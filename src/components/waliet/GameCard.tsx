@@ -78,6 +78,10 @@ const OddsButton = memo(function OddsButton({
         sportName: game.sport?.name,
         leagueName: game.league?.name,
         startsAt: +game.startsAt,
+        team1Name: game.participants?.[0]?.name,
+        team2Name: game.participants?.[1]?.name,
+        team1Image: game.participants?.[0]?.image ?? undefined,
+        team2Image: game.participants?.[1]?.image ?? undefined,
       });
       addItem(item);
     }
@@ -227,7 +231,7 @@ export const GameCard = memo(function GameCard({ game, leagueUrl }: { game: Game
 
   return (
     <div
-      className="bg-bg-card rounded-xl border border-border-subtle hover:bg-white/[0.03] p-3 cursor-pointer flex flex-col transition-colors"
+      className="bg-bg-modal rounded-xl border border-border-subtle p-3 cursor-pointer flex flex-col game-card-shadow"
       onClick={() => openGame(gameId)}
     >
       {/* Top: time + live badge + favorite */}

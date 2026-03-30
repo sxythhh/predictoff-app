@@ -72,6 +72,10 @@ function OddsBtn({
         sportName: game.sport?.name,
         leagueName: game.league?.name,
         startsAt: +game.startsAt,
+        team1Name: game.participants?.[0]?.name,
+        team2Name: game.participants?.[1]?.name,
+        team1Image: game.participants?.[0]?.image ?? undefined,
+        team2Image: game.participants?.[1]?.image ?? undefined,
       });
       addItem(item);
     }
@@ -421,7 +425,7 @@ export function LiveTopEvents() {
       {/* Drag-to-scroll container */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto select-none pt-8 -mt-8 pb-28 -mb-28 pl-2 scrollbar-hide touch-auto lg:touch-pan-y scroll-pl-2 snap-x snap-mandatory lg:snap-none"
+        className="flex gap-3 overflow-x-auto select-none pt-8 -mt-8 pb-28 -mb-28 pl-2 scrollbar-hide touch-auto lg:touch-pan-y scroll-pl-2 "
         style={{ overscrollBehaviorX: "contain" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -432,7 +436,7 @@ export function LiveTopEvents() {
         {displayGames.map((game) => (
           <div
             key={game.gameId}
-            className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer snap-start top-events-card-perf"
+            className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer top-events-card-perf"
           >
             <LiveEventCard game={game} />
           </div>

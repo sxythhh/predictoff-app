@@ -1,14 +1,26 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import SearchModal from "./SearchModal";
 import { WalletModal } from "@/components/waliet/WalletModal";
 import { SettingsDrawer } from "@/components/waliet/SettingsDrawer";
-import { usePlayMode } from "@/components/waliet/PlayBetslip";
 import { usePlayBalance } from "@/components/waliet/usePlayBalance";
 import { useAccount } from "wagmi";
-import { useBetTokenBalance, useChain } from "@azuro-org/sdk";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
+import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { springs } from "@/lib/springs";
+
+function WalietLogo({ className }: { className?: string }) {
+  return (
+    <img
+      src="/images/waliet-logo.png"
+      alt="Waliet"
+      className={className}
+      style={{ filter: "invert(var(--logo-invert))" }}
+    />
+  );
+}
 
 function UsdtIcon() {
   return (
@@ -37,27 +49,94 @@ const HEADER_TABS = [
 ] as const;
 
 function HeaderTabs({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isMouseInside = useRef(false);
+  const selectedIndex = HEADER_TABS.findIndex((t) => t.id === activeTab);
+
+  const {
+    activeIndex: hoveredIndex,
+    itemRects: tabRects,
+    handlers,
+    registerItem: registerTab,
+    measureItems: measureTabs,
+  } = useProximityHover(containerRef, { axis: "x" });
+
+  useEffect(() => { measureTabs(); }, [measureTabs]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    isMouseInside.current = true;
+    handlers.onMouseMove(e);
+  }, [handlers]);
+
+  const handleMouseLeave = useCallback(() => {
+    isMouseInside.current = false;
+    handlers.onMouseLeave();
+  }, [handlers]);
+
+  const selectedRect = tabRects[selectedIndex];
+  const hoverRect = hoveredIndex !== null ? tabRects[hoveredIndex] : null;
+  const isHoveringSelected = hoveredIndex === selectedIndex;
+
   return (
-    <div className="hidden lg:flex items-center gap-1 h-full">
-      {HEADER_TABS.map((tab) => {
-        const isActive = activeTab === tab.id;
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="hidden lg:flex items-center relative h-full select-none"
+    >
+      {/* Active underline */}
+      {selectedRect && (
+        <motion.div
+          className="pointer-events-none absolute bottom-[-1px] h-[2px] rounded-full bg-text-primary"
+          initial={false}
+          animate={{
+            left: selectedRect.left,
+            width: selectedRect.width,
+            opacity: 1,
+          }}
+          transition={{ ...springs.moderate, opacity: { duration: 0.16 } }}
+        />
+      )}
+
+      {/* Hover underline */}
+      <AnimatePresence>
+        {hoverRect && !isHoveringSelected && selectedRect && (
+          <motion.div
+            className="pointer-events-none absolute bottom-[-1px] h-[2px] rounded-full bg-text-primary/15"
+            initial={{ left: selectedRect.left, width: selectedRect.width, opacity: 0 }}
+            animate={{ left: hoverRect.left, width: hoverRect.width, opacity: 0.5 }}
+            exit={
+              !isMouseInside.current && selectedRect
+                ? { left: selectedRect.left, width: selectedRect.width, opacity: 0, transition: { ...springs.moderate, opacity: { duration: 0.12 } } }
+                : { opacity: 0, transition: { duration: 0.12 } }
+            }
+            transition={{ ...springs.moderate, opacity: { duration: 0.16 } }}
+          />
+        )}
+      </AnimatePresence>
+
+      {HEADER_TABS.map((tab, index) => {
+        const isActive = selectedIndex === index;
+        const isHovered = hoveredIndex === index;
         return (
           <button
             key={tab.id}
+            ref={(el) => { registerTab(index, el); }}
+            data-proximity-index={index}
             type="button"
             onClick={() => onTabChange(tab.id)}
-            className="relative flex items-center justify-center px-4 h-full cursor-pointer"
+            className="relative z-10 flex items-center justify-center px-4 h-full cursor-pointer bg-transparent border-none outline-none"
           >
+            {/* Invisible bold text to reserve space */}
+            <span className="invisible text-[13px] font-bold tracking-[-0.3px]" aria-hidden="true">{tab.label}</span>
             <span
-              className={`text-[13px] tracking-[-0.3px] transition-colors ${
-                isActive ? "text-text-primary font-bold" : "text-text-muted font-semibold hover:text-text-secondary"
+              className={`absolute text-[13px] tracking-[-0.3px] transition-[color,font-weight] duration-75 ${
+                isActive || isHovered ? "text-text-primary font-semibold" : "text-text-muted font-medium"
               }`}
+              style={{ fontWeight: isActive ? 700 : isHovered ? 600 : 500 }}
             >
               {tab.label}
             </span>
-            {isActive && (
-              <div className="absolute bottom-[-1px] left-2 right-2 h-[2px] rounded-full bg-accent" />
-            )}
           </button>
         );
       })}
@@ -71,7 +150,7 @@ function SearchButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 w-[276px] h-[35px] rounded-[5px] px-[8px] pr-[5px] bg-bg-card hover:bg-bg-hover transition-colors"
+      className="flex items-center gap-2 w-[276px] h-[35px] rounded-[5px] px-[8px] pr-[5px] bg-bg-card hover:bg-bg-hover transition-colors cursor-pointer"
     >
       <div className="flex items-center justify-center w-[18px] h-[18px] shrink-0">
         <SearchIcon />
@@ -89,25 +168,10 @@ function SearchButton({ onClick }: { onClick: () => void }) {
 /* ── Wallet Button ── */
 
 function HeaderWalletButton({ onWalletClick }: { onWalletClick: () => void }) {
-  const { isPlayMode } = usePlayMode();
   const { balance: playBalance, currency: playCurrency } = usePlayBalance();
-  const { address, isConnected } = useAccount();
-  const { betToken } = useChain();
-  const { data: tokenBalance } = useBetTokenBalance();
 
-  let displayBalance: string;
-  let displaySymbol: string;
-
-  if (isPlayMode) {
-    displayBalance = playBalance.toFixed(2);
-    displaySymbol = playCurrency;
-  } else if (isConnected && tokenBalance?.balance) {
-    displayBalance = Number(tokenBalance.balance).toFixed(2);
-    displaySymbol = betToken?.symbol ?? "USDT";
-  } else {
-    displayBalance = "0.00";
-    displaySymbol = "USD";
-  }
+  const displayBalance = playBalance.toFixed(2);
+  const displaySymbol = playCurrency;
 
   return (
     <button
@@ -135,22 +199,12 @@ function HeaderWalletButton({ onWalletClick }: { onWalletClick: () => void }) {
 /* ── Balance Pill (replaces wallet button + settings gear) ── */
 
 function HeaderBalancePill() {
-  const { isPlayMode } = usePlayMode();
   const { balance: playBalance, currency: playCurrency } = usePlayBalance();
-  const { address, isConnected } = useAccount();
-  const { betToken } = useChain();
-  const { data: tokenBalance } = useBetTokenBalance();
+  const { isConnected, address } = useAccount();
   const [showUsdt, setShowUsdt] = useState(false);
 
-  let usdtBalance = "0.00";
-  let usdtSymbol = "USDT";
-  if (isPlayMode) {
-    usdtBalance = playBalance.toFixed(2);
-    usdtSymbol = playCurrency;
-  } else if (isConnected && tokenBalance?.balance) {
-    usdtBalance = Number(tokenBalance.balance).toFixed(2);
-    usdtSymbol = betToken?.symbol ?? "USDT";
-  }
+  const usdtBalance = playBalance.toFixed(2);
+  const usdtSymbol = playCurrency;
 
   return (
     <div
@@ -158,7 +212,7 @@ function HeaderBalancePill() {
       style={{ backdropFilter: "blur(40px)" }}
     >
       {/* Balance section */}
-      <div className="flex items-center gap-2 h-8 rounded-2xl px-3" style={{ background: "rgba(47, 47, 47, 0.80)" }}>
+      <div className="flex items-center gap-2 h-8 rounded-2xl px-3" style={{ background: "rgba(47, 47, 47, 0.80)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.08), inset 0 -1px 0 0 rgba(0,0,0,0.2), inset 0 0 12px 0 rgba(255,255,255,0.03)" }}>
         {showUsdt ? (
           <>
             {/* USDT icon */}
@@ -313,7 +367,7 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
           {/* Left: logo + search */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <img src="/images/waliet-logo.png" alt="Waliet" className="w-6 h-6 dark:invert-0 invert" />
+              <WalietLogo className="w-6 h-6" />
               <span className="text-[18px] font-bold tracking-tight text-text-primary -ml-0.5">Waliet</span>
             </div>
             <div className="hidden lg:block ml-1">

@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useAccount, useDisconnect } from "wagmi";
 import { useChain } from "@azuro-org/sdk";
-import { usePlayMode } from "./PlayBetslip";
-import { usePlayBalance } from "./usePlayBalance";
+
 import { useTheme } from "@/components/ui/theme";
 
 interface SettingsDrawerProps {
@@ -16,7 +15,6 @@ interface SettingsDrawerProps {
 const navItems = [
   { id: "account", label: "Account", icon: UserIcon },
   { id: "preferences", label: "Preferences", icon: SettingsIcon },
-  { id: "playmode", label: "Play Mode", icon: GameIcon },
   { id: "about", label: "About Waliet", icon: InfoIcon },
 ];
 
@@ -38,16 +36,6 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
-function GameIcon({ className }: { className?: string }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className={className}>
-      <rect x="3" y="5" width="14" height="10" rx="3" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M7 8V12M5 10H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="13" cy="9" r="0.75" fill="currentColor"/>
-      <circle cx="15" cy="11" r="0.75" fill="currentColor"/>
-    </svg>
-  );
-}
 
 function InfoIcon({ className }: { className?: string }) {
   return (
@@ -153,7 +141,7 @@ export function SettingsDrawer({ onClose, open }: SettingsDrawerProps) {
           <div className="flex-1 overflow-y-auto">
             {activeSection === "account" && <AccountSection />}
             {activeSection === "preferences" && <PreferencesSection />}
-            {activeSection === "playmode" && <PlayModeSection />}
+
             {activeSection === "about" && <AboutSection />}
             <div className="lg:hidden px-8 pb-8">
               <DisconnectButton />
@@ -337,57 +325,6 @@ function PreferencesSection() {
   );
 }
 
-function PlayModeSection() {
-  const { isPlayMode, setPlayMode } = usePlayMode();
-  const { balance, reset, currency } = usePlayBalance();
-
-  return (
-    <div className="p-8 max-w-[600px]">
-      <h2 className="text-[18px] font-semibold text-text-primary mb-6">Play Mode</h2>
-
-      <div className="flex flex-col gap-5">
-        <div className="flex items-center justify-between p-4 rounded-xl bg-border-subtle border border-border-subtle">
-          <div>
-            <span className="text-[14px] font-semibold text-text-primary">Play Mode</span>
-            <p className="text-[12px] text-text-muted mt-0.5">Practice betting with virtual currency</p>
-          </div>
-          <button
-            onClick={() => setPlayMode(!isPlayMode)}
-            className={`w-11 h-6 rounded-full relative transition-colors ${
-              isPlayMode ? "bg-accent" : "bg-bg-active"
-            }`}
-          >
-            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-              isPlayMode ? "right-1" : "left-1"
-            }`} />
-          </button>
-        </div>
-
-        {isPlayMode && (
-          <>
-            <div className="flex items-center justify-between">
-              <span className="text-[13px] text-text-secondary">Balance</span>
-              <span className="text-[16px] font-bold text-text-primary tabular-nums">{balance.toFixed(2)} {currency}</span>
-            </div>
-
-            <button
-              onClick={reset}
-              className="h-10 rounded-lg border border-border-input bg-border-subtle hover:bg-bg-input text-[13px] font-medium text-text-secondary transition-colors"
-            >
-              Reset Balance to 1,000 {currency}
-            </button>
-          </>
-        )}
-
-        {!isPlayMode && (
-          <p className="text-[13px] text-text-muted">
-            Switch to Play Mode to practice betting with virtual {currency} tokens. No real money involved.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function AboutSection() {
   return (

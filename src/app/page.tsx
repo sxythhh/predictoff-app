@@ -185,7 +185,7 @@ function BackToTop({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | nul
 function MainContent({ activeSport, activeLeague }: { activeSport: string | null; activeLeague: string | null }) {
   const mainRef = useRef<HTMLElement>(null);
   return (
-    <main ref={mainRef} className="flex-1 min-w-0 overflow-y-auto">
+    <main ref={mainRef} className="flex-1 min-w-0 overflow-y-auto @container/main">
       {!activeSport && (
         <LiveTopEvents />
       )}
@@ -219,7 +219,7 @@ function MainContent({ activeSport, activeLeague }: { activeSport: string | null
       <footer className="border-t border-bg-card py-[60px] px-2">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <img src="/images/waliet-logo.png" alt="Waliet" className="w-6 h-6 opacity-50 dark:invert-0 invert" />
+            <img src="/images/waliet-logo.png" alt="Waliet" className="w-6 h-6 opacity-50" style={{ filter: "invert(var(--logo-invert, 1))" }} />
             <span className="text-[15px] font-semibold text-text-muted">Waliet</span>
           </div>
           <div className="text-text-secondary text-sm">Powered by Azuro</div>
@@ -492,7 +492,7 @@ function MobileNav({
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden safe-area-pb">
-      <div className="relative flex items-end h-[44px] bg-bg-card">
+      <div className="relative flex items-end h-[44px] bg-bg-card dark:bg-bg-surface">
         {/* Live */}
         <NavBtn label="Live" active={isLive} onClick={() => startTransition(() => changeLive(!isLive))}>
           <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
@@ -511,7 +511,7 @@ function MobileNav({
         {/* Betslip — center notch button */}
         <div className="relative flex flex-col items-center" style={{ width: 64 }}>
           {/* Notch cutout shape */}
-          <svg className="absolute bottom-0 text-bg-card" width="64" height="61" viewBox="0 0 64 61" fill="none" style={{ pointerEvents: "none" }}>
+          <svg className="absolute bottom-0 text-bg-card dark:text-bg-surface" width="64" height="61" viewBox="0 0 64 61" fill="none" style={{ pointerEvents: "none" }}>
             <path fillRule="evenodd" clipRule="evenodd" d="M60.006 17C56.45 17 53.436 14.57 51.64 11.503C47.6 4.604 40.315 0 32 0C23.685 0 16.4 4.604 12.36 11.503C10.564 14.57 7.55 17 3.994 17H0V61H64V17H60.006Z" fill="currentColor"/>
           </svg>
           {/* Circle button */}
@@ -525,7 +525,7 @@ function MobileNav({
               <path d="M8 7H12M8 10H12M8 13H11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
             {betslipCount > 0 && (
-              <span className="absolute -top-2.5 -right-2.5 w-5 h-5 flex items-center justify-center rounded-full border-[0.6px] border-black font-inter text-[14px] font-extrabold leading-none tracking-[-0.42px] text-white betslip-badge-count"
+              <span className="absolute -top-1.5 -right-1.5 w-[15px] h-[15px] flex items-center justify-center rounded-full border-[0.5px] border-black font-inter text-[10px] font-extrabold leading-none tracking-[-0.3px] text-white betslip-badge-count"
                 style={{
                   background: "#e6311f",
                   boxShadow: "inset 0px 2px 0px 0px #ff7b7b, 0px 1px 0px 0px #000",

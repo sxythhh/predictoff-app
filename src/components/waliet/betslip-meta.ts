@@ -13,6 +13,10 @@ export interface BetslipMeta {
   leagueName?: string;
   /** Unix seconds — game start time */
   startsAt?: number;
+  team1Name?: string;
+  team2Name?: string;
+  team1Image?: string;
+  team2Image?: string;
 }
 
 const cache = new Map<string, BetslipMeta>();

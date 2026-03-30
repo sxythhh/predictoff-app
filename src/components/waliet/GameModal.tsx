@@ -128,6 +128,10 @@ function ModalOddsButton({
         sportName: game.sport?.name,
         leagueName: game.league?.name,
         startsAt: +game.startsAt,
+        team1Name: game.participants?.[0]?.name,
+        team2Name: game.participants?.[1]?.name,
+        team1Image: game.participants?.[0]?.image ?? undefined,
+        team2Image: game.participants?.[1]?.image ?? undefined,
       });
       addItem(item);
     }

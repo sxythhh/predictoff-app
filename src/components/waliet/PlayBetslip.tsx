@@ -8,6 +8,7 @@ import { BetConfirmModal, type BetConfirmData } from "./BetConfirmModal";
 import { Betslip } from "./Betslip";
 import { BetHistory } from "./BetHistory";
 import { BetSummaryCard } from "./BetSummaryCard";
+import { TeamLogo } from "./TeamLogo";
 
 // ── Betslip collapse context ──────────────────────────────────
 const BetslipCollapseContext = createContext<{
@@ -70,28 +71,6 @@ function CollapsedBetslip() {
   );
 }
 
-// Play mode context — allows toggling between play and real mode
-const PlayModeContext = createContext<{
-  isPlayMode: boolean;
-  setPlayMode: (v: boolean) => void;
-}>({ isPlayMode: true, setPlayMode: () => {} });
-
-export function usePlayMode() {
-  return useContext(PlayModeContext);
-}
-
-export function PlayModeProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isPlayMode, setPlayMode] = useState(true);
-  return (
-    <PlayModeContext.Provider value={{ isPlayMode, setPlayMode }}>
-      {children}
-    </PlayModeContext.Provider>
-  );
-}
 
 function PlayBetslipCard({
   item,
@@ -105,23 +84,57 @@ function PlayBetslipCard({
   const meta = getBetslipMeta(item.conditionId, item.outcomeId);
 
   return (
-    <div className="odds-glass rounded-lg p-3 relative">
+    <div
+      className="rounded-xl p-3 relative"
+      style={{
+        background: "var(--bg-card)",
+        boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.06), inset 0 -1px 0 0 rgba(0,0,0,0.15), inset 0 0 12px 0 rgba(255,255,255,0.02)",
+      }}
+    >
+      {/* Remove button */}
       <button
         onClick={onRemove}
-        className="absolute top-2 right-2 text-text-muted hover:text-status-loss transition-colors cursor-pointer"
+        className="absolute top-2.5 right-2.5 text-text-muted hover:text-status-loss transition-colors cursor-pointer"
       >
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
           <path fillRule="evenodd" clipRule="evenodd" d="M7.83855 2.40883C8.14766 1.94517 8.66805 1.66667 9.2253 1.66667H10.7747C11.3319 1.66667 11.8523 1.94517 12.1614 2.40883L12.9167 3.54167H16.0417C16.3868 3.54167 16.6667 3.82149 16.6667 4.16667C16.6667 4.51185 16.3868 4.79167 16.0417 4.79167H3.95833C3.61315 4.79167 3.33333 4.51185 3.33333 4.16667C3.33333 3.82149 3.61315 3.54167 3.95833 3.54167H7.08333L7.83855 2.40883ZM12.5 18.3333H7.5C5.65905 18.3333 4.16666 16.841 4.16666 15V5.83333H15.8333V15C15.8333 16.841 14.3409 18.3333 12.5 18.3333ZM8.33333 8.54167C8.67851 8.54167 8.95833 8.82149 8.95833 9.16667V15C8.95833 15.3452 8.67851 15.625 8.33333 15.625C7.98815 15.625 7.70833 15.3452 7.70833 15L7.70833 9.16667C7.70833 8.82149 7.98815 8.54167 8.33333 8.54167ZM11.6667 8.54167C12.0118 8.54167 12.2917 8.82149 12.2917 9.16667V15C12.2917 15.3452 12.0118 15.625 11.6667 15.625C11.3215 15.625 11.0417 15.3452 11.0417 15V9.16667C11.0417 8.82149 11.3215 8.54167 11.6667 8.54167Z" fill="currentColor"/>
         </svg>
       </button>
-      <div className="text-[11px] text-text-muted mb-1 truncate pr-6">
-        {meta?.gameTitle ?? `Game ${item.gameId}`}
-      </div>
+
+      {/* Teams row */}
+      {meta?.team1Name && (
+        <div className="flex items-center gap-2 mb-2 pr-6">
+          {(meta.team1Image || meta.team2Image) && (
+            <div className="flex items-center -space-x-1.5">
+              {meta.team1Image && (
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-bg-surface ring-1 ring-border-subtle">
+                  <TeamLogo src={meta.team1Image} name={meta.team1Name} className="w-5 h-5 object-contain" />
+                </div>
+              )}
+              {meta.team2Image && (
+                <div className="w-5 h-5 rounded-full overflow-hidden bg-bg-surface ring-1 ring-border-subtle">
+                  <TeamLogo src={meta.team2Image} name={meta.team2Name ?? ""} className="w-5 h-5 object-contain" />
+                </div>
+              )}
+            </div>
+          )}
+          <span className="text-[11px] text-text-muted truncate">
+            {meta.team1Name} vs {meta.team2Name}
+          </span>
+        </div>
+      )}
+
+      {/* Selection + odds */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[13px] font-semibold text-text-primary truncate">
-          {meta ? `${meta.marketName}: ${meta.selectionName}` : `#${item.outcomeId}`}
-        </span>
-        <span className="text-[13px] font-bold text-accent tabular-nums shrink-0">
+        <div className="flex flex-col min-w-0">
+          <span className="text-[13px] font-semibold text-text-primary truncate">
+            {meta?.selectionName ?? `#${item.outcomeId}`}
+          </span>
+          <span className="text-[11px] text-text-muted truncate">
+            {meta?.marketName ?? "Market"}
+          </span>
+        </div>
+        <span className="text-[14px] font-bold text-accent tabular-nums shrink-0">
           {odds?.toFixed(2) ?? "—"}
         </span>
       </div>
@@ -246,73 +259,25 @@ function PlayBetHistory() {
 }
 
 export function PlayBetslip({ isMobileDrawer }: { isMobileDrawer?: boolean } = {}) {
-  const { isPlayMode, setPlayMode } = usePlayMode();
   const [collapsed, setCollapsed] = useState(false);
   const toggle = useCallback(() => setCollapsed((c) => !c), []);
 
   if (isMobileDrawer) {
-    // Render without the sidebar wrapper for mobile drawer
     return (
       <BetslipCollapseContext.Provider value={{ collapsed: false, toggle: () => {} }}>
-        {isPlayMode ? (
-          <PlayBetslipInner isMobile />
-        ) : (
-          <RealBetslipSidebar onSwitchToPlay={() => setPlayMode(true)} isMobile />
-        )}
+        <PlayBetslipInner isMobile />
       </BetslipCollapseContext.Provider>
     );
   }
 
   return (
     <BetslipCollapseContext.Provider value={{ collapsed, toggle }}>
-      {collapsed ? (
-        <CollapsedBetslip />
-      ) : isPlayMode ? (
-        <PlayBetslipInner />
-      ) : (
-        <RealBetslipSidebar onSwitchToPlay={() => setPlayMode(true)} />
-      )}
+      {collapsed ? <CollapsedBetslip /> : <PlayBetslipInner />}
     </BetslipCollapseContext.Provider>
   );
 }
 
-function RealBetslipSidebar({ onSwitchToPlay, isMobile }: { onSwitchToPlay: () => void; isMobile?: boolean }) {
-  const [tab, setTab] = useState<"betslip" | "history">("betslip");
-
-  return (
-    <aside className={isMobile ? "flex flex-col" : "w-[320px] shrink-0 border-l border-border-primary flex flex-col"}>
-      {/* Tabs — pill style */}
-      <div className="flex gap-1 px-3 py-2 border-b border-border-primary">
-        <button
-          onClick={() => setTab("betslip")}
-          className={`flex-1 h-8 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
-            tab === "betslip"
-              ? "bg-bg-input text-text-primary"
-              : "text-text-muted hover:text-text-secondary"
-          }`}
-        >
-          Betslip
-        </button>
-        <button
-          onClick={() => setTab("history")}
-          className={`flex-1 h-8 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
-            tab === "history"
-              ? "bg-bg-input text-text-primary"
-              : "text-text-muted hover:text-text-secondary"
-          }`}
-        >
-          My Bets
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {tab === "betslip" ? <Betslip /> : <BetHistory />}
-      </div>
-    </aside>
-  );
-}
-
 function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
-  const { setPlayMode } = usePlayMode();
   const { items, removeItem, clear } = useBaseBetslip();
   const { odds, totalOdds, isOddsFetching } = useDetailedBetslip();
   const { balance, currency, reset } = usePlayBalance();
@@ -405,7 +370,8 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
   return (
     <aside className={isMobile ? "flex flex-col" : "w-[320px] shrink-0 border-l border-border-primary flex flex-col"}>
       {/* Tabs — pill style */}
-      <div className="flex gap-1 px-3 py-2 border-b border-border-primary">
+      <div className="flex items-center gap-1 px-3 py-2">
+        {!isMobile && <CollapseToggle />}
         <button
           onClick={() => setTab("betslip")}
           className={`flex-1 h-8 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${

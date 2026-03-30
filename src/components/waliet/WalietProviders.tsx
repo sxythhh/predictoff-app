@@ -10,7 +10,6 @@ import { AzuroSDKProvider, LiveProvider } from "@azuro-org/sdk";
 import { type Address } from "viem";
 import { ToastProvider } from "./Toast";
 import { AuthProvider } from "@/components/auth/AuthProvider";
-import { PlayModeProvider } from "./PlayBetslip";
 import { ThemeProvider } from "@/components/ui/theme";
 
 const AFFILIATE_ADDRESS =
@@ -68,7 +67,7 @@ export function WalietProviders({ children }: { children: ReactNode }) {
             <AuthProvider>
               <ThemeProvider>
                 <ToastProvider>
-                  <PlayModeProvider>{children}</PlayModeProvider>
+                  {children}
                 </ToastProvider>
               </ThemeProvider>
             </AuthProvider>

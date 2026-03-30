@@ -3,7 +3,6 @@
 import { useAccount } from "wagmi";
 import { useBetsSummary } from "@azuro-org/sdk";
 import { usePlayBets } from "./usePlayBalance";
-import { usePlayMode } from "./PlayBetslip";
 
 function StatBox({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
@@ -67,6 +66,5 @@ function PlayBetSummary() {
 }
 
 export function BetSummaryCard() {
-  const { isPlayMode } = usePlayMode();
-  return isPlayMode ? <PlayBetSummary /> : <RealBetSummary />;
+  return <PlayBetSummary />;
 }
