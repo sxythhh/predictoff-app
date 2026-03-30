@@ -261,6 +261,7 @@ function CollapsedIconStrip({
   isFetching: boolean;
   onSportClick: (slug: string | null) => void;
 }) {
+  const { setSettingsOpen } = useSidebar();
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     activeIndex,
