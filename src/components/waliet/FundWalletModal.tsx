@@ -266,7 +266,7 @@ export function FundWalletModal({
         <div className="flex-1 overflow-y-auto min-h-0 lifi-theme-override">
           {tab === "swap" ? (
             <Suspense fallback={<WidgetSkeleton />}>
-              <LiFiWidgetLazy integrator="predictoff" config={widgetConfig} />
+              <LiFiWidgetLazy integrator="waliet" config={widgetConfig} />
             </Suspense>
           ) : (
             <div className="flex flex-col h-full">

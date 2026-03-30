@@ -17,7 +17,7 @@ const navItems = [
   { id: "account", label: "Account", icon: UserIcon },
   { id: "preferences", label: "Preferences", icon: SettingsIcon },
   { id: "playmode", label: "Play Mode", icon: GameIcon },
-  { id: "about", label: "About PredictOff", icon: InfoIcon },
+  { id: "about", label: "About Waliet", icon: InfoIcon },
 ];
 
 function UserIcon({ className }: { className?: string }) {
@@ -392,11 +392,11 @@ function PlayModeSection() {
 function AboutSection() {
   return (
     <div className="p-8 max-w-[600px]">
-      <h2 className="text-[18px] font-semibold text-text-primary mb-6">About PredictOff</h2>
+      <h2 className="text-[18px] font-semibold text-text-primary mb-6">About Waliet</h2>
 
       <div className="flex flex-col gap-4">
         <p className="text-[14px] text-text-secondary leading-relaxed">
-          PredictOff is a decentralized sports betting platform built on the Azuro protocol.
+          Waliet is a decentralized sports betting platform built on the Azuro protocol.
           Your bets are transparent, your funds stay under your control, and there&apos;s no middleman.
         </p>
 

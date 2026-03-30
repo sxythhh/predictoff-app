@@ -281,21 +281,6 @@ function RealBetslipSidebar({ onSwitchToPlay, isMobile }: { onSwitchToPlay: () =
 
   return (
     <aside className={isMobile ? "flex flex-col" : "w-[320px] shrink-0 border-l border-border-primary flex flex-col"}>
-      {/* Mode bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-bg-modal border-b border-border-primary">
-        <div className="flex items-center gap-2">
-          <CollapseToggle />
-          <span className="text-[11px] font-bold text-status-win bg-green-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-            Real
-          </span>
-        </div>
-        <button
-          onClick={onSwitchToPlay}
-          className="text-[10px] text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
-        >
-          Switch to Play
-        </button>
-      </div>
       {/* Tabs — pill style */}
       <div className="flex gap-1 px-3 py-2 border-b border-border-primary">
         <button
@@ -419,38 +404,6 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
 
   return (
     <aside className={isMobile ? "flex flex-col" : "w-[320px] shrink-0 border-l border-border-primary flex flex-col"}>
-      {/* Balance bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-bg-modal border-b border-border-primary">
-        <div className="flex items-center gap-2">
-          <CollapseToggle />
-          <span className="text-[11px] font-bold text-accent bg-accent-muted px-2 py-0.5 rounded-full uppercase tracking-wider">
-            Play
-          </span>
-          <button
-            onClick={() => setPlayMode(false)}
-            className="text-[10px] text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
-          >
-            Go Real
-          </button>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[16px] font-bold text-text-primary tabular-nums">
-            {balance.toFixed(0)}
-          </span>
-          <span className="text-[11px] text-text-muted">{currency}</span>
-          <button
-            onClick={reset}
-            className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-bg-hover text-text-muted hover:text-text-secondary transition-colors ml-0.5 cursor-pointer"
-            title="Reset balance to 1,000"
-          >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-              <path d="M2 8a6 6 0 1 1 1.05 3.36" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M2 12V8.5H5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
       {/* Tabs — pill style */}
       <div className="flex gap-1 px-3 py-2 border-b border-border-primary">
         <button

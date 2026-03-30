@@ -31,7 +31,7 @@ const wagmiConfig = createConfig({
     ...(WC_PROJECT_ID
       ? [walletConnect({ projectId: WC_PROJECT_ID, showQrModal: false })]
       : []),
-    coinbaseWallet({ appName: "PredictOff" }),
+    coinbaseWallet({ appName: "Waliet" }),
   ],
   transports: {
     [polygon.id]: http("https://polygon-bor-rpc.publicnode.com"),

@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const message = new SiweMessage({
         domain: window.location.host,
         address: walletAddress,
-        statement: "Sign in to PredictOff",
+        statement: "Sign in to Waliet",
         uri: window.location.origin,
         version: "1",
         chainId: walletChainId,

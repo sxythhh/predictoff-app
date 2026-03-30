@@ -96,7 +96,7 @@ function OddsBtn({
 
 /* ── Event Card Markets ── */
 
-function EventCardMarkets({ game }: { game: GameData }) {
+const EventCardMarkets = memo(function EventCardMarkets({ game }: { game: GameData }) {
   const { data: markets, isFetching } = useActiveMarkets({
     gameId: game.gameId,
   });
@@ -128,7 +128,7 @@ function EventCardMarkets({ game }: { game: GameData }) {
       </div>
     </div>
   );
-}
+});
 
 /* ── Countdown Timer ── */
 
@@ -168,7 +168,7 @@ const CountdownTimer = memo(function CountdownTimer({ startsAt }: { startsAt: nu
 
 /* ── Event Card with hover expand ── */
 
-function LiveEventCard({ game }: { game: GameData }) {
+const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) {
   const { participants, startsAt } = game;
   const openGame = useOpenGame();
   const liveData = useLiveScore(game);
@@ -274,7 +274,7 @@ function LiveEventCard({ game }: { game: GameData }) {
       </div>
     </div>
   );
-}
+});
 
 /* ── Main Component ── */
 
@@ -432,7 +432,7 @@ export function LiveTopEvents() {
         {displayGames.map((game) => (
           <div
             key={game.gameId}
-            className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer snap-start"
+            className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer snap-start top-events-card-perf"
           >
             <LiveEventCard game={game} />
           </div>

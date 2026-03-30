@@ -313,8 +313,8 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
           {/* Left: logo + search */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <img src="/images/predictoff-logo.png" alt="PredictOff" className="w-7 h-7 rounded-md" />
-              <span className="text-[16px] font-bold tracking-tight text-text-primary">PredictOff</span>
+              <img src="/images/waliet-logo.png" alt="Waliet" className="w-6 h-6 dark:invert-0 invert" />
+              <span className="text-[18px] font-bold tracking-tight text-text-primary -ml-0.5">Waliet</span>
             </div>
             <div className="hidden lg:block ml-1">
               <SearchButton onClick={() => setSearchOpen(true)} />

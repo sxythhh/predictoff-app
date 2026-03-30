@@ -18,7 +18,7 @@ const ibmPlexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "PredictOff — Decentralized Sports Betting",
+  title: "Waliet — Decentralized Sports Betting",
   description: "Bet on sports with crypto. No KYC, non-custodial, powered by Azuro protocol.",
 };
 

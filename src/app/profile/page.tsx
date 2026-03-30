@@ -256,7 +256,7 @@ function ProfileCard() {
               <PointsBadge points={0} />
             </div>
           </div>
-          <span className="text-[12px] text-[#686868]">Joined PredictOff on {joinDate}</span>
+          <span className="text-[12px] text-[#686868]">Joined Waliet on {joinDate}</span>
           {user.bio && <p className="text-[13px] text-text-secondary mt-1">{user.bio}</p>}
         </div>
 

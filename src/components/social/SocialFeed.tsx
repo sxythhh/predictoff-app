@@ -25,7 +25,7 @@ const MOCK_POSTS: Post[] = [
   {
     id: "1",
     author: { name: "CryptoWhale", handle: "@whale_bets", avatarColor: "#6366f1" },
-    content: "Just hit a 5-leg parlay on the EPL weekend matches. Man City, Arsenal, Liverpool all came through. The on-chain transparency of PredictOff makes it so much better — you can actually verify the odds are fair.",
+    content: "Just hit a 5-leg parlay on the EPL weekend matches. Man City, Arsenal, Liverpool all came through. The on-chain transparency of Waliet makes it so much better — you can actually verify the odds are fair.",
     timestamp: "2 hours ago",
     likes: 24,
     comments: 8,
@@ -50,7 +50,7 @@ const MOCK_POSTS: Post[] = [
   {
     id: "4",
     author: { name: "OnChain Oscar", handle: "@onchain_oscar", avatarColor: "#10b981" },
-    content: "The fact that PredictOff runs on Azuro protocol means every bet is transparent on-chain. No more wondering if the house is adjusting odds against you. This is what sports betting should have always been.",
+    content: "The fact that Waliet runs on Azuro protocol means every bet is transparent on-chain. No more wondering if the house is adjusting odds against you. This is what sports betting should have always been.",
     timestamp: "12 hours ago",
     likes: 56,
     comments: 15,
@@ -228,7 +228,7 @@ function ReferralBanner() {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText("predictoff.xyz/invite/");
+    navigator.clipboard.writeText("waliet.com/invite/");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, []);
@@ -240,10 +240,10 @@ function ReferralBanner() {
         <span className="text-[15px] font-semibold text-accent">get paid!</span>
       </div>
       <p className="text-[13px] text-text-secondary leading-[18px] mb-3">
-        Earn $1 for every friend you invite, plus $1 when they verify their profile. Spread it in the PredictOff Discord.
+        Earn $1 for every friend you invite, plus $1 when they verify their profile. Spread it in the Waliet Discord.
       </p>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[13px] text-text-muted">predictoff.xyz/invite/</span>
+        <span className="text-[13px] text-text-muted">waliet.com/invite/</span>
       </div>
       <div className="flex items-center gap-3">
         <button className="text-[13px] font-semibold text-accent hover:underline">

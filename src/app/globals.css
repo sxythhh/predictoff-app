@@ -386,6 +386,19 @@ body {
 .odds-increased { animation: odds-flash-up 600ms ease-out; }
 .odds-decreased { animation: odds-flash-down 600ms ease-out; }
 
+/* ── Mobile-only perf optimizations for top events cards ── */
+@media (max-width: 1023px) {
+  .top-events-card-perf {
+    contain: layout style paint;
+    will-change: transform;
+  }
+}
+
+/* ── Disable transitions during drag scroll ── */
+.is-dragging * {
+  transition: none !important;
+}
+
 /* ── Back to top button ── */
 @keyframes back-to-top-in {
   from { opacity: 0; transform: translateY(12px); }
