@@ -282,8 +282,13 @@ export function LiveTopEvents() {
   const { isLive } = useLive();
   const scrollRef = useRef<HTMLDivElement>(null);
   const dragState = useRef({ isDown: false, startX: 0, scrollLeft: 0, hasDragged: false, pointerId: -1 });
+  const prevGamesRef = useRef<GameData[]>([]);
+
+  // Only use pointer-drag on non-touch (desktop); let native touch scroll work on mobile
+  const isTouch = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "touch") return; // let native scroll handle it
     const ds = dragState.current;
     ds.isDown = true;
     ds.startX = e.clientX;
@@ -293,6 +298,7 @@ export function LiveTopEvents() {
   }, []);
 
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "touch") return;
     const ds = dragState.current;
     if (!ds.isDown) return;
     const dx = e.clientX - ds.startX;
@@ -310,6 +316,7 @@ export function LiveTopEvents() {
   }, []);
 
   const onPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "touch") return;
     const ds = dragState.current;
     if (ds.hasDragged) {
       try { (e.currentTarget as HTMLElement).releasePointerCapture(ds.pointerId); } catch {}
@@ -332,21 +339,6 @@ export function LiveTopEvents() {
     filter: { maxGamesPerLeague: 3 },
     isLive,
   });
-
-  if (isFetching) {
-    return (
-      <div className="mt-4">
-        <div className="flex items-center justify-between mb-3 px-2">
-          <h2 className="text-lg font-semibold">Top Events</h2>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pl-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="w-[280px] h-[260px] shrink-0 bg-bg-card rounded-xl animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   // Collect all games, attach league/country metadata, then pick the best 6
   const allGames: GameData[] = [];
@@ -396,10 +388,32 @@ export function LiveTopEvents() {
     }
   }
 
-  if (!topGames.length) return null;
+  // Cache previous games to show during fetch (avoids skeleton flash)
+  if (topGames.length > 0) {
+    prevGamesRef.current = topGames;
+  }
+  const displayGames = topGames.length > 0 ? topGames : prevGamesRef.current;
+
+  // Only show skeletons on first load
+  if (isFetching && displayGames.length === 0) {
+    return (
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-3 px-2">
+          <h2 className="text-lg font-semibold">Top Events</h2>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pl-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="w-[280px] h-[260px] shrink-0 bg-bg-card rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!displayGames.length) return null;
 
   return (
-    <div className="mt-4 relative">
+    <div className={`mt-4 relative transition-opacity duration-200 ${isFetching ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
       <div className="flex items-center justify-between mb-3 px-2">
         <h2 className="text-lg font-semibold">Top Events</h2>
       </div>
@@ -407,7 +421,7 @@ export function LiveTopEvents() {
       {/* Drag-to-scroll container */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto select-none pt-8 -mt-8 pb-28 -mb-28 pl-2 scrollbar-hide touch-pan-y scroll-pl-2 snap-x snap-mandatory lg:snap-none"
+        className="flex gap-3 overflow-x-auto select-none pt-8 -mt-8 pb-28 -mb-28 pl-2 scrollbar-hide touch-auto lg:touch-pan-y scroll-pl-2 snap-x snap-mandatory lg:snap-none"
         style={{ overscrollBehaviorX: "contain" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -415,7 +429,7 @@ export function LiveTopEvents() {
         onPointerCancel={onPointerUp}
         onClickCapture={onClickCapture}
       >
-        {topGames.map((game) => (
+        {displayGames.map((game) => (
           <div
             key={game.gameId}
             className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer snap-start"

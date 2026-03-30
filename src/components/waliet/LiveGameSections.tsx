@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useSports, useLive } from "@azuro-org/sdk";
 import { GameOrderBy, OrderDirection, GameState, type GameData } from "@azuro-org/toolkit";
 import { GameCard } from "./GameCard";
@@ -34,6 +34,10 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
           isLive,
         }
   );
+
+  // Keep a ref to the last successfully rendered content so we can show it
+  // while new data is loading (avoids skeleton flash on live/prematch toggle)
+  const prevContentRef = useRef<React.ReactNode>(null);
 
   const sportsContent = useMemo(() => {
     if (!sports?.length) return null;
@@ -90,7 +94,13 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
     });
   }, [sports, sportSlug]);
 
-  if (isFetching) {
+  // Cache the last good content
+  if (sportsContent) {
+    prevContentRef.current = sportsContent;
+  }
+
+  // Show skeletons only on first load (no previous content to display)
+  if (isFetching && !prevContentRef.current) {
     return (
       <div className="flex flex-col gap-6 mt-6">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -114,7 +124,7 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
     );
   }
 
-  if (!sports?.length) {
+  if (!isFetching && !sports?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center mt-6">
         <p className="text-text-secondary text-sm font-medium">
@@ -127,9 +137,11 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
     );
   }
 
+  // While fetching, show previous content with reduced opacity
+  const content = sportsContent ?? prevContentRef.current;
   return (
-    <div className="flex flex-col gap-6 mt-6">
-      {sportsContent}
+    <div className={`flex flex-col gap-6 mt-6 transition-opacity duration-200 ${isFetching ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
+      {content}
     </div>
   );
 }
