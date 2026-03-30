@@ -1,26 +1,394 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── Font ── */
+@font-face {
+  font-family: "ABC Oracle";
+  src: url("/fonts/ABCOracleVariable-Trial.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
 }
+
+/* ══════════════════════════════════════════════════════════
+   DESIGN TOKENS — Light Mode (default)
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Backgrounds */
+  --bg-page: #ffffff;
+  --bg-card: #f5f5f7;
+  --bg-surface: #eeeef0;
+  --bg-modal: #ffffff;
+  --bg-hover: #e8e8ea;
+  --bg-subtle: #f0f0f2;
+  --bg-input: #f5f5f7;
+  --bg-active: rgba(0, 0, 0, 0.06);
+
+  /* Borders */
+  --border-primary: #e0e0e3;
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-input: #d0d0d3;
+
+  /* Text */
+  --text-primary: #111111;
+  --text-secondary: #666670;
+  --text-muted: #9999a3;
+  --text-inverse: #ffffff;
+
+  /* Accent (green) */
+  --accent: #25b662;
+  --accent-hover: #1fa356;
+  --accent-muted: rgba(37, 182, 98, 0.1);
+  --accent-text: #25b662;
+
+  /* Status */
+  --status-live: #ef4444;
+  --status-win: #25b662;
+  --status-loss: #ef4444;
+  --status-pending: #ca8a04;
+
+  /* Interactive */
+  --btn-primary-bg: #25b662;
+  --btn-primary-hover: #1fa356;
+  --btn-primary-text: #ffffff;
+  --btn-wallet-bg: #1475e1;
+  --btn-wallet-hover: #1266c7;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+
+  /* Overlay / glass */
+  --card-border-overlay: rgba(0, 0, 0, 0.08);
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Misc */
+  --field-gradient: linear-gradient(to bottom, #e8f5e9, #c8e6c9, #a5d6a7);
+
+  /* Sidebar */
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #eeeeee;
+  --sidebar-text: #252525;
+  --sidebar-text-muted: rgba(37, 37, 37, 0.5);
+  --sidebar-text-subtle: rgba(37, 37, 37, 0.7);
+  --sidebar-hover: rgba(37, 37, 37, 0.04);
+  --sidebar-active: rgba(37, 37, 37, 0.06);
+  --sidebar-section-label: rgba(37, 37, 37, 0.5);
+}
+
+/* ══════════════════════════════════════════════════════════
+   DESIGN TOKENS — Dark Mode
+   ══════════════════════════════════════════════════════════ */
+
+.dark {
+  --bg-page: #111111;
+  --bg-card: #141414;
+  --bg-surface: #101010;
+  --bg-modal: #0e0e0e;
+  --bg-hover: #1b1b1b;
+  --bg-subtle: #222222;
+  --bg-input: #202020;
+  --bg-active: #1b1b1b;
+
+  --border-primary: #1b1b1b;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-input: rgba(255, 255, 255, 0.08);
+
+  --text-primary: #fafafa;
+  --text-secondary: #808080;
+  --text-muted: #737373;
+  --text-inverse: #111111;
+
+  --accent: #33c771;
+  --accent-hover: #59f79b;
+  --accent-muted: rgba(51, 199, 113, 0.12);
+  --accent-text: #33c771;
+
+  --status-live: #fe7c8c;
+  --status-win: #33c771;
+  --status-loss: #fe7c8c;
+  --status-pending: #eab308;
+
+  --btn-primary-bg: #33c771;
+  --btn-primary-hover: #59f79b;
+  --btn-primary-text: #000000;
+  --btn-wallet-bg: #33c771;
+  --btn-wallet-hover: #59f79b;
+
+  --shadow-card: none;
+
+  --card-border-overlay: rgba(255, 255, 255, 0.16);
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+
+  --field-gradient: linear-gradient(to bottom, #1a3a1a, #153015, #0d1a0d);
+
+  /* Sidebar */
+  --sidebar-bg: #101010;
+  --sidebar-border: #1b1b1b;
+  --sidebar-text: #eeeeee;
+  --sidebar-text-muted: rgba(224, 224, 224, 0.5);
+  --sidebar-text-subtle: rgba(224, 224, 224, 0.7);
+  --sidebar-hover: rgba(224, 224, 224, 0.04);
+  --sidebar-active: rgba(224, 224, 224, 0.07);
+  --sidebar-section-label: #7B7B7B;
+}
+
+/* ── Tailwind v4 theme mapping ── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg-page: var(--bg-page);
+  --color-bg-card: var(--bg-card);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-modal: var(--bg-modal);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-input: var(--bg-input);
+  --color-bg-active: var(--bg-active);
+
+  --color-border-primary: var(--border-primary);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-input: var(--border-input);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-text: var(--accent-text);
+
+  --color-status-live: var(--status-live);
+  --color-status-win: var(--status-win);
+  --color-status-loss: var(--status-loss);
+  --color-status-pending: var(--status-pending);
+
+  --color-btn-primary-bg: var(--btn-primary-bg);
+  --color-btn-primary-hover: var(--btn-primary-hover);
+  --color-btn-primary-text: var(--btn-primary-text);
+  --color-btn-wallet-bg: var(--btn-wallet-bg);
+  --color-btn-wallet-hover: var(--btn-wallet-hover);
+
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  --color-sidebar-text-subtle: var(--sidebar-text-subtle);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-section-label: var(--sidebar-section-label);
+
+  --font-sans: "ABC Oracle", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Base styles ── */
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: "ABC Oracle", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Inter font for numbers — uses next/font CSS variable */
+.font-ibm-plex {
+  font-family: var(--font-ibm-plex), system-ui, sans-serif;
+}
+
+.font-inter {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* ── Discover page card system (kept from original) ── */
+:root {
+  --hover-duration: 380ms;
+  --hover-delay: 30ms;
+  --hover-easing: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Card border — semi-transparent border that lets content behind show through ── */
+.discover-card-border {
+  position: relative;
+}
+.discover-card-border::after {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  content: "";
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* Event card border — only on the gradient/image area, not the odds section */
+.event-card-border {
+  position: relative;
+}
+.event-card-border::after {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  content: "";
+  border-radius: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: none;
+}
+.dark .event-card-border::after {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Glass inner shadow — odds buttons on top event cards.
+   Exact effect from clipper campaign budget-header, adapted for small buttons. */
+.odds-glass {
+  background:
+    linear-gradient(180deg, #ffffff -10.42%, rgba(255, 255, 255, 0.01) 68.75%)
+      padding-box,
+    linear-gradient(0deg, #eae8e6, #eae8e6) padding-box,
+    linear-gradient(
+        135deg,
+        #ffffff 0%,
+        rgba(255, 255, 255, 0) 35%,
+        rgba(255, 255, 255, 0) 85%,
+        #ffffff 100%
+      )
+      border-box,
+    linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0) 35%,
+        rgba(255, 255, 255, 0) 85%,
+        rgba(255, 255, 255, 0.2) 100%
+      )
+      border-box,
+    linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%)
+      border-box !important;
+  border: 0.83px solid transparent !important;
+  box-shadow:
+    0px 16px 6px rgba(0, 0, 0, 0.004),
+    0px 9px 5px rgba(0, 0, 0, 0.04),
+    0px 4px 4px rgba(0, 0, 0, 0.07),
+    0px 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+.dark .odds-glass {
+  background:
+    radial-gradient(
+        60.93% 50% at 51.43% 0%,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.005) 100%
+      )
+      padding-box,
+    linear-gradient(0deg, #181818, #181818) padding-box,
+    linear-gradient(180deg, #0e0e0e 0%, #3a3a3a 50%, #0e0e0e 100%) border-box !important;
+  box-shadow:
+    4px 6px 8px rgba(0, 0, 0, 0.12),
+    2px 3px 5px rgba(0, 0, 0, 0.18),
+    1px 1.5px 3px rgba(0, 0, 0, 0.22),
+    inset 0px 1.25px 0px rgba(255, 255, 255, 0.18) !important;
+}
+/* Active (selected) state — solid accent with glass treatment */
+.odds-glass.odds-glass-active {
+  background:
+    linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff) 0%, color-mix(in srgb, var(--accent) 90%, #fff) 50%, color-mix(in srgb, var(--accent) 70%, #fff) 100%) border-box !important;
+  border: 0.83px solid transparent !important;
+  box-shadow:
+    4px 6px 8px rgba(0, 0, 0, 0.12),
+    2px 3px 5px rgba(0, 0, 0, 0.18),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.65) !important;
+}
+.dark .odds-glass.odds-glass-active {
+  background:
+    linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #000) 0%, color-mix(in srgb, var(--accent) 80%, #fff) 50%, color-mix(in srgb, var(--accent) 60%, #000) 100%) border-box !important;
+}
+
+/* Press interaction — scale + radial light burst */
+.odds-glass {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease;
+}
+.odds-glass:active {
+  transform: scale(0.97);
+}
+
+/* Safe area padding for mobile nav */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.verified-card-hover {
+  contain: layout style;
+  transition: box-shadow var(--hover-duration) var(--hover-easing);
+}
+@media (min-width: 1024px) {
+  .group\/card:hover .verified-card-hover {
+    box-shadow:
+      0 2px 6px 0 rgba(0, 0, 0, 0.5),
+      0 8px 20px 0 rgba(0, 0, 0, 0.45),
+      0 24px 48px -8px rgba(0, 0, 0, 0.5),
+      0 48px 80px -12px rgba(0, 0, 0, 0.4);
+    transition: box-shadow var(--hover-duration) var(--hover-easing) var(--hover-delay);
+  }
+  :root:not(.dark) .group\/card:hover .verified-card-hover {
+    box-shadow:
+      0 2px 6px 0 rgba(0, 0, 0, 0.06),
+      0 8px 20px 0 rgba(0, 0, 0, 0.05),
+      0 24px 48px -8px rgba(0, 0, 0, 0.06);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (min-width: 1024px) {
+  .verified-expand {
+    transition-delay: 0s;
+    transition-timing-function: var(--hover-easing);
+    transition-duration: var(--hover-duration);
+  }
+  .verified-expand-ease {
+    transition-delay: 0s;
+    transition-timing-function: ease;
+    transition-duration: 180ms;
+  }
+  .group\/card:hover .verified-expand,
+  .group\/card:hover .verified-expand-ease {
+    transition-delay: calc(var(--hover-delay) + var(--expand-stagger, 0ms));
+  }
 }
+
+.is-dragging .verified-card-hover {
+  transition: none;
+}
+.is-dragging .verified-expand,
+.is-dragging .verified-expand-ease {
+  transition: none;
+}
+
+/* ── Smooth theme transitions ── */
+
+/* ── Odds change flash ── */
+@keyframes odds-flash-up {
+  0% { background-color: rgba(34, 197, 94, 0.3); }
+  100% { background-color: transparent; }
+}
+@keyframes odds-flash-down {
+  0% { background-color: rgba(239, 68, 68, 0.3); }
+  100% { background-color: transparent; }
+}
+.odds-increased { animation: odds-flash-up 600ms ease-out; }
+.odds-decreased { animation: odds-flash-down 600ms ease-out; }
+
+/* ── Toast slide-in ── */
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
