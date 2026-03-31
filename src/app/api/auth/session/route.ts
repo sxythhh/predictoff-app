@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       avatar: user.avatar,
       bio: user.bio,
       authProvider: user.authProvider,
+      createdAt: user.createdAt.toISOString(),
     },
   });
 }

@@ -150,19 +150,23 @@ const GameMarkets = memo(function GameMarkets({ game }: { game: GameData }) {
 
 function useCountdown(startsAt: number) {
   const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
   const startMs = startsAt * 1000;
   const diffMs = startMs - now;
+  // Tick faster when close to kickoff: every 1s within 1 hour, every 30s otherwise
+  const tickMs = diffMs < 3_600_000 ? 1_000 : 30_000;
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), tickMs);
+    return () => clearInterval(interval);
+  }, [tickMs]);
+
   const diffMinutes = Math.floor(diffMs / 60_000);
   const diffHours = Math.floor(diffMinutes / 60);
+  const diffSeconds = Math.floor((diffMs % 60_000) / 1000);
 
   if (diffMs <= 0) return null; // already started
-  if (diffMinutes < 60) return { label: `Starts in ${diffMinutes}m`, urgent: true };
+  if (diffMinutes < 1) return { label: `Starts in ${diffSeconds}s`, urgent: true };
+  if (diffMinutes < 60) return { label: `Starts in ${diffMinutes}m ${diffSeconds}s`, urgent: true };
   if (diffHours < 24) return { label: `Starts in ${diffHours}h ${diffMinutes % 60}m`, urgent: false };
   return null; // more than 24h away
 }

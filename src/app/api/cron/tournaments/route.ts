@@ -1,10 +1,18 @@
 export const dynamic = "force-dynamic";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scoreProfitTournament, scorePickemTournament, distributePrizes } from "@/lib/tournament-scoring";
 
+const CRON_SECRET = process.env.CRON_SECRET ?? "";
+
 // POST /api/cron/tournaments — lifecycle state transitions
 // Called by Vercel Cron every 5 minutes
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // Verify caller is Vercel Cron or has the secret
+  const authHeader = request.headers.get("authorization");
+  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const now = Math.floor(Date.now() / 1000);
   const results: string[] = [];
 
@@ -71,6 +79,6 @@ export async function POST() {
 }
 
 // Also support GET for Vercel Cron (it sends GET by default)
-export async function GET() {
-  return POST();
+export async function GET(request: NextRequest) {
+  return POST(request);
 }

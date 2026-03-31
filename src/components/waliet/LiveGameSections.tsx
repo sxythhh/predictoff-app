@@ -27,11 +27,13 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
           orderDir: OrderDirection.Asc,
           filter: { sportSlug, ...(leagueSlug ? { leagueSlug } : {}) },
           isLive,
+          query: { refetchInterval: isLive ? 15_000 : 60_000 },
         }
       : {
           gameOrderBy: GameOrderBy.Turnover,
           filter: { maxGamesPerLeague: 5 },
           isLive,
+          query: { refetchInterval: isLive ? 15_000 : 60_000 },
         }
   );
 
@@ -74,9 +76,7 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 @[700px]/main:grid-cols-3 gap-2">
-                      {league.games
-                        .filter((game: GameData) => ACTIVE_STATES.has(game.state as GameState))
-                        .map((game: GameData) => (
+                      {activeGames.map((game: GameData) => (
                         <GameCard
                           key={game.gameId}
                           game={game}

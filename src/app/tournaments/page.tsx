@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { TournamentCard } from "@/components/waliet/tournaments/TournamentCard";
+import type { TournamentListItem } from "@/types/tournament";
 
 type FilterTab = "all" | "profit" | "pickem";
 
 export default function TournamentsPage() {
   const [tab, setTab] = useState<FilterTab>("all");
-  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [tournaments, setTournaments] = useState<TournamentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
 

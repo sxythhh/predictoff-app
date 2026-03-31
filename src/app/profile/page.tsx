@@ -327,7 +327,7 @@ function ProfileCard() {
   }
 
   const displayName = user.displayName ?? formatAddress(user.walletAddress);
-  const joinDate = new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "2-digit" });
+  const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "2-digit" }) : null;
 
   return (
     <div className="flex items-start gap-5">
@@ -367,7 +367,7 @@ function ProfileCard() {
               <PointsBadge points={0} />
             </div>
           </div>
-          <span className="text-[12px] text-[#686868]">Joined Waliet on {joinDate}</span>
+          {joinDate && <span className="text-[12px] text-[#686868]">Joined Waliet on {joinDate}</span>}
           {user.bio && <p className="text-[13px] text-text-secondary mt-1">{user.bio}</p>}
         </div>
 

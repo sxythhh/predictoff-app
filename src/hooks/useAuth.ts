@@ -11,6 +11,7 @@ interface DbUser {
   avatar: string | null;
   bio: string | null;
   authProvider: string;
+  createdAt?: string;
 }
 
 interface AuthContextValue {

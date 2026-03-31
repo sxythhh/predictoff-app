@@ -8,7 +8,7 @@ import {
   useBaseBetslip,
   useSelectionOdds,
 } from "@azuro-org/sdk";
-import { GameOrderBy, type GameData, type MarketOutcome } from "@azuro-org/toolkit";
+import { GameOrderBy, GameState, type GameData, type MarketOutcome } from "@azuro-org/toolkit";
 import { setBetslipMeta, clearBetslipMeta } from "./betslip-meta";
 import { useOpenGame } from "./GameModal";
 import { useImageColor, darkenColor, colorFromName, hslToRgb, lightenColor } from "./useImageColor";
@@ -404,6 +404,7 @@ export function LiveTopEvents() {
     gameOrderBy: GameOrderBy.Turnover,
     filter: { maxGamesPerLeague: 3 },
     isLive,
+    query: { refetchInterval: isLive ? 15_000 : 60_000 },
   });
 
   // Collect all games, attach league/country metadata, then pick the best 6
@@ -413,7 +414,9 @@ export function LiveTopEvents() {
       for (const country of sport.countries) {
         for (const league of country.leagues) {
           for (const game of league.games) {
-            if (game.state === "Prematch" && +game.startsAt * 1000 < Date.now()) continue;
+            // Skip finished, canceled, or past prematch games
+            if (game.state === GameState.Finished || game.state === GameState.Canceled) continue;
+            if (game.state === GameState.Prematch && +game.startsAt * 1000 < Date.now()) continue;
             (game as any).league = league;
             (game as any).country = country;
             allGames.push(game);
