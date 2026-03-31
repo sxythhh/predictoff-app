@@ -385,11 +385,13 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
             </div>
           </div>
 
-          {/* Right: search + balance pill */}
-          <div className="flex items-center gap-2 ml-auto">
-            <div className="hidden lg:block">
-              <SearchButton onClick={() => setSearchOpen(true)} />
-            </div>
+          {/* Center: search (fills remaining space, content centered) */}
+          <div className="hidden lg:flex flex-1 justify-center">
+            <SearchButton onClick={() => setSearchOpen(true)} />
+          </div>
+
+          {/* Right: balance pill */}
+          <div className="flex items-center gap-2 ml-auto lg:ml-0 shrink-0">
             {/* Mobile search icon */}
             <button
               onClick={() => setSearchOpen(true)}
