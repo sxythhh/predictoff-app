@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         walletAddress: user.walletAddress,
         displayName: user.displayName,
         avatar: user.avatar,
+        banner: user.banner,
         bio: user.bio,
       },
     });

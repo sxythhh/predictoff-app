@@ -9,6 +9,7 @@ interface DbUser {
   walletAddress: string;
   displayName: string | null;
   avatar: string | null;
+  banner: string | null;
   bio: string | null;
   authProvider: string;
   createdAt?: string;

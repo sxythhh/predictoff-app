@@ -360,8 +360,10 @@ function ProfileCard() {
   const [editing, setEditing] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [copied, setCopied] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
   const { refreshUser } = useAuth();
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -385,6 +387,43 @@ function ProfileCard() {
     } finally {
       setUploadingAvatar(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBanner(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ banner: data.url }),
+      });
+      await refreshUser();
+    } catch {
+      // silent
+    } finally {
+      setUploadingBanner(false);
+      if (bannerInputRef.current) bannerInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveBanner = async () => {
+    try {
+      await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ banner: null }),
+      });
+      await refreshUser();
+    } catch {
+      // silent
     }
   };
 
@@ -430,10 +469,39 @@ function ProfileCard() {
     <div>
       {/* Banner */}
       <div className="relative mb-16">
-        <div className="w-full h-40 md:h-52 rounded-xl overflow-hidden relative bg-gradient-to-r from-accent/20 to-accent/5">
-          <div className="w-full h-full" style={{
-            background: `linear-gradient(135deg, hsl(${parseInt(user.walletAddress.slice(2, 6), 16) % 360}, 60%, 25%), hsl(${parseInt(user.walletAddress.slice(6, 10), 16) % 360}, 50%, 15%))`,
-          }} />
+        <div
+          className="w-full h-40 md:h-52 rounded-xl overflow-hidden relative group cursor-pointer"
+          onClick={() => bannerInputRef.current?.click()}
+        >
+          {user.banner ? (
+            <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full" style={{
+              background: `linear-gradient(135deg, hsl(${parseInt(user.walletAddress.slice(2, 6), 16) % 360}, 60%, 25%), hsl(${parseInt(user.walletAddress.slice(6, 10), 16) % 360}, 50%, 15%))`,
+            }} />
+          )}
+          {/* Upload overlay */}
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            {uploadingBanner ? (
+              <svg className="w-5 h-5 text-white animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            ) : (
+              <div className="flex items-center gap-2 text-white text-[13px] font-medium">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                Change Banner
+              </div>
+            )}
+          </div>
+          {/* Remove banner button */}
+          {user.banner && (
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRemoveBanner(); }}
+              className="absolute top-3 right-3 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 z-10"
+              title="Remove banner"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 4L10 10M10 4L4 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            </button>
+          )}
+          <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleBannerUpload} />
         </div>
 
         {/* Avatar — overlapping banner */}

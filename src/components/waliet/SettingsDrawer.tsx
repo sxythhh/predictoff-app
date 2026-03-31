@@ -7,13 +7,26 @@ import { useChain } from "@azuro-org/sdk";
 
 import { useTheme } from "@/components/ui/theme";
 import { useOddsFormat, type OddsFormat } from "./OddsFormatContext";
+import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
 
 interface SettingsDrawerProps {
   onClose: () => void;
   open: boolean;
 }
 
+function ProfileIcon({ className }: { className?: string }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className={className}>
+      <rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+      <circle cx="10" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M5.5 16C5.5 13.5 7.5 12 10 12C12.5 12 14.5 13.5 14.5 16" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 const navItems = [
+  { id: "profile", label: "Profile", icon: ProfileIcon },
   { id: "account", label: "Account", icon: UserIcon },
   { id: "preferences", label: "Preferences", icon: SettingsIcon },
   { id: "about", label: "About Waliet", icon: InfoIcon },
@@ -48,7 +61,7 @@ function InfoIcon({ className }: { className?: string }) {
 }
 
 export function SettingsDrawer({ onClose, open }: SettingsDrawerProps) {
-  const [activeSection, setActiveSection] = useState("account");
+  const [activeSection, setActiveSection] = useState("profile");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -140,9 +153,9 @@ export function SettingsDrawer({ onClose, open }: SettingsDrawerProps) {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
+            {activeSection === "profile" && <ProfileSection />}
             {activeSection === "account" && <AccountSection />}
             {activeSection === "preferences" && <PreferencesSection />}
-
             {activeSection === "about" && <AboutSection />}
             <div className="lg:hidden px-8 pb-8">
               <DisconnectButton />
@@ -224,6 +237,129 @@ function AccountSection() {
           <p className="text-text-muted text-[12px] mt-1">Connect a wallet to see account details</p>
         </div>
       )}
+    </div>
+  );
+}
+
+function ProfileSection() {
+  const { user, refreshUser } = useAuth();
+  const { address } = useAccount();
+  const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+  const [bio, setBio] = useState(user?.bio ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const res = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        displayName: displayName.trim() || null,
+        bio: bio.trim() || null,
+        avatar: avatarUrl.trim() || null,
+      }),
+    });
+    if (res.ok) {
+      await refreshUser();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+    setSaving(false);
+  };
+
+  const walletDisplay = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "";
+
+  return (
+    <div className="p-8 max-w-[600px]">
+      <h2 className="text-[18px] font-semibold text-text-primary mb-6">Profile</h2>
+
+      <div className="flex flex-col gap-5">
+        {/* Avatar */}
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-surface shrink-0">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : address ? (
+              <div className="w-full h-full" style={{
+                background: `linear-gradient(135deg, hsl(${parseInt(address.slice(2, 6), 16) % 360}, 70%, 45%), hsl(${parseInt(address.slice(6, 10), 16) % 360}, 60%, 35%))`,
+              }} />
+            ) : (
+              <div className="w-full h-full bg-bg-surface" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <label className="text-[12px] text-text-muted mb-1 block">Avatar URL</label>
+            <input
+              type="url"
+              value={avatarUrl}
+              onChange={(e) => setAvatarUrl(e.target.value)}
+              placeholder="https://example.com/avatar.png"
+              className="w-full h-9 px-3 rounded-lg bg-bg-input border border-border-input text-[13px] text-text-primary outline-none focus:border-accent transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Display name */}
+        <div>
+          <label className="text-[12px] text-text-muted mb-1 block">Display Name</label>
+          <input
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder={walletDisplay}
+            maxLength={50}
+            className="w-full h-9 px-3 rounded-lg bg-bg-input border border-border-input text-[13px] text-text-primary outline-none focus:border-accent transition-colors"
+          />
+        </div>
+
+        {/* Bio */}
+        <div>
+          <label className="text-[12px] text-text-muted mb-1 block">Bio</label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Tell us about yourself..."
+            maxLength={300}
+            rows={3}
+            className="w-full px-3 py-2 rounded-lg bg-bg-input border border-border-input text-[13px] text-text-primary outline-none focus:border-accent transition-colors resize-none"
+          />
+          <div className="text-[11px] text-text-muted text-right mt-0.5">{bio.length}/300</div>
+        </div>
+
+        {/* Wallet */}
+        {address && (
+          <div>
+            <label className="text-[12px] text-text-muted mb-1 block">Wallet</label>
+            <div className="h-9 px-3 rounded-lg bg-bg-surface flex items-center text-[13px] text-text-muted font-mono">
+              {address}
+            </div>
+          </div>
+        )}
+
+        {/* Tipster status */}
+        {user?.isTipster ? (
+          <Link href="/picks" className="text-[13px] text-accent font-medium hover:text-accent-hover flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+            Manage my picks
+          </Link>
+        ) : (
+          <Link href="/tipster/setup" className="text-[13px] text-accent font-medium hover:text-accent-hover flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+            Become a Tipster — earn from your picks
+          </Link>
+        )}
+
+        {/* Save */}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="h-10 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors disabled:opacity-50"
+        >
+          {saved ? "Saved!" : saving ? "Saving..." : "Save Profile"}
+        </button>
+      </div>
     </div>
   );
 }

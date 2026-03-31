@@ -9,6 +9,7 @@ import { SettingsDrawer } from "@/components/waliet/SettingsDrawer";
 import { usePlayBalance } from "@/components/waliet/usePlayBalance";
 import { useAccount } from "wagmi";
 import { useSidebar } from "@/components/sidebar/sidebar-context";
+import { useAuth } from "@/hooks/useAuth";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
 import { springs } from "@/lib/springs";
 
@@ -202,6 +203,8 @@ function HeaderWalletButton({ onWalletClick }: { onWalletClick: () => void }) {
 function HeaderBalancePill() {
   const { balance: playBalance, currency: playCurrency } = usePlayBalance();
   const { isConnected, address } = useAccount();
+  const { user } = useAuth();
+  const { setSettingsOpen } = useSidebar();
   const [showUsdt, setShowUsdt] = useState(false);
 
   const usdtBalance = playBalance.toFixed(2);
@@ -276,8 +279,8 @@ function HeaderBalancePill() {
         </button>
       </div>
 
-      {/* Profile avatar with rank badge — links to profile page */}
-      <Link href="/profile" className="relative w-[42px] h-[46px] shrink-0 block">
+      {/* Profile avatar with rank badge — opens settings drawer */}
+      <button onClick={() => setSettingsOpen(true)} className="relative w-[42px] h-[46px] shrink-0 block cursor-pointer">
         {/* Rank badge frame (SVG) */}
         <svg viewBox="0 0 72 72" fill="none" className="absolute inset-0 w-full h-full z-10 pointer-events-none">
           <path fillRule="evenodd" clipRule="evenodd" d="M45.3038 60.1251C42.4169 61.2392 39.2798 61.85 36.0001 61.85C21.7235 61.85 10.1501 50.2765 10.1501 36C10.1501 21.7234 21.7235 10.15 36.0001 10.15C50.2766 10.15 61.8501 21.7234 61.8501 36C61.8501 41.5371 60.1091 46.6676 57.1447 50.874L59.3782 52.4967C59.9313 52.8986 60.1628 53.611 59.9515 54.2612L57.3635 62.2263C57.1522 62.8766 56.5462 63.3169 55.8625 63.3169H47.4875C46.8038 63.3169 46.1978 62.8766 45.9865 62.2263L45.3038 60.1251ZM44.1117 56.4563C41.6017 57.4524 38.8648 58 36 58C23.8498 58 14 48.1503 14 36C14 23.8497 23.8498 14 36 14C48.1503 14 58 23.8497 58 36C58 40.6913 56.5316 45.0397 54.0294 48.6106L52.6027 47.574C52.0495 47.1721 51.3005 47.1721 50.7473 47.574L43.9718 52.4967C43.4187 52.8986 43.1872 53.611 43.3985 54.2612L44.1117 56.4563Z" fill="url(#badge-grad)"/>
@@ -314,7 +317,9 @@ function HeaderBalancePill() {
         {/* Avatar centered in the ring */}
         <div className="absolute" style={{ top: "10px", left: "8px" }}>
           <div className="w-[26px] h-[26px] rounded-full overflow-hidden bg-bg-surface flex items-center justify-center">
-            {isConnected && address ? (
+            {user?.avatar ? (
+              <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+            ) : isConnected && address ? (
               <div className="w-full h-full rounded-full" style={{ background: `linear-gradient(135deg, hsl(${parseInt(address.slice(2, 6), 16) % 360}, 70%, 50%), hsl(${(parseInt(address.slice(6, 10), 16) % 360)}, 60%, 40%))` }} />
             ) : (
               <svg width="12" height="12" viewBox="0 0 20 20" fill="none" className="text-text-muted">
@@ -324,7 +329,7 @@ function HeaderBalancePill() {
             )}
           </div>
         </div>
-      </Link>
+      </button>
     </div>
   );
 }

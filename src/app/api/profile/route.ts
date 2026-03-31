@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     walletAddress: user.walletAddress,
     displayName: user.displayName,
     avatar: user.avatar,
+    banner: user.banner,
     bio: user.bio,
     profileVisibility: user.profileVisibility,
     showBetHistory: user.showBetHistory,
@@ -42,6 +43,9 @@ export async function PATCH(request: NextRequest) {
   }
   if (typeof body.avatar === "string") {
     updates.avatar = body.avatar.trim().slice(0, 500);
+  }
+  if (typeof body.banner === "string" || body.banner === null) {
+    updates.banner = body.banner ? body.banner.trim().slice(0, 500) : "";
   }
   if (typeof body.profileVisibility === "string" && ["public", "private"].includes(body.profileVisibility)) {
     updates.profileVisibility = body.profileVisibility;

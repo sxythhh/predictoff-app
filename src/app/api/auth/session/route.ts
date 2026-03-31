@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
       walletAddress: user.walletAddress,
       displayName: user.displayName,
       avatar: user.avatar,
+      banner: user.banner,
       bio: user.bio,
       authProvider: user.authProvider,
       createdAt: user.createdAt.toISOString(),

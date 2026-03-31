@@ -12,6 +12,7 @@ model User {
   walletAddress     String    @unique
   displayName       String?
   avatar            String?
+  banner            String?
   bio               String?
   email             String?   @unique
   authProvider      String    @default("wallet")
