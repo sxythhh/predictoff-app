@@ -308,7 +308,7 @@ function CollapsedIconStrip({
   isFetching: boolean;
   onSportClick: (slug: string | null) => void;
 }) {
-  const { setSettingsOpen } = useSidebar();
+  const { setSettingsOpen, setCollapsed } = useSidebar();
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     activeIndex,
@@ -422,8 +422,17 @@ function CollapsedIconStrip({
         )}
       </div>
 
-      {/* Bottom: settings gear */}
-      <div className="flex flex-col items-center gap-3 py-3">
+      {/* Bottom: expand + settings */}
+      <div className="flex flex-col items-center gap-2 py-3">
+        <button
+          onClick={() => setCollapsed(false)}
+          className="flex items-center justify-center w-10 h-10 rounded-lg text-sidebar-text-muted hover:text-sidebar-text hover:bg-sidebar-hover transition-colors"
+          title="Expand sidebar"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
         <CollapsedSettingsButton onClick={() => setSettingsOpen(true)} />
       </div>
     </>
@@ -528,7 +537,7 @@ export function AppSidebar({
   onSportClick: (slug: string | null) => void;
   sportIcons: SportIconMap;
 }) {
-  const { collapsed, setSettingsOpen } = useSidebar();
+  const { collapsed, setCollapsed, setSettingsOpen } = useSidebar();
   const { isLive } = useLive();
   const { data: sports, isFetching } = useSportsNavigation({ isLive });
 
@@ -675,9 +684,20 @@ export function AppSidebar({
               </div>
             </div>
 
-            {/* Bottom: settings */}
-            <div className="shrink-0 px-3 py-2">
-              <SettingsNavButton onClick={() => setSettingsOpen(true)} />
+            {/* Bottom: collapse + settings */}
+            <div className="shrink-0 px-3 py-2 flex items-center gap-1">
+              <button
+                onClick={() => setCollapsed(true)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-sidebar-text-muted hover:text-sidebar-text hover:bg-sidebar-hover transition-colors"
+                title="Collapse sidebar"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <div className="flex-1">
+                <SettingsNavButton onClick={() => setSettingsOpen(true)} />
+              </div>
             </div>
           </div>
           </div>
