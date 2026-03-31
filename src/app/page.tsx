@@ -768,7 +768,7 @@ function MobileNav({
         </NavBtn>
 
         {/* Betslip */}
-        <NavBtn label="Betslip" active={activeTab === "bets"} onClick={() => onTabChange("bets")}>
+        <NavBtn label="Betslip" active={false} onClick={() => { onBetslipOpen(); window.dispatchEvent(new Event("open-betslip")); }}>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.5"/>
             <path d="M8 7H12M8 10H12M8 13H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>

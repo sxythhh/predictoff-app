@@ -80,7 +80,34 @@ function EditProfileForm({ user, onClose }: { user: { displayName: string | null
   const [bio, setBio] = useState(user.bio ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user.avatar ?? "");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 4 * 1024 * 1024) {
+      setError("File too large. Max 4MB.");
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      setAvatarUrl(data.url);
+    } catch (e: any) {
+      setError(e.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -117,9 +144,14 @@ function EditProfileForm({ user, onClose }: { user: { displayName: string | null
         </button>
       </div>
 
-      {/* Avatar preview */}
+      {/* Avatar upload */}
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-[14px] overflow-hidden bg-bg-surface shrink-0">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="relative w-16 h-16 rounded-[14px] overflow-hidden bg-bg-surface shrink-0 group cursor-pointer"
+        >
           {avatarUrl ? (
             <img src={avatarUrl} alt="Avatar preview" className="w-full h-full object-cover" />
           ) : (
@@ -130,16 +162,49 @@ function EditProfileForm({ user, onClose }: { user: { displayName: string | null
               }}
             />
           )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <label className="text-[12px] text-text-muted mb-1 block">Avatar URL</label>
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            {uploading ? (
+              <svg className="w-5 h-5 text-white animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-white">
+                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            )}
+          </div>
           <input
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://example.com/avatar.png"
-            className="w-full h-9 px-3 rounded-lg bg-bg-input border border-border-subtle text-[13px] text-text-primary placeholder:text-text-muted outline-none focus:border-accent transition-colors"
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={handleFileUpload}
+            className="hidden"
           />
+        </button>
+        <div className="flex-1 min-w-0">
+          <label className="text-[12px] text-text-muted mb-1 block">Profile Picture</label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="h-9 px-3 rounded-lg bg-bg-input border border-border-subtle text-[13px] text-text-secondary hover:bg-bg-hover transition-colors disabled:opacity-50"
+            >
+              {uploading ? "Uploading..." : "Upload Image"}
+            </button>
+            {avatarUrl && (
+              <button
+                type="button"
+                onClick={() => setAvatarUrl("")}
+                className="h-9 px-3 rounded-lg bg-bg-input border border-border-subtle text-[13px] text-text-muted hover:text-status-loss transition-colors"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+          <p className="text-[10px] text-text-muted mt-1">JPG, PNG, WebP, or GIF. Max 4MB.</p>
         </div>
       </div>
 
