@@ -28,8 +28,9 @@ export async function GET(request: NextRequest) {
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400, immutable",
+        "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400, immutable",
         "Access-Control-Allow-Origin": "*",
+        "CDN-Cache-Control": "public, max-age=2592000",
       },
     });
   } catch {

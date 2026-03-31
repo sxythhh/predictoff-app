@@ -3,12 +3,14 @@
 import { useState, useCallback, type ReactNode } from "react";
 import { CountryFlag, getCountryCode } from "@/components/sidebar/app-sidebar";
 
+// Cache which URLs work directly (no proxy needed) vs need proxy
+const urlStatusCache = new Map<string, "direct" | "proxy">();
+
 /**
- * Team logo with automatic fallback chain:
- * 1. Direct URL from Azuro
- * 2. Proxy via /api/image-proxy (bypasses CORS/CDN issues)
- * 3. Country flag (for national teams / international games)
- * 4. Custom fallback (sport icon) or initials
+ * Team logo with fast loading:
+ * - Uses proxy by default (Azuro CDN has CORS issues)
+ * - Caches URL status so repeat renders don't retry
+ * - Falls back to country flag or initials
  */
 export function TeamLogo({
   src,
@@ -23,27 +25,22 @@ export function TeamLogo({
 }) {
   const isCountry = !!getCountryCode(name);
 
-  const [state, setState] = useState<"direct" | "proxy" | "fallback">(
-    src && !isCountry ? "direct" : "fallback"
-  );
+  const [failed, setFailed] = useState(false);
 
   const onError = useCallback(() => {
-    setState((prev) => {
-      if (prev === "direct") return "proxy";
-      return "fallback";
-    });
+    setFailed(true);
   }, []);
 
-  if (state === "fallback" || !src || isCountry) {
-    // National teams get circle-flags
-    if (isCountry) return <CountryFlag name={name} className={className} />;
-    return <>{fallback ?? <span className="text-[10px] font-bold text-text-muted">{name.slice(0, 2)}</span>}</>;
+  // National teams get circle-flags
+  if (isCountry) return <CountryFlag name={name} className={className} />;
+
+  // No source — show fallback
+  if (!src || failed) {
+    return <>{fallback ?? <span className="text-[10px] font-bold text-text-muted">{name.slice(0, 2).toUpperCase()}</span>}</>;
   }
 
-  const imgSrc =
-    state === "proxy"
-      ? `/api/image-proxy?url=${encodeURIComponent(src)}`
-      : src;
+  // Go straight to proxy — avoids the failed direct request + CORS error
+  const imgSrc = `/api/image-proxy?url=${encodeURIComponent(src)}`;
 
   return (
     <img
@@ -52,6 +49,7 @@ export function TeamLogo({
       className={className}
       onError={onError}
       loading="lazy"
+      decoding="async"
     />
   );
 }

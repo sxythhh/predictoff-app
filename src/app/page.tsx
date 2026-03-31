@@ -7,13 +7,14 @@ import HeaderClient from "./HeaderClient";
 import { LiveTopEvents } from "@/components/waliet/LiveTopEvents";
 import { LiveGameSections } from "@/components/waliet/LiveGameSections";
 const PlayBetslip = dynamic(() => import("@/components/waliet/PlayBetslip").then(m => ({ default: m.PlayBetslip })), { ssr: false });
-import { useGameModal, GameModal, GameModalProvider } from "@/components/waliet/GameModal";
+import { useGameModal, GameModalProvider } from "@/components/waliet/GameModal";
+const GameModal = dynamic(() => import("@/components/waliet/GameModal").then(m => ({ default: m.GameModal })), { ssr: false });
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { AppSidebar, CountryFlag } from "@/components/sidebar/app-sidebar";
 import { sportIcons } from "@/components/waliet/sport-icons";
 import { useCaptureReferral } from "@/hooks/useReferral";
 import { useAccount } from "wagmi";
-import { WalletModal } from "@/components/waliet/WalletModal";
+const WalletModal = dynamic(() => import("@/components/waliet/WalletModal").then(m => ({ default: m.WalletModal })), { ssr: false });
 import { useWebHaptics } from "web-haptics/react";
 
 // Dynamic imports — these only load when needed (saves ~100KB on initial load)
@@ -930,14 +931,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mobile bottom nav */}
-        <MobileNavWithCount
-          activeTab={mobileTab}
-          onTabChange={(tab) => { setMobileTab(tab); setMobileSportsOpen(false); }}
-          onBetslipOpen={() => setBetslipDrawerOpen(true)}
-          onSportsToggle={() => { setMobileTab("sports"); setMobileSportsOpen((v) => !v); }}
-        />
-
         {/* Mobile sports sidebar drawer */}
         <MobileSportsDrawer
           open={mobileSportsOpen}
@@ -946,12 +939,6 @@ export default function Home() {
           onSportClick={(slug) => { setActiveSport(slug); setActiveLeague(null); setActivePage("sports"); setMobileSportsOpen(false); }}
           sportIcons={sportIcons}
         />
-
-        {/* Mobile betslip drawer — only when connected */}
-        {isConnected && <MobileBetslipDrawer open={betslipDrawerOpen} onClose={() => setBetslipDrawerOpen(false)} />}
-
-        {/* Bottom padding for mobile nav */}
-        <div className="h-[60px] lg:hidden" />
       </div>
 
       {/* Interceptive game modal */}

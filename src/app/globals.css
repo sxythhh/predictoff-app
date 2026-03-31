@@ -8,6 +8,21 @@
   }
 }
 
+/* ── Splash screen animations (server-rendered, no JS needed) ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes splash-fade {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+@keyframes splash-bar {
+  0% { transform: scaleX(0); }
+  50% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
 /* ── Font ── */
 @font-face {
   font-family: "ABC Oracle";

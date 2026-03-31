@@ -16,6 +16,7 @@ import { useTheme } from "@/components/ui/theme";
 import { useLiveScore } from "./LiveStats";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
+import { useSplashReady } from "./Web3Boundary";
 import { useOddsFormat } from "./OddsFormatContext";
 
 function resolveSelectionName(raw: string, game: GameData): string {
@@ -282,6 +283,38 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
   );
 });
 
+/* ── Top event card skeleton (matches real card shape) ── */
+function TopEventSkeleton() {
+  return (
+    <div className="rounded-xl bg-bg-card w-[280px] overflow-hidden">
+      {/* Gradient area */}
+      <div className="h-[140px] flex flex-col items-center justify-center px-3 rounded-t-xl bg-bg-surface">
+        <div className="w-24 h-3 rounded bg-border-subtle animate-pulse mb-4" />
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 w-full px-3">
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="w-10 h-10 rounded-full bg-border-subtle animate-pulse" />
+            <div className="w-16 h-3 rounded bg-border-subtle animate-pulse" />
+          </div>
+          <div className="w-8 h-5 rounded bg-border-subtle animate-pulse" />
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="w-10 h-10 rounded-full bg-border-subtle animate-pulse" />
+            <div className="w-16 h-3 rounded bg-border-subtle animate-pulse" />
+          </div>
+        </div>
+      </div>
+      {/* Odds area */}
+      <div className="p-3 pt-2 border-x border-b border-border-subtle rounded-b-xl">
+        <div className="w-20 h-3 rounded bg-border-subtle animate-pulse mx-auto mb-2" />
+        <div className="flex gap-1">
+          <div className="flex-1 h-9 rounded-lg bg-border-subtle animate-pulse" />
+          <div className="flex-1 h-9 rounded-lg bg-border-subtle animate-pulse" />
+          <div className="flex-1 h-9 rounded-lg bg-border-subtle animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Lazy wrapper for off-screen top event cards on mobile ── */
 const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameData }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -300,7 +333,9 @@ const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameDa
 
   if (!visible) {
     return (
-      <div ref={ref} className="w-[280px] h-full rounded-xl animate-pulse" style={{ background: "var(--border-subtle)" }} />
+      <div ref={ref} className="w-[280px] h-full">
+        <TopEventSkeleton />
+      </div>
     );
   }
 
@@ -425,6 +460,18 @@ export function LiveTopEvents() {
     }
   }, []);
 
+  // Try to use prefetched data from the inline script while SDK loads
+  const [prefetchedSports, setPrefetchedSports] = useState<any[] | null>(null);
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).__PREFETCH_SPORTS) {
+      (window as any).__PREFETCH_SPORTS.then((data: any) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setPrefetchedSports(data);
+        }
+      });
+    }
+  }, []);
+
   const { data: sports, isFetching } = useSports({
     gameOrderBy: GameOrderBy.Turnover,
     filter: { maxGamesPerLeague: 3 },
@@ -432,10 +479,13 @@ export function LiveTopEvents() {
     query: { refetchInterval: isLive ? 15_000 : 60_000 },
   });
 
+  // Use prefetched data until SDK data arrives
+  const effectiveSports = sports ?? prefetchedSports;
+
   // Collect all games, attach league/country metadata, then pick the best 6
   const allGames: GameData[] = [];
-  if (sports) {
-    for (const sport of sports) {
+  if (effectiveSports) {
+    for (const sport of effectiveSports) {
       for (const country of sport.countries) {
         for (const league of country.leagues) {
           for (const game of league.games) {
@@ -488,6 +538,14 @@ export function LiveTopEvents() {
   }
   const displayGames = topGames.length > 0 ? topGames : prevGamesRef.current;
 
+  // Signal splash removal once we have games to show
+  const { removeSplash } = useSplashReady();
+  useEffect(() => {
+    if (displayGames.length > 0) {
+      removeSplash();
+    }
+  }, [displayGames.length, removeSplash]);
+
   // Only show skeletons on first load
   if (isFetching && displayGames.length === 0) {
     return (
@@ -497,7 +555,7 @@ export function LiveTopEvents() {
         </div>
         <div className="flex gap-3 overflow-x-auto pl-2">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="w-[280px] h-[260px] shrink-0 bg-bg-card rounded-xl animate-pulse" />
+            <div key={i} className="w-[280px] shrink-0"><TopEventSkeleton /></div>
           ))}
         </div>
       </div>
