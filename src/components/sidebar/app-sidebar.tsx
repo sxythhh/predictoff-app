@@ -59,7 +59,7 @@ export function getCountryCode(name: string): string | null {
   return COUNTRY_ISO_OVERRIDES[lower] ?? _isoByName[lower] ?? null;
 }
 
-export function CountryFlag({ name, className = "w-4 h-3 rounded-[2px]" }: { name: string; className?: string }) {
+export function CountryFlag({ name, className = "w-4 h-4 rounded-full" }: { name: string; className?: string }) {
   const lower = name.toLowerCase();
   // International/World uses custom icon
   if (lower === "world" || lower === "international") {
@@ -483,7 +483,7 @@ function LeagueSubList({
                   : "text-sidebar-text-muted hover:bg-sidebar-hover"
               }`}
             >
-              <CountryFlag name={league.countryName} className="w-3.5 h-2.5 rounded-[1px] shrink-0" />
+              <CountryFlag name={league.countryName} className="w-4 h-4 rounded-full shrink-0" />
               <span className="truncate flex-1 text-left">{league.leagueName}</span>
               <span className={`font-inter text-[10px] shrink-0 ${
                 isLeagueActive ? "text-accent-text" : "text-sidebar-text-muted"
