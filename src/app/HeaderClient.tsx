@@ -407,7 +407,7 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2 shrink-0">
               <WalietLogo className="w-6 h-6" />
-              <span className="text-[18px] font-bold tracking-tight text-text-primary -ml-0.5 hidden sm:inline">Waliet</span>
+              <span className="text-[18px] font-bold tracking-tight text-text-primary -ml-0.5">Waliet</span>
             </div>
             <div className="hidden lg:block h-14">
               <HeaderTabs activeTab={headerTab} onTabChange={handleTabChange} />

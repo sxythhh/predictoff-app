@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import HeaderClient from "./HeaderClient";
 import { LiveTopEvents } from "@/components/waliet/LiveTopEvents";
 import { LiveGameSections } from "@/components/waliet/LiveGameSections";
-import { PlayBetslip } from "@/components/waliet/PlayBetslip";
+const PlayBetslip = dynamic(() => import("@/components/waliet/PlayBetslip").then(m => ({ default: m.PlayBetslip })), { ssr: false });
 import { useGameModal, GameModal, GameModalProvider } from "@/components/waliet/GameModal";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { AppSidebar, CountryFlag } from "@/components/sidebar/app-sidebar";
@@ -364,7 +364,7 @@ function BackToTop({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | nul
   return (
     <button
       onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
-      className="fixed left-1/2 -translate-x-1/2 bottom-20 lg:bottom-6 z-30 flex items-center gap-2 h-10 px-4 rounded-full bg-bg-card/90 backdrop-blur-md border border-border-subtle shadow-[0_4px_24px_rgba(0,0,0,0.25)] text-text-primary hover:bg-bg-hover transition-all cursor-pointer"
+      className="fixed left-1/2 -translate-x-1/2 bottom-20 lg:bottom-6 z-30 flex items-center gap-2 h-10 px-4 rounded-full bg-bg-card/90 backdrop-blur-md border border-border-subtle shadow-[0_4px_24px_rgba(0,0,0,0.25)] text-text-primary hover:bg-bg-hover transition-colors cursor-pointer"
       style={{ animation: "back-to-top-in 0.3s ease-out" }}
     >
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-text-secondary">

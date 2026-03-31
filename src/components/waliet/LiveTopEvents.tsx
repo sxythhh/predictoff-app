@@ -282,6 +282,31 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
   );
 });
 
+/* ── Lazy wrapper for off-screen top event cards on mobile ── */
+const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameData }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { rootMargin: "200px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  if (!visible) {
+    return (
+      <div ref={ref} className="w-[280px] h-full rounded-xl animate-pulse" style={{ background: "var(--border-subtle)" }} />
+    );
+  }
+
+  return <div ref={ref}><LiveEventCard game={game} /></div>;
+});
+
 /* ── Scroll Nav Buttons ── */
 
 function ScrollNavButtons({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement | null> }) {
@@ -501,12 +526,17 @@ export function LiveTopEvents() {
         onPointerCancel={onPointerUp}
         onClickCapture={onClickCapture}
       >
-        {displayGames.map((game) => (
+        {displayGames.map((game, i) => (
           <div
             key={game.gameId}
             className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer top-events-card-perf"
           >
-            <LiveEventCard game={game} />
+            {/* On mobile, only render first 3 cards eagerly — rest load on scroll */}
+            {i < 3 || typeof window === "undefined" || window.innerWidth >= 1024 ? (
+              <LiveEventCard game={game} />
+            ) : (
+              <LazyTopEventCard game={game} />
+            )}
           </div>
         ))}
       </div>
