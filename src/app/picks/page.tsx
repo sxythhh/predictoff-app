@@ -7,6 +7,7 @@ import { PickCard } from "@/components/waliet/tipster/PickCard";
 import { PickComposer } from "@/components/waliet/tipster/PickComposer";
 
 type FeedTab = "all" | "following";
+type SportFilter = "all" | "football" | "basketball" | "tennis" | "mma" | "esports";
 
 function FeaturedTipsters() {
   const [tipsters, setTipsters] = useState<any[]>([]);
@@ -61,6 +62,7 @@ function FeaturedTipsters() {
 export default function PicksFeedPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<FeedTab>("all");
+  const [sport, setSport] = useState<SportFilter>("all");
   const [picks, setPicks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export default function PicksFeedPage() {
   const fetchPicks = useCallback(async (cursor?: string) => {
     const params = new URLSearchParams({ limit: "20" });
     if (tab === "following") params.set("following", "true");
+    if (sport !== "all") params.set("sport", sport);
     if (cursor) params.set("cursor", cursor);
 
     const res = await fetch(`/api/picks/feed?${params}`);
@@ -81,7 +84,7 @@ export default function PicksFeedPage() {
     setLoading(true);
     setPicks([]);
     fetchPicks().finally(() => setLoading(false));
-  }, [fetchPicks]);
+  }, [fetchPicks, sport]);
 
   return (
     <div className="text-text-primary" style={{ letterSpacing: "-0.02em" }}>
@@ -117,7 +120,7 @@ export default function PicksFeedPage() {
         <FeaturedTipsters />
 
         {/* Feed tabs */}
-        <div className="flex items-center gap-1.5 mb-4">
+        <div className="flex items-center gap-1.5 mb-3">
           <button
             onClick={() => setTab("all")}
             className={`h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors ${
@@ -136,6 +139,28 @@ export default function PicksFeedPage() {
               Following
             </button>
           )}
+        </div>
+
+        {/* Sport filters */}
+        <div className="flex items-center gap-1.5 mb-4 overflow-x-auto">
+          {([
+            { key: "all" as const, label: "All Sports" },
+            { key: "football" as const, label: "Football" },
+            { key: "basketball" as const, label: "Basketball" },
+            { key: "tennis" as const, label: "Tennis" },
+            { key: "mma" as const, label: "MMA" },
+            { key: "esports" as const, label: "Esports" },
+          ]).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setSport(key)}
+              className={`shrink-0 h-7 px-3 rounded-full text-[12px] font-medium transition-colors ${
+                sport === key ? "bg-bg-active text-text-primary" : "text-text-muted hover:text-text-secondary hover:bg-bg-hover"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Picks list */}

@@ -1,22 +1,24 @@
 "use client";
 
-import { useState, useCallback, useTransition, useEffect, useRef } from "react";
+import { useState, useCallback, useTransition, useEffect, useRef, lazy, Suspense } from "react";
 import { useLive, useBaseBetslip, useSportsNavigation } from "@azuro-org/sdk";
+import dynamic from "next/dynamic";
 import HeaderClient from "./HeaderClient";
 import { LiveTopEvents } from "@/components/waliet/LiveTopEvents";
 import { LiveGameSections } from "@/components/waliet/LiveGameSections";
-// SearchGames removed — use header search modal instead
 import { PlayBetslip } from "@/components/waliet/PlayBetslip";
 import { useGameModal, GameModal, GameModalProvider } from "@/components/waliet/GameModal";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { AppSidebar, CountryFlag } from "@/components/sidebar/app-sidebar";
-import { SocialFeed } from "@/components/social/SocialFeed";
-import { WaveLeaderboard } from "@/components/waliet/WaveLeaderboard";
 import { sportIcons } from "@/components/waliet/sport-icons";
-import { WelcomeModal } from "@/components/waliet/WelcomeModal";
 import { useCaptureReferral } from "@/hooks/useReferral";
 import { useAccount } from "wagmi";
 import { WalletModal } from "@/components/waliet/WalletModal";
+
+// Dynamic imports — these only load when needed (saves ~100KB on initial load)
+const SocialFeed = dynamic(() => import("@/components/social/SocialFeed").then(m => ({ default: m.SocialFeed })), { ssr: false });
+const WaveLeaderboard = dynamic(() => import("@/components/waliet/WaveLeaderboard").then(m => ({ default: m.WaveLeaderboard })), { ssr: false });
+const WelcomeModal = dynamic(() => import("@/components/waliet/WelcomeModal").then(m => ({ default: m.WelcomeModal })), { ssr: false });
 
 // ─── SVG Icons ──────────────────────────────────────────────────
 
@@ -867,8 +869,17 @@ export default function Home() {
   const [betslipDrawerOpen, setBetslipDrawerOpen] = useState(false);
   const [mobileSportsOpen, setMobileSportsOpen] = useState(false);
   const { isConnected } = useAccount();
+  const [isDesktop, setIsDesktop] = useState(false);
   const gameModal = useGameModal();
   useCaptureReferral();
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   return (
     <GameModalProvider openGame={gameModal.open}>
@@ -877,14 +888,14 @@ export default function Home() {
         <HeaderClient activePage={activePage} onPageChange={(p) => { setActivePage(p as "sports" | "social" | "leaderboard"); if (p === "social") setMobileTab("social"); }} />
         <div className="flex flex-1">
           <div className="w-full flex h-[calc(100vh-56px)]">
-            {/* Desktop: always show all three columns */}
-            <div className="hidden lg:contents">
+            {/* Desktop only: sidebar (not rendered on mobile = saves ~300 DOM nodes) */}
+            {isDesktop && (
               <AppSidebar
                 activeSport={activeSport}
                 onSportClick={(slug) => { setActiveSport(slug); setActiveLeague(null); setActivePage("sports"); }}
                 sportIcons={sportIcons}
               />
-            </div>
+            )}
 
             {/* Mobile: show based on active tab */}
             <div className="contents lg:hidden">

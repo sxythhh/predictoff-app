@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     include: {
       tipster: { select: { id: true, walletAddress: true, displayName: true, avatar: true, isTipster: true, subscriptionPrice: true } },
+      _count: { select: { likes: true, comments: true, tails: true } },
     },
   });
 
@@ -46,6 +47,9 @@ export async function GET(request: NextRequest) {
       isCorrect: p.isCorrect,
       createdAt: p.createdAt.toISOString(),
       tipster: p.tipster,
+      likeCount: p._count.likes,
+      commentCount: p._count.comments,
+      tailCount: p._count.tails,
     })),
     nextCursor: hasMore ? items[items.length - 1].id : null,
   });

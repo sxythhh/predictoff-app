@@ -128,13 +128,16 @@ function extractColor(imageUrl: string): Promise<string | null> {
  * Extracts the dominant color from an image URL.
  * Fetches via proxy to bypass CORS, with concurrency limiting and deduplication.
  */
+// Skip color extraction on mobile — canvas getImageData blocks main thread
+const IS_MOBILE_DEVICE = typeof window !== "undefined" && window.innerWidth < 1024;
+
 export function useImageColor(imageUrl: string | undefined | null): string | null {
   const [color, setColor] = useState<string | null>(
     imageUrl ? colorCache.get(imageUrl) ?? null : null
   );
 
   useEffect(() => {
-    if (!imageUrl) return;
+    if (!imageUrl || IS_MOBILE_DEVICE) return;
     if (colorCache.has(imageUrl)) {
       setColor(colorCache.get(imageUrl)!);
       return;

@@ -48,6 +48,9 @@ model User {
   subscribers        TipsterSubscription[]  @relation("tipsterSubscribers")
   following          Follow[]               @relation("following")
   followers          Follow[]               @relation("followers")
+  pickLikes          PickLike[]
+  pickComments       PickComment[]
+  pickTails          PickTail[]
 
   @@unique([authProvider, oauthId])
 }
@@ -276,6 +279,46 @@ model Follow {
   @@index([followingId])
 }
 
+// ── Pick Engagement ──────────────────────────────────────────────
+
+model PickLike {
+  id     String @id @default(cuid())
+  userId String
+  pickId String
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pick TipsterPick @relation(fields: [pickId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pickId])
+  @@index([pickId])
+}
+
+model PickComment {
+  id        String   @id @default(cuid())
+  userId    String
+  pickId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pick TipsterPick @relation(fields: [pickId], references: [id], onDelete: Cascade)
+
+  @@index([pickId, createdAt])
+}
+
+model PickTail {
+  id        String   @id @default(cuid())
+  userId    String
+  pickId    String
+  createdAt DateTime @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pick TipsterPick @relation(fields: [pickId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pickId])
+  @@index([pickId])
+}
+
 // ── Search & Indexing System ──────────────────────────────────────
 
 model IndexedSport {
@@ -383,7 +426,10 @@ model TipsterPick {
   resolvedAt    DateTime?
   createdAt     DateTime  @default(now())
 
-  tipster User @relation("tipsterPicks", fields: [tipsterId], references: [id], onDelete: Cascade)
+  tipster  User        @relation("tipsterPicks", fields: [tipsterId], references: [id], onDelete: Cascade)
+  likes    PickLike[]
+  comments PickComment[]
+  tails    PickTail[]
 
   @@index([tipsterId, createdAt])
   @@index([gameId])

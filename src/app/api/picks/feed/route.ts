@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 50);
   const cursor = searchParams.get("cursor");
   const following = searchParams.get("following") === "true";
+  const sportFilter = searchParams.get("sport");
 
   const user = following ? await getAuthUser(request) : null;
 
@@ -28,12 +29,14 @@ export async function GET(request: NextRequest) {
   const picks = await prisma.tipsterPick.findMany({
     where: {
       ...(tipsterIds ? { tipsterId: { in: tipsterIds } } : {}),
+      ...(sportFilter ? { sportSlug: sportFilter } : {}),
     },
     orderBy: { createdAt: "desc" },
     take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     include: {
       tipster: { select: { id: true, walletAddress: true, displayName: true, avatar: true, isTipster: true, subscriptionPrice: true } },
+      _count: { select: { likes: true, comments: true, tails: true } },
     },
   });
 
@@ -71,6 +74,9 @@ export async function GET(request: NextRequest) {
         isCorrect: p.isCorrect,
         createdAt: p.createdAt.toISOString(),
         tipster: p.tipster,
+        likeCount: p._count.likes,
+        commentCount: p._count.comments,
+        tailCount: p._count.tails,
         hasAccess,
       };
     }),

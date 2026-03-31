@@ -154,29 +154,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithSocial = useCallback(
-    async (provider: "google" | "twitter" | "apple") => {
-      try {
-        // Fetch CSRF token — this also sets the authjs.csrf-token cookie
-        const csrfRes = await fetch("/api/oauth/csrf", { credentials: "include" });
-        const { csrfToken } = await csrfRes.json();
-
-        // POST via fetch with credentials to include the csrf cookie
-        const res = await fetch(`/api/oauth/signin/${provider}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ csrfToken, callbackUrl: "/" }),
-          credentials: "include",
-          redirect: "manual", // Don't follow redirect — we need the Location header
-        });
-
-        // NextAuth returns a 302 to the OAuth provider
-        const redirectUrl = res.headers.get("Location") || res.url;
-        if (redirectUrl && redirectUrl !== window.location.href) {
-          window.location.href = redirectUrl;
-        }
-      } catch (err) {
-        console.error("Social sign-in failed:", err);
-      }
+    (provider: "google" | "twitter" | "apple") => {
+      // Navigate to the CSRF page first via an iframe to set the cookie,
+      // then submit the form. Or simpler: use a two-step redirect.
+      // The simplest reliable approach: navigate to a server endpoint that
+      // handles the CSRF + redirect internally.
+      window.location.href = `/api/oauth/social-redirect?provider=${provider}`;
     },
     []
   );
