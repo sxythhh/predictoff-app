@@ -187,6 +187,20 @@ export default function TipsterDashboardPage() {
           <Link href="/picks" className="flex-1 h-10 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors flex items-center justify-center">
             Share a Pick
           </Link>
+          {data?.whopConfigured && (
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/tipster/onboarding?type=payouts");
+                const d = await res.json();
+                if (d.url) window.open(d.url, "_blank");
+                else toast("Unable to open payouts portal", "error");
+              }}
+              className="flex-1 h-10 rounded-lg bg-bg-surface text-text-secondary text-[14px] font-medium hover:bg-bg-hover transition-colors flex items-center justify-center gap-2"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 14V6M6 14V4M10 14V8M14 14V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              Manage Payouts
+            </button>
+          )}
           <Link href={`/tipster/${user.id}`} className="flex-1 h-10 rounded-lg bg-bg-surface text-text-secondary text-[14px] font-medium hover:bg-bg-hover transition-colors flex items-center justify-center">
             View Public Profile
           </Link>

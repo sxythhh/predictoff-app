@@ -90,7 +90,7 @@ function SocialButton({
   return (
     <button
       onClick={onClick}
-      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-border-subtle bg-border-subtle hover:bg-bg-input hover:border-border-input transition-all active:scale-[0.98]"
+      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-border-subtle bg-border-subtle cursor-pointer active:scale-[0.98]"
     >
       {icon}
       <span className="text-[13px] font-semibold text-text-primary">{name}</span>

@@ -29,20 +29,29 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // Whop checkout for paid subscriptions
   if (tipster.whopBusinessId) {
     try {
-      const checkout = await whop.checkoutConfigurations.create({
-        plan: {
+      // Use existing plan_id if available (avoids recreating plans)
+      const checkoutParams: any = {
+        metadata: { subscriberId: user.id, tipsterId, type: "tipster_subscription" },
+        redirect_url: `${origin}/tipster/${tipsterId}?subscribed=true`,
+        source_url: `${origin}/tipster/${tipsterId}`,
+      };
+
+      if (tipster.whopPlanId) {
+        // Reference existing plan
+        checkoutParams.plan_id = tipster.whopPlanId;
+      } else {
+        // Create plan inline (fallback if plan wasn't saved)
+        checkoutParams.plan = {
           company_id: tipster.whopBusinessId,
           currency: "usd",
           initial_price: price,
           plan_type: "renewal",
           billing_period: 30,
           application_fee_amount: Math.round(price * PLATFORM_FEE_RATE * 100) / 100,
-        },
-        metadata: { subscriberId: user.id, tipsterId, type: "tipster_subscription" },
-        redirect_url: `${origin}/tipster/${tipsterId}?subscribed=true`,
-        source_url: `${origin}/tipster/${tipsterId}`,
-      });
+        };
+      }
 
+      const checkout = await whop.checkoutConfigurations.create(checkoutParams);
       return Response.json({ checkoutUrl: checkout.purchase_url });
     } catch (err: any) {
       console.error("Whop subscription checkout error:", err);

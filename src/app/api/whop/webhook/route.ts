@@ -90,7 +90,21 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Handle membership deactivation (subscription canceled)
+  // Handle membership activation (more reliable than payment.succeeded for access)
+  if (type === "membership.activated" || type === "membership_activated") {
+    const data = (event as any).data ?? event;
+    const membershipId = data?.id;
+    const metadata = data?.metadata ?? {};
+    if (metadata.subscriberId && metadata.tipsterId) {
+      await prisma.tipsterSubscription.upsert({
+        where: { subscriberId_tipsterId: { subscriberId: metadata.subscriberId, tipsterId: metadata.tipsterId } },
+        create: { subscriberId: metadata.subscriberId, tipsterId: metadata.tipsterId, status: "active", whopMembershipId: membershipId },
+        update: { status: "active", whopMembershipId: membershipId },
+      });
+    }
+  }
+
+  // Handle membership deactivation (subscription canceled/expired)
   if (type === "membership.deactivated" || type === "membership_deactivated") {
     const data = (event as any).data ?? event;
     const membershipId = data?.id ?? data?.membership_id;
@@ -99,6 +113,58 @@ export async function POST(request: NextRequest) {
         where: { whopMembershipId: membershipId },
         data: { status: "canceled" },
       });
+    }
+  }
+
+  // Handle pending cancellation (subscriber set to cancel at period end)
+  if (type === "membership.cancel_at_period_end_changed") {
+    const data = (event as any).data ?? event;
+    const membershipId = data?.id;
+    const cancelAtPeriodEnd = data?.cancel_at_period_end;
+    if (membershipId && cancelAtPeriodEnd) {
+      await prisma.tipsterSubscription.updateMany({
+        where: { whopMembershipId: membershipId },
+        data: { status: "canceled" },
+      });
+    }
+  }
+
+  // Handle payment failure (subscription past due)
+  if (type === "payment.failed" || type === "payment_failed") {
+    const data = (event as any).data ?? event;
+    const membershipId = data?.membership_id ?? data?.membership;
+    if (membershipId) {
+      await prisma.tipsterSubscription.updateMany({
+        where: { whopMembershipId: membershipId },
+        data: { status: "expired" },
+      });
+    }
+  }
+
+  // Handle refunds — revoke access
+  if (type === "refund.created" || type === "refund_created") {
+    const data = (event as any).data ?? event;
+    const paymentId = data?.payment_id ?? data?.payment;
+    if (paymentId) {
+      console.log(`[webhook] Refund created for payment ${paymentId}`);
+      // Could look up the membership via payment and deactivate, but membership.deactivated should also fire
+    }
+  }
+
+  // Handle disputes — log for review
+  if (type === "dispute.created" || type === "dispute_alert.created") {
+    const data = (event as any).data ?? event;
+    console.warn(`[webhook] Dispute/alert created:`, data?.id, data?.reason);
+  }
+
+  // Handle payout account status updates — track tipster readiness
+  if (type === "payout_account.status_updated") {
+    const data = (event as any).data ?? event;
+    const companyId = data?.company_id;
+    const status = data?.status; // 'connected' | 'disabled' | 'action_required' | etc.
+    if (companyId) {
+      console.log(`[webhook] Payout account status for ${companyId}: ${status}`);
+      // Could update a tipster readiness flag in the database
     }
   }
 

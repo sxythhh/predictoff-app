@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     const company = await whop.companies.create({
       parent_company_id: WHOP_COMPANY_ID,
       title: `Picks by ${user.displayName ?? user.walletAddress.slice(0, 10)}`,
+      ...(user.email ? { email: user.email } : {}),
       metadata: { walietUserId: user.id, walletAddress: user.walletAddress },
     });
 

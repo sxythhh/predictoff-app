@@ -14,6 +14,8 @@ import { GameCard } from "./GameCard";
  * - Without: 15 cards × 4 hooks = 60 queries on mount
  * - With: only visible cards (~5-6) load = ~20-24 queries
  */
+const IS_MOBILE = typeof window !== "undefined" && window.innerWidth < 1024;
+
 export const LazyGameCard = memo(function LazyGameCard({
   game,
   leagueUrl,
@@ -22,21 +24,23 @@ export const LazyGameCard = memo(function LazyGameCard({
   leagueUrl: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isNearViewport, setIsNearViewport] = useState(false);
+  const [isNearViewport, setIsNearViewport] = useState(!IS_MOBILE);
 
   useEffect(() => {
+    // Skip lazy loading on desktop — render everything immediately
+    if (!IS_MOBILE) return;
+
     const el = ref.current;
     if (!el) return;
 
-    // Use a generous rootMargin so cards pre-load before they're visible
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsNearViewport(true);
-          observer.disconnect(); // Once loaded, never unload
+          observer.disconnect();
         }
       },
-      { rootMargin: "300px 0px" } // Start loading 300px before visible
+      { rootMargin: "300px 0px" }
     );
 
     observer.observe(el);
