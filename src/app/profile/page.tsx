@@ -353,24 +353,56 @@ function PrivacySettings({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ── Profile Card (1:1 from Figma) ── */
+/* ── Profile Card (banner + avatar overlap design from virality-nexus) ── */
 function ProfileCard() {
   const { user, isAuthenticated, signIn } = useAuth();
   const { address } = useAccount();
   const [editing, setEditing] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const { refreshUser } = useAuth();
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar: data.url }),
+      });
+      await refreshUser();
+    } catch {
+      // silent
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  };
+
+  const handleCopyAddress = async () => {
+    if (!user) return;
+    await navigator.clipboard.writeText(user.walletAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (!isAuthenticated || !user) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
-        <div className="relative w-[99px] h-[99px]">
-          <div className="w-[99px] h-[99px] rounded-[22px] bg-bg-surface flex items-center justify-center">
-            <svg width="40" height="40" viewBox="0 0 20 20" fill="none" className="text-text-muted">
-              <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M3 17.5C3 14.5 6 12.5 10 12.5C14 12.5 17 14.5 17 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <div className="absolute top-0 right-0 w-[1px] h-[99px] rounded-[22px] pointer-events-none" style={{ background: "#ED3440", filter: "blur(8.85px)", transform: "scaleX(-1)" }} />
+        <div className="w-24 h-24 rounded-2xl bg-bg-surface flex items-center justify-center">
+          <svg width="40" height="40" viewBox="0 0 20 20" fill="none" className="text-text-muted">
+            <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M3 17.5C3 14.5 6 12.5 10 12.5C14 12.5 17 14.5 17 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
         </div>
         <p className="text-text-muted text-sm">Connect wallet to view profile</p>
         <button
@@ -392,77 +424,119 @@ function ProfileCard() {
   }
 
   const displayName = user.displayName ?? formatAddress(user.walletAddress);
-  const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "2-digit" }) : null;
+  const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : null;
 
   return (
-    <div className="flex items-start gap-5">
-      {/* Avatar with glow */}
-      <div className="relative shrink-0 w-[99px] h-[99px]">
-        <div className="w-[99px] h-[99px] rounded-[22px] overflow-hidden bg-bg-surface">
-          {user.avatar ? (
-            <img src={user.avatar} alt={displayName} className="w-full h-full object-cover" />
-          ) : (
-            <div
-              className="w-full h-full rounded-[22px]"
-              style={{
-                background: `linear-gradient(135deg, hsl(${parseInt(user.walletAddress.slice(2, 6), 16) % 360}, 70%, 45%), hsl(${parseInt(user.walletAddress.slice(6, 10), 16) % 360}, 60%, 35%))`,
-              }}
-            />
-          )}
+    <div>
+      {/* Banner */}
+      <div className="relative mb-16">
+        <div className="w-full h-40 md:h-52 rounded-xl overflow-hidden relative bg-gradient-to-r from-accent/20 to-accent/5">
+          <div className="w-full h-full" style={{
+            background: `linear-gradient(135deg, hsl(${parseInt(user.walletAddress.slice(2, 6), 16) % 360}, 60%, 25%), hsl(${parseInt(user.walletAddress.slice(6, 10), 16) % 360}, 50%, 15%))`,
+          }} />
         </div>
-        {/* Red glow on right edge — Figma: 1px wide, blur 8.85px, #ED3440, flipped */}
+
+        {/* Avatar — overlapping banner */}
         <div
-          className="absolute top-0 right-0 w-[1px] h-[99px] rounded-[22px] pointer-events-none"
-          style={{
-            background: "#ED3440",
-            filter: "blur(8.85px)",
-            transform: "scaleX(-1)",
-          }}
-        />
+          className="absolute -bottom-12 left-6 group cursor-pointer z-[5]"
+          onClick={(e) => { e.stopPropagation(); avatarInputRef.current?.click(); }}
+        >
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl border-4 border-bg-page shadow-xl overflow-hidden bg-bg-surface">
+            {user.avatar ? (
+              <img src={user.avatar} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white" style={{ background: `linear-gradient(135deg, hsl(${parseInt(user.walletAddress.slice(2, 6), 16) % 360}, 70%, 45%), hsl(${parseInt(user.walletAddress.slice(6, 10), 16) % 360}, 60%, 35%))` }}>
+                {displayName[0]?.toUpperCase() ?? "W"}
+              </div>
+            )}
+          </div>
+          {/* Upload overlay */}
+          <div className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            {uploadingAvatar ? (
+              <svg className="w-5 h-5 text-white animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-white"><path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            )}
+          </div>
+          <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={handleAvatarUpload} />
+        </div>
       </div>
 
-      {/* Info */}
-      <div className="flex flex-col gap-5 min-w-0">
-        {/* Name + badges + bio */}
-        <div className="flex flex-col gap-[5px]">
-          <div className="flex items-center gap-3.5">
-            <span className="text-[22px] font-medium text-white truncate">{displayName}</span>
+      {/* Profile info */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-[-0.5px]">
+              {displayName}
+            </h1>
             <div className="flex items-center gap-[7px] shrink-0">
               <LevelTag level={1} />
               <PointsBadge points={0} />
             </div>
           </div>
-          {joinDate && <span className="text-[12px] text-[#686868]">Joined Waliet on {joinDate}</span>}
-          {user.bio && <p className="text-[13px] text-text-secondary mt-1">{user.bio}</p>}
+          <p className="text-text-muted text-[14px]">
+            {formatAddress(user.walletAddress)}
+          </p>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-3.5">
-          <ActionButton>
-            <svg width="14" height="13" viewBox="0 0 14 13" fill="none">
-              <path d="M3.45 8.35L6.91 11.81M6.91 11.81L10.37 8.35M6.91 11.81V4.58M13.23 4.92V4.09C13.23 2.93 13.23 2.35 13.01 1.9C12.81 1.51 12.49 1.19 12.1.99C11.65.77 11.07.77 9.91.77H4.09C2.93.77 2.35.77 1.9.99C1.51 1.19 1.19 1.51.99 1.9C.77 2.35.77 2.93.77 4.09V4.92" stroke="#EEEEEE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Deposit
-          </ActionButton>
-          <ActionButton onClick={() => setEditing(true)}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M11.5 1.5L14.5 4.5M1 15L1.5 11.5L12 1L15 4L4.5 14.5L1 15Z" stroke="#EEEEEE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Copy address */}
+          <button
+            onClick={handleCopyAddress}
+            className="h-9 w-9 rounded-lg bg-bg-surface hover:bg-bg-hover flex items-center justify-center transition-colors"
+            title="Copy wallet address"
+          >
+            {copied ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8L7 11L12 5" stroke="var(--status-win)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-text-muted"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M11 5V4C11 3.44772 10.5523 3 10 3H4C3.44772 3 3 3.44772 3 4V10C3 10.5523 3.44772 11 4 11H5" stroke="currentColor" strokeWidth="1.2"/></svg>
+            )}
+          </button>
+          <button
+            onClick={() => setEditing(true)}
+            className="h-9 px-4 rounded-lg bg-bg-surface hover:bg-bg-hover text-[13px] font-medium text-text-secondary transition-colors"
+          >
             Edit Profile
-          </ActionButton>
-          <ActionButton onClick={() => setShowPrivacy(true)}>
+          </button>
+          <button
+            onClick={() => setShowPrivacy(true)}
+            className="h-9 px-4 rounded-lg bg-bg-surface hover:bg-bg-hover text-[13px] font-medium text-text-secondary transition-colors"
+          >
             Settings
-          </ActionButton>
+          </button>
         </div>
+      </div>
 
-        {/* Tipster CTA */}
-        {user.isTipster ? (
-          <Link href="/picks" className="flex items-center gap-2 mt-3 text-[13px] text-accent font-medium hover:text-accent-hover">
+      {/* Bio */}
+      {user.bio ? (
+        <p className="mt-4 text-text-secondary text-[14px] leading-relaxed max-w-xl">
+          {user.bio}
+        </p>
+      ) : (
+        <p className="mt-4 text-text-muted text-[14px] italic">
+          No bio yet. Click &ldquo;Edit Profile&rdquo; to add one.
+        </p>
+      )}
+
+      {/* Join date */}
+      <div className="flex items-center gap-4 mt-4 text-[13px] text-text-muted">
+        {joinDate && (
+          <div className="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.2"/><path d="M2 7H14M5 1V4M11 1V4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+            <span>Joined {joinDate}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Tipster CTA */}
+      <div className="mt-4">
+        {(user as any).isTipster ? (
+          <Link href="/picks" className="flex items-center gap-2 text-[13px] text-accent font-medium hover:text-accent-hover">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
             Manage my picks
           </Link>
         ) : (
-          <Link href="/tipster/setup" className="flex items-center gap-2 mt-3 text-[13px] text-accent font-medium hover:text-accent-hover">
+          <Link href="/tipster/setup" className="flex items-center gap-2 text-[13px] text-accent font-medium hover:text-accent-hover">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
             Become a Tipster — earn from your picks
           </Link>

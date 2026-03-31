@@ -16,20 +16,9 @@ export default function CreateTournamentPage() {
   const { toast } = useToast();
   const { user, isAuthenticated, signIn } = useAuth();
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <p className="text-text-secondary text-[15px]">Sign in to create a tournament</p>
-        <button onClick={signIn} className="h-10 px-6 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors">
-          Sign In
-        </button>
-      </div>
-    );
-  }
+  // All hooks must be called before any early return
   const [step, setStep] = useState<Step>("format");
   const [submitting, setSubmitting] = useState(false);
-
-  // Form state
   const [format, setFormat] = useState<"profit" | "pickem">("profit");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -41,12 +30,21 @@ export default function CreateTournamentPage() {
   const [prizeStructure, setPrizeStructure] = useState("50,30,20");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [curatedGames, setCuratedGames] = useState<TournamentGame[]>([]);
-
-  // Dates — default to reasonable values
   const now = Math.floor(Date.now() / 1000);
   const [registrationStart] = useState(now);
   const [startsIn, setStartsIn] = useState("24"); // hours from now
   const [duration, setDuration] = useState("48"); // hours
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <p className="text-text-secondary text-[15px]">Sign in to create a tournament</p>
+        <button onClick={signIn} className="h-10 px-6 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors">
+          Sign In
+        </button>
+      </div>
+    );
+  }
 
   const stepIndex = STEPS.indexOf(step);
 

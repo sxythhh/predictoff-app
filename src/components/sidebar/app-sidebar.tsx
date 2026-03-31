@@ -36,6 +36,7 @@ const COUNTRY_ISO_OVERRIDES: Record<string, string> = {
   "hong kong": "hk", "macau": "mo", "taiwan": "tw", "palestine": "ps",
   "kosovo": "xk", "curacao": "cw", "east timor": "tl", "eswatini": "sz",
   "cape verde": "cv", "myanmar": "mm", "burma": "mm", "laos": "la",
+  "serbia": "rs", "montenegro": "me",
 };
 
 // Build a reverse lookup: English country name → ISO 3166-1 alpha-2 code using the Intl API
