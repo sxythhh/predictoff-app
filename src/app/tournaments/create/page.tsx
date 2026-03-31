@@ -58,6 +58,11 @@ export default function CreateTournamentPage() {
   };
 
   const handleSubmit = async () => {
+    if (!title.trim()) { toast("Title is required", "error"); return; }
+    if (parseInt(startsIn) < 1) { toast("Tournament must start at least 1 hour from now", "error"); return; }
+    if (parseInt(duration) < 1) { toast("Duration must be at least 1 hour", "error"); return; }
+    if (entryType === "paid" && (!entryFee || parseFloat(entryFee) < 1)) { toast("Entry fee must be at least $1", "error"); return; }
+
     setSubmitting(true);
 
     const startsAt = now + parseInt(startsIn) * 3600;

@@ -18,17 +18,6 @@ export default function InvitePage({ params }: { params: Promise<{ code: string 
 
   useEffect(() => {
     // Find tournament by invite code
-    fetch(`/api/tournaments?inviteCode=${code}`)
-      .then(async (r) => {
-        // The list endpoint doesn't support inviteCode filter yet,
-        // so we need a direct lookup
-        const res = await fetch(`/api/tournaments`);
-        return res.json();
-      })
-      .catch(() => null)
-      .finally(() => setLoading(false));
-
-    // Direct lookup by invite code
     fetch(`/api/tournaments/invite/${code}`)
       .then((r) => r.ok ? r.json() : null)
       .then(setTournament)

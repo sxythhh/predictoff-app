@@ -52,12 +52,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (!existing) {
+      // Look up wallet address from user if not in metadata
+      let resolvedWallet = walletAddress ?? "";
+      if (!resolvedWallet) {
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { walletAddress: true } });
+        resolvedWallet = user?.walletAddress ?? "";
+      }
+
       // Create entry
       await prisma.tournamentEntry.create({
         data: {
           tournamentId,
           userId,
-          walletAddress: walletAddress ?? "",
+          walletAddress: resolvedWallet,
           entryPaid: true,
           entryTxHash: data?.id ?? data?.payment_id ?? null,
         },
