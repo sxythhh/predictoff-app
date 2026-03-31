@@ -14,21 +14,23 @@ import { useProximityHover } from "@/hooks/use-proximity-hover";
 import { springs } from "@/lib/springs";
 
 function WalietLogo({ className }: { className?: string }) {
+  // Dark mode: white PNG, Light mode: green SVG
+  // Uses two imgs with CSS visibility toggled via .dark class
   return (
-    <>
-      {/* White logo for dark mode */}
-      <img
-        src="/images/waliet-logo.png"
-        alt="Waliet"
-        className={`hidden dark:block ${className ?? ""}`}
-      />
-      {/* Green logo for light mode */}
+    <span className="relative inline-block" style={{ width: "inherit", height: "inherit" }}>
       <img
         src="/images/waliet-logo-green.svg"
         alt="Waliet"
-        className={`block dark:hidden ${className ?? ""}`}
+        className={className}
+        style={{ display: "var(--logo-light-display, block)" }}
       />
-    </>
+      <img
+        src="/images/waliet-logo.png"
+        alt="Waliet"
+        className={className}
+        style={{ display: "var(--logo-dark-display, none)", position: "absolute", inset: 0 }}
+      />
+    </span>
   );
 }
 
@@ -342,6 +344,25 @@ function HeaderBalancePill() {
   );
 }
 
+/* ── Header right section: balance pill (logged in) or join button (logged out) ── */
+function HeaderRightSection({ onWalletOpen }: { onWalletOpen: () => void }) {
+  const { isConnected } = useAccount();
+  const { isAuthenticated } = useAuth();
+
+  if (isConnected || isAuthenticated) {
+    return <HeaderBalancePill />;
+  }
+
+  return (
+    <button
+      onClick={onWalletOpen}
+      className="h-9 px-5 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors cursor-pointer"
+    >
+      Join
+    </button>
+  );
+}
+
 export default function HeaderClient({ activePage, onPageChange }: { activePage?: string; onPageChange?: (page: string) => void } = {}) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
@@ -398,7 +419,7 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
             <SearchButton onClick={() => setSearchOpen(true)} />
           </div>
 
-          {/* Right: balance pill */}
+          {/* Right: balance pill or join button */}
           <div className="flex items-center gap-2 ml-auto lg:ml-0 shrink-0">
             {/* Mobile search icon */}
             <button
@@ -407,7 +428,7 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
             >
               <SearchIcon />
             </button>
-            <HeaderBalancePill />
+            <HeaderRightSection onWalletOpen={() => setWalletOpen(true)} />
           </div>
         </div>
       </header>

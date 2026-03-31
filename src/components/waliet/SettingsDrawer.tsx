@@ -25,8 +25,17 @@ function ProfileIcon({ className }: { className?: string }) {
   );
 }
 
+function SubsIcon({ className }: { className?: string }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className={className}>
+      <path d="M4 6H16M4 10H16M4 14H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 const navItems = [
   { id: "profile", label: "Profile", icon: ProfileIcon },
+  { id: "subscriptions", label: "Subscriptions", icon: SubsIcon },
   { id: "account", label: "Account", icon: UserIcon },
   { id: "preferences", label: "Preferences", icon: SettingsIcon },
   { id: "about", label: "About Waliet", icon: InfoIcon },
@@ -154,6 +163,7 @@ export function SettingsDrawer({ onClose, open }: SettingsDrawerProps) {
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
             {activeSection === "profile" && <ProfileSection />}
+            {activeSection === "subscriptions" && <SubscriptionsSection />}
             {activeSection === "account" && <AccountSection />}
             {activeSection === "preferences" && <PreferencesSection />}
             {activeSection === "about" && <AboutSection />}
@@ -235,6 +245,81 @@ function AccountSection() {
         <div className="text-center py-12">
           <p className="text-text-muted text-[14px]">No wallet connected</p>
           <p className="text-text-muted text-[12px] mt-1">Connect a wallet to see account details</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SubscriptionsSection() {
+  const [subs, setSubs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/subscriptions")
+      .then((r) => r.ok ? r.json() : { subscriptions: [] })
+      .then((d) => setSubs(d.subscriptions ?? []))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const cancelSub = async (tipsterId: string) => {
+    await fetch(`/api/subscriptions?tipsterId=${tipsterId}`, { method: "DELETE" });
+    setSubs((prev) => prev.map((s) => s.tipster.id === tipsterId ? { ...s, status: "canceled" } : s));
+  };
+
+  return (
+    <div className="p-8 max-w-[600px]">
+      <h2 className="text-[18px] font-semibold text-text-primary mb-6">My Subscriptions</h2>
+      {loading ? (
+        <div className="flex flex-col gap-3">
+          {[1, 2].map((i) => <div key={i} className="h-20 bg-bg-surface rounded-xl animate-pulse" />)}
+        </div>
+      ) : subs.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-text-muted text-[13px]">No subscriptions yet</p>
+          <Link href="/tipsters" className="text-accent text-[13px] hover:underline mt-2 inline-block">Browse tipsters</Link>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {subs.map((sub: any) => (
+            <div key={sub.id} className="bg-bg-card rounded-xl border border-border-subtle p-4">
+              <div className="flex items-start justify-between">
+                <Link href={`/tipster/${sub.tipster.id}`} className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-bg-surface overflow-hidden shrink-0">
+                    {sub.tipster.avatar ? (
+                      <img src={sub.tipster.avatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full" style={{
+                        background: `linear-gradient(135deg, hsl(${parseInt(sub.tipster.walletAddress.slice(2, 6), 16) % 360}, 70%, 45%), hsl(${parseInt(sub.tipster.walletAddress.slice(6, 10), 16) % 360}, 60%, 35%))`,
+                      }} />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[14px] font-medium text-text-primary truncate">
+                      {sub.tipster.displayName ?? `${sub.tipster.walletAddress.slice(0, 6)}...`}
+                    </div>
+                    <div className="text-[12px] text-text-muted">{sub.tipster.totalPicks} picks · ${sub.tipster.subscriptionPrice}/mo</div>
+                  </div>
+                </Link>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${sub.status === "active" ? "text-green-400 bg-green-500/10" : "text-text-muted bg-bg-surface"}`}>
+                    {sub.status}
+                  </span>
+                  {sub.status === "active" && (
+                    <button
+                      onClick={() => cancelSub(sub.tipster.id)}
+                      className="text-[11px] text-red-400 hover:text-red-300 font-medium"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="text-[11px] text-text-muted mt-2">
+                Subscribed {new Date(sub.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -340,10 +425,16 @@ function ProfileSection() {
 
         {/* Tipster status */}
         {user?.isTipster ? (
-          <Link href="/picks" className="text-[13px] text-accent font-medium hover:text-accent-hover flex items-center gap-1.5">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
-            Manage my picks
-          </Link>
+          <>
+            <Link href="/picks" className="text-[13px] text-accent font-medium hover:text-accent-hover flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+              Manage my picks
+            </Link>
+            <Link href="/tipster/dashboard" className="text-[13px] text-text-secondary font-medium hover:text-text-primary flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 14V6M6 14V4M10 14V8M14 14V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              Earnings Dashboard
+            </Link>
+          </>
         ) : (
           <Link href="/tipster/setup" className="text-[13px] text-accent font-medium hover:text-accent-hover flex items-center gap-1.5">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>

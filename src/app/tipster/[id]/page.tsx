@@ -16,6 +16,7 @@ export default function TipsterProfilePage({ params }: { params: Promise<{ id: s
   const [hasAccess, setHasAccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const isOwn = user?.id === id;
 
@@ -24,25 +25,25 @@ export default function TipsterProfilePage({ params }: { params: Promise<{ id: s
       fetch(`/api/tipsters/${id}/stats`).then((r) => r.ok ? r.json() : null),
       fetch(`/api/picks?tipsterId=${id}&limit=20`).then((r) => r.ok ? r.json() : { picks: [] }),
       user ? fetch(`/api/tipster/${id}/access`).then((r) => r.ok ? r.json() : { hasAccess: false }) : Promise.resolve({ hasAccess: false }),
-    ]).then(([statsData, picksData, accessData]) => {
+      user ? fetch(`/api/follow?targetId=${id}`).then((r) => r.ok ? r.json() : { following: false }) : Promise.resolve({ following: false }),
+    ]).then(([statsData, picksData, accessData, followData]) => {
       if (statsData) { setTipster(statsData.tipster); setStats(statsData.stats); }
       setPicks(picksData.picks ?? []);
       setHasAccess(accessData.hasAccess || isOwn);
+      setIsFollowing(followData.following);
     }).finally(() => setLoading(false));
   }, [id, user, isOwn]);
 
   const handleSubscribe = async () => {
+    if (!user) { window.location.href = "/"; return; }
     setSubscribing(true);
     const res = await fetch(`/api/tipster/${id}/subscribe`, { method: "POST" });
     const data = await res.json();
     if (data.checkoutUrl) {
       window.open(data.checkoutUrl, "_blank");
       toast("Complete payment in the new tab", "info");
-    } else if (data.subscribed) {
-      toast("Subscribed!", "success");
-      setHasAccess(true);
     } else {
-      toast(data.error ?? "Failed", "error");
+      toast(data.error ?? "Subscription unavailable", "error");
     }
     setSubscribing(false);
   };
@@ -91,17 +92,42 @@ export default function TipsterProfilePage({ params }: { params: Promise<{ id: s
           <div className="flex-1 min-w-0">
             <h1 className="text-[20px] font-semibold truncate">{tipster.displayName ?? "Tipster"}</h1>
             {tipster.tipsterBio && <p className="text-[13px] text-text-secondary mt-1">{tipster.tipsterBio}</p>}
-            {!isOwn && !hasAccess && tipster.subscriptionPrice && (
-              <button
-                onClick={handleSubscribe}
-                disabled={subscribing}
-                className="mt-3 h-10 px-5 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors disabled:opacity-50"
-              >
-                {subscribing ? "..." : `Subscribe $${tipster.subscriptionPrice}/mo`}
-              </button>
-            )}
-            {hasAccess && !isOwn && (
-              <span className="mt-3 inline-block text-[12px] text-green-400 bg-green-500/10 px-2.5 py-1 rounded font-semibold">Subscribed</span>
+            {!isOwn && (
+              <div className="flex items-center gap-2 mt-3">
+                {/* Follow button (free) */}
+                <button
+                  onClick={async () => {
+                    if (!user) { window.location.href = "/"; return; }
+                    const res = await fetch("/api/follow", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ targetId: id }),
+                    });
+                    const d = await res.json();
+                    setIsFollowing(d.following);
+                  }}
+                  className={`h-10 px-4 rounded-lg text-[14px] font-semibold transition-colors ${
+                    isFollowing
+                      ? "bg-bg-surface text-text-secondary hover:bg-bg-hover"
+                      : "bg-bg-surface text-text-primary hover:bg-bg-hover"
+                  }`}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+
+                {/* Subscribe button (paid) */}
+                {!hasAccess && tipster.subscriptionPrice ? (
+                  <button
+                    onClick={handleSubscribe}
+                    disabled={subscribing}
+                    className="h-10 px-5 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors disabled:opacity-50"
+                  >
+                    {subscribing ? "..." : `Subscribe $${tipster.subscriptionPrice}/mo`}
+                  </button>
+                ) : hasAccess ? (
+                  <span className="text-[12px] text-green-400 bg-green-500/10 px-2.5 py-1 rounded font-semibold">Subscribed</span>
+                ) : null}
+              </div>
             )}
           </div>
         </div>

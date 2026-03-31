@@ -8,6 +8,56 @@ import { PickComposer } from "@/components/waliet/tipster/PickComposer";
 
 type FeedTab = "all" | "following";
 
+function FeaturedTipsters() {
+  const [tipsters, setTipsters] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/tipsters?limit=5")
+      .then((r) => r.ok ? r.json() : { tipsters: [] })
+      .then((d) => setTipsters((d.tipsters ?? []).filter((t: any) => t.totalPicks > 0).slice(0, 4)))
+      .catch(() => {});
+  }, []);
+
+  if (tipsters.length === 0) return null;
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[13px] font-semibold text-text-primary">Top Tipsters</span>
+        <Link href="/tipsters" className="text-[11px] text-text-muted hover:text-text-secondary">See all</Link>
+      </div>
+      <div className="flex gap-2 overflow-x-auto">
+        {tipsters.map((t: any) => (
+          <Link
+            key={t.id}
+            href={`/tipster/${t.id}`}
+            className="shrink-0 w-[140px] bg-bg-card rounded-xl border border-border-subtle p-3 hover:bg-bg-hover transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-bg-surface overflow-hidden shrink-0">
+                {t.avatar ? (
+                  <img src={t.avatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full" style={{
+                    background: `linear-gradient(135deg, hsl(${parseInt(t.walletAddress.slice(2, 6), 16) % 360}, 70%, 45%), hsl(${parseInt(t.walletAddress.slice(6, 10), 16) % 360}, 60%, 35%))`,
+                  }} />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="text-[12px] font-medium text-text-primary truncate">{t.displayName ?? `${t.walletAddress.slice(0, 6)}...`}</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className={`font-bold ${t.winRate >= 60 ? "text-green-400" : t.winRate >= 50 ? "text-yellow-400" : "text-text-muted"}`}>{t.winRate}%</span>
+              <span className="text-text-muted">{t.totalPicks} picks</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function PicksFeedPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<FeedTab>("all");
@@ -62,6 +112,9 @@ export default function PicksFeedPage() {
             </Link>
           </div>
         )}
+
+        {/* Featured tipsters */}
+        <FeaturedTipsters />
 
         {/* Feed tabs */}
         <div className="flex items-center gap-1.5 mb-4">

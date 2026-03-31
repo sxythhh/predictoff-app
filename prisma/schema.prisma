@@ -46,6 +46,8 @@ model User {
   tipsterPicks       TipsterPick[]          @relation("tipsterPicks")
   subscriptions      TipsterSubscription[]  @relation("tipsterSubscriptions")
   subscribers        TipsterSubscription[]  @relation("tipsterSubscribers")
+  following          Follow[]               @relation("following")
+  followers          Follow[]               @relation("followers")
 
   @@unique([authProvider, oauthId])
 }
@@ -258,6 +260,20 @@ model TournamentBetSnapshot {
   @@unique([entryId, tokenId])
   @@index([tournamentId])
   @@index([entryId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 // ── Search & Indexing System ──────────────────────────────────────

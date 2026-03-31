@@ -63,7 +63,7 @@ function GoogleIcon() {
 
 function XTwitterIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   );
@@ -71,7 +71,7 @@ function XTwitterIcon() {
 
 function AppleIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
       <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.52-3.23 0-1.44.64-2.2.52-3.06-.4C3.79 16.17 4.36 9.02 8.93 8.75c1.28.07 2.17.72 2.91.76.99-.1 1.94-.78 3-.83 1.28-.05 2.26.47 2.9 1.2-2.66 1.52-2.03 4.86.62 5.8-.5 1.29-1.15 2.56-2.31 4.6zM12.26 8.6C12.07 6.63 13.7 5 15.55 4.85c.25 2.22-2.02 3.88-3.29 3.75z" />
     </svg>
   );

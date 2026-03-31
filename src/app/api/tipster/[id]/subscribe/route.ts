@@ -26,8 +26,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const price = tipster.subscriptionPrice ?? 20;
   const origin = request.headers.get("origin") ?? request.nextUrl.origin;
 
-  // If Whop is configured and tipster has a Whop plan
-  if (tipster.whopBusinessId && tipster.whopPlanId) {
+  // Whop checkout for paid subscriptions
+  if (tipster.whopBusinessId) {
     try {
       const checkout = await whop.checkoutConfigurations.create({
         plan: {
@@ -46,16 +46,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return Response.json({ checkoutUrl: checkout.purchase_url });
     } catch (err: any) {
       console.error("Whop subscription checkout error:", err);
-      return Response.json({ error: "Failed to create checkout" }, { status: 500 });
+      return Response.json({
+        error: "Payment system unavailable. Please try again later.",
+        detail: process.env.NODE_ENV === "development" ? err.message : undefined,
+      }, { status: 500 });
     }
   }
 
-  // Fallback: create local subscription without Whop
-  await prisma.tipsterSubscription.upsert({
-    where: { subscriberId_tipsterId: { subscriberId: user.id, tipsterId } },
-    create: { subscriberId: user.id, tipsterId, status: "active" },
-    update: { status: "active" },
-  });
+  // No Whop configured — payments not available
+  if (!WHOP_COMPANY_ID) {
+    return Response.json({
+      error: "Subscriptions are not available yet. The tipster hasn't completed payment setup.",
+    }, { status: 503 });
+  }
 
-  return Response.json({ subscribed: true });
+  return Response.json({ error: "Tipster payment setup incomplete" }, { status: 503 });
 }

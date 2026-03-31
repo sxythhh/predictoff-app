@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
         select: {
           tipsterPicks: true,
           subscribers: { where: { status: "active" } },
+          followers: true,
         },
       },
     },
@@ -54,6 +55,7 @@ export async function GET(request: NextRequest) {
       subscriptionPrice: t.subscriptionPrice,
       totalPicks: t._count.tipsterPicks,
       subscriberCount: t._count.subscribers,
+      followerCount: t._count.followers,
       resolvedPicks: stats._count,
       wins,
       winRate,

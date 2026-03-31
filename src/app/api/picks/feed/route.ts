@@ -14,12 +14,12 @@ export async function GET(request: NextRequest) {
 
   let tipsterIds: string[] | undefined;
   if (following && user) {
-    // Get followed tipsters (via TipsterSubscription)
-    const subs = await prisma.tipsterSubscription.findMany({
-      where: { subscriberId: user.id, status: "active" },
-      select: { tipsterId: true },
+    // Get followed tipsters (via Follow model — free follows)
+    const follows = await prisma.follow.findMany({
+      where: { followerId: user.id },
+      select: { followingId: true },
     });
-    tipsterIds = subs.map((s) => s.tipsterId);
+    tipsterIds = follows.map((f) => f.followingId);
     if (tipsterIds.length === 0) {
       return Response.json({ picks: [], nextCursor: null });
     }
