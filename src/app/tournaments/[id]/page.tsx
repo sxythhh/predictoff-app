@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,23 +9,33 @@ import { TournamentCountdown } from "@/components/waliet/tournaments/TournamentC
 import { useToast } from "@/components/waliet/Toast";
 import { PickSheet } from "@/components/waliet/tournaments/PickSheet";
 import type { TournamentGame, TournamentPick } from "@/types/tournament";
+import { GamePicker } from "@/components/waliet/tournaments/GamePicker";
 
 function formatAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
-type Tab = "overview" | "leaderboard" | "picks" | "games";
+type Tab = "overview" | "leaderboard" | "picks" | "games" | "manage";
 
 function LeaderboardTab({ tournamentId, myUserId }: { tournamentId: string; myUserId?: string }) {
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchEntries = useCallback(async (cursor?: string) => {
+    const params = new URLSearchParams({ limit: "50" });
+    if (cursor) params.set("cursor", cursor);
+    const res = await fetch(`/api/tournaments/${tournamentId}/leaderboard?${params}`);
+    const d = await res.json();
+    setEntries((prev) => cursor ? [...prev, ...(d.entries ?? [])] : d.entries ?? []);
+    setNextCursor(d.nextCursor);
+  }, [tournamentId]);
 
   useEffect(() => {
-    fetch(`/api/tournaments/${tournamentId}/leaderboard?limit=50`)
-      .then((r) => r.json())
-      .then((d) => setEntries(d.entries ?? []))
-      .finally(() => setLoading(false));
-  }, [tournamentId]);
+    setLoading(true);
+    fetchEntries().finally(() => setLoading(false));
+  }, [fetchEntries]);
 
   if (loading) return <div className="py-8 text-center text-text-muted text-sm">Loading...</div>;
   if (entries.length === 0) return <div className="py-8 text-center text-text-muted text-sm">No entries yet</div>;
@@ -74,6 +84,19 @@ function LeaderboardTab({ tournamentId, myUserId }: { tournamentId: string; myUs
           </div>
         );
       })}
+      {nextCursor && (
+        <button
+          onClick={async () => {
+            setLoadingMore(true);
+            await fetchEntries(nextCursor);
+            setLoadingMore(false);
+          }}
+          disabled={loadingMore}
+          className="h-9 mt-2 rounded-lg bg-bg-surface text-[13px] font-medium text-text-secondary hover:bg-bg-hover transition-colors disabled:opacity-50"
+        >
+          {loadingMore ? "Loading..." : "Load more"}
+        </button>
+      )}
     </div>
   );
 }
@@ -114,6 +137,32 @@ function GamesTab({ tournamentId }: { tournamentId: string }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function ManageGamesTab({ tournamentId }: { tournamentId: string }) {
+  const [games, setGames] = useState<TournamentGame[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/tournaments/${tournamentId}/games`)
+      .then((r) => r.json())
+      .then((d) => setGames(d.games ?? []))
+      .finally(() => setLoading(false));
+  }, [tournamentId]);
+
+  if (loading) return <div className="py-8 text-center text-text-muted text-sm">Loading...</div>;
+
+  return (
+    <div>
+      <h3 className="text-[14px] font-semibold text-text-primary mb-3">Manage Games</h3>
+      <p className="text-[12px] text-text-muted mb-4">Add or remove games from this tournament. Changes can only be made before the tournament starts.</p>
+      <GamePicker
+        tournamentId={tournamentId}
+        existingGames={games}
+        onGamesChange={setGames}
+      />
     </div>
   );
 }
@@ -162,6 +211,34 @@ export default function TournamentDetailPage({ params }: { params: Promise<{ id:
 
   const handleJoin = async () => {
     setJoining(true);
+
+    // Paid tournaments: create Whop checkout
+    if (tournament?.entryType === "paid") {
+      try {
+        const res = await fetch("/api/whop/create-checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tournamentId: id }),
+        });
+        const data = await res.json();
+        if (res.ok && data.checkoutUrl) {
+          // Redirect to Whop checkout — webhook will handle entry creation
+          window.open(data.checkoutUrl, "_blank");
+          toast("Complete payment in the new tab", "info");
+          setJoining(false);
+          return;
+        }
+        toast(data.error ?? "Failed to create checkout", "error");
+        setJoining(false);
+        return;
+      } catch {
+        toast("Payment error", "error");
+        setJoining(false);
+        return;
+      }
+    }
+
+    // Free tournaments: join directly
     const res = await fetch(`/api/tournaments/${id}/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -369,7 +446,7 @@ export default function TournamentDetailPage({ params }: { params: Promise<{ id:
 
         {/* Tabs */}
         <div className="flex items-center gap-1 border-b border-border-subtle mb-4">
-          {(["overview", "leaderboard", ...(t.format === "pickem" ? ["games"] : []), ...(myEntry && t.format === "pickem" ? ["picks"] : [])] as Tab[]).map((key) => (
+          {(["overview", "leaderboard", ...(t.scope === "curated" ? ["games"] : []), ...(myEntry && t.format === "pickem" ? ["picks"] : []), ...(isCreator && ["draft", "open"].includes(t.status) ? ["manage"] : [])] as Tab[]).map((key) => (
             <button
               key={key}
               onClick={() => setTab(key)}
@@ -432,6 +509,10 @@ export default function TournamentDetailPage({ params }: { params: Promise<{ id:
 
         {tab === "picks" && myEntry && (
           <PicksTab tournamentId={id} myEntry={myEntry} />
+        )}
+
+        {tab === "manage" && isCreator && (
+          <ManageGamesTab tournamentId={id} />
         )}
       </div>
     </div>

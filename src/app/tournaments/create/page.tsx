@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/waliet/Toast";
+import { GamePicker } from "@/components/waliet/tournaments/GamePicker";
+import type { TournamentGame } from "@/types/tournament";
 
 type Step = "format" | "details" | "scope" | "entry" | "review";
 const STEPS: Step[] = ["format", "details", "scope", "entry", "review"];
@@ -25,6 +27,7 @@ export default function CreateTournamentPage() {
   const [maxParticipants, setMaxParticipants] = useState("");
   const [prizeStructure, setPrizeStructure] = useState("50,30,20");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [curatedGames, setCuratedGames] = useState<TournamentGame[]>([]);
 
   // Dates — default to reasonable values
   const now = Math.floor(Date.now() / 1000);
@@ -72,6 +75,13 @@ export default function CreateTournamentPage() {
       startsAt,
       endsAt,
       visibility,
+      games: scope === "curated" ? curatedGames.map((g) => ({
+        gameId: g.gameId,
+        gameTitle: g.gameTitle,
+        sportName: g.sportName,
+        leagueName: g.leagueName,
+        startsAt: g.startsAt,
+      })) : undefined,
     };
 
     const res = await fetch("/api/tournaments", {
@@ -233,9 +243,18 @@ export default function CreateTournamentPage() {
                 }`}
               >
                 <div className="text-[14px] font-semibold">Curated — Selected Games</div>
-                <p className="text-[12px] text-text-muted mt-1">Only bets/picks on specific games you choose will count. You can add games after creating the tournament.</p>
+                <p className="text-[12px] text-text-muted mt-1">Only bets/picks on specific games you choose will count.</p>
               </button>
             </div>
+
+            {/* Game picker for curated scope */}
+            {scope === "curated" && (
+              <GamePicker
+                existingGames={curatedGames}
+                onGamesChange={setCuratedGames}
+              />
+            )}
+
             <div>
               <label className="text-[12px] text-text-muted mb-1 block">Max Players (optional)</label>
               <input
