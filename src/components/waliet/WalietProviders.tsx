@@ -11,6 +11,8 @@ import { type Address } from "viem";
 import { ToastProvider } from "./Toast";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { ThemeProvider } from "@/components/ui/theme";
+import { ConnectionStatus } from "./ConnectionStatus";
+import { OddsFormatProvider } from "./OddsFormatContext";
 
 const AFFILIATE_ADDRESS =
   (process.env.NEXT_PUBLIC_AFFILIATE_ADDRESS as Address) ??
@@ -66,9 +68,12 @@ export function WalietProviders({ children }: { children: ReactNode }) {
           <LiveProvider initialLiveState={false}>
             <AuthProvider>
               <ThemeProvider>
+                <OddsFormatProvider>
                 <ToastProvider>
+                  <ConnectionStatus />
                   {children}
                 </ToastProvider>
+                </OddsFormatProvider>
               </ThemeProvider>
             </AuthProvider>
           </LiveProvider>

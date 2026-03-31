@@ -25,34 +25,41 @@ import {
 
 type SportIconMap = Record<string, ComponentType<{ className?: string }>>;
 
-// ── Country name → ISO code mapping for flag icons ─────────────
-
-const COUNTRY_ISO: Record<string, string> = {
-  "england": "gb-eng", "united kingdom": "gb", "scotland": "gb-sct", "wales": "gb-wls",
-  "spain": "es", "germany": "de", "france": "fr", "italy": "it", "portugal": "pt",
-  "netherlands": "nl", "belgium": "be", "turkey": "tr", "greece": "gr", "austria": "at",
-  "switzerland": "ch", "poland": "pl", "czech republic": "cz", "croatia": "hr",
-  "serbia": "rs", "romania": "ro", "ukraine": "ua", "russia": "ru", "denmark": "dk",
-  "sweden": "se", "norway": "no", "finland": "fi", "iceland": "is",
-  "usa": "us", "united states": "us", "canada": "ca", "mexico": "mx",
-  "brazil": "br", "argentina": "ar", "colombia": "co", "chile": "cl", "uruguay": "uy",
-  "australia": "au", "new zealand": "nz", "japan": "jp", "south korea": "kr", "china": "cn",
-  "india": "in", "saudi arabia": "sa", "uae": "ae", "qatar": "qa", "egypt": "eg",
-  "south africa": "za", "nigeria": "ng", "morocco": "ma", "tunisia": "tn", "algeria": "dz",
-  "kenya": "ke", "ghana": "gh", "cameroon": "cm", "senegal": "sn",
-  "ireland": "ie", "hungary": "hu", "bulgaria": "bg", "slovakia": "sk", "slovenia": "si",
-  "bosnia and herzegovina": "ba", "north macedonia": "mk", "albania": "al", "montenegro": "me",
-  "cyprus": "cy", "malta": "mt", "luxembourg": "lu", "estonia": "ee", "latvia": "lv",
-  "lithuania": "lt", "georgia": "ge", "armenia": "am", "azerbaijan": "az",
-  "israel": "il", "iran": "ir", "iraq": "iq", "jordan": "jo", "lebanon": "lb",
-  "thailand": "th", "vietnam": "vn", "indonesia": "id", "malaysia": "my", "singapore": "sg",
-  "philippines": "ph", "peru": "pe", "ecuador": "ec", "venezuela": "ve", "paraguay": "py",
-  "bolivia": "bo", "costa rica": "cr", "honduras": "hn", "el salvador": "sv",
-  "guatemala": "gt", "panama": "pa", "jamaica": "jm", "trinidad and tobago": "tt",
+// ── Country name → ISO code for flag icons ─────────────
+// Explicit overrides for names that don't match the Intl API or need sub-national flags
+const COUNTRY_ISO_OVERRIDES: Record<string, string> = {
+  "england": "gb-eng", "scotland": "gb-sct", "wales": "gb-wls", "northern ireland": "gb-nir",
+  "united kingdom": "gb", "usa": "us", "united states": "us", "uae": "ae",
+  "south korea": "kr", "north korea": "kp", "czech republic": "cz", "ivory coast": "ci",
+  "democratic republic of the congo": "cd", "republic of the congo": "cg",
   "world": "un", "international": "un", "europe": "eu",
+  "hong kong": "hk", "macau": "mo", "taiwan": "tw", "palestine": "ps",
+  "kosovo": "xk", "curacao": "cw", "east timor": "tl", "eswatini": "sz",
+  "cape verde": "cv", "myanmar": "mm", "burma": "mm", "laos": "la",
 };
 
-function CountryFlag({ name, className = "w-4 h-3 rounded-[2px]" }: { name: string; className?: string }) {
+// Build a reverse lookup: English country name → ISO 3166-1 alpha-2 code using the Intl API
+const _isoByName: Record<string, string> = {};
+if (typeof Intl !== "undefined") {
+  const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
+  // All alpha-2 codes
+  for (let i = 0; i < 26; i++) {
+    for (let j = 0; j < 26; j++) {
+      const code = String.fromCharCode(65 + i) + String.fromCharCode(65 + j);
+      try {
+        const name = displayNames.of(code);
+        if (name) _isoByName[name.toLowerCase()] = code.toLowerCase();
+      } catch { /* invalid code */ }
+    }
+  }
+}
+
+export function getCountryCode(name: string): string | null {
+  const lower = name.toLowerCase().trim();
+  return COUNTRY_ISO_OVERRIDES[lower] ?? _isoByName[lower] ?? null;
+}
+
+export function CountryFlag({ name, className = "w-4 h-3 rounded-[2px]" }: { name: string; className?: string }) {
   const lower = name.toLowerCase();
   // International/World uses custom icon
   if (lower === "world" || lower === "international") {
@@ -65,7 +72,7 @@ function CountryFlag({ name, className = "w-4 h-3 rounded-[2px]" }: { name: stri
       />
     );
   }
-  const code = COUNTRY_ISO[lower];
+  const code = getCountryCode(name);
   if (!code) return null;
   return (
     <img
@@ -514,15 +521,11 @@ function LeagueSubList({
 
 export function AppSidebar({
   activeSport,
-  activeLeague,
   onSportClick,
-  onLeagueClick,
   sportIcons,
 }: {
   activeSport: string | null;
-  activeLeague: string | null;
   onSportClick: (slug: string | null) => void;
-  onLeagueClick: (sportSlug: string, leagueSlug: string) => void;
   sportIcons: SportIconMap;
 }) {
   const { collapsed, setSettingsOpen } = useSidebar();
@@ -618,41 +621,22 @@ export function AppSidebar({
                           <div key={sport.slug}>
                             <ProximityNavItem
                               index={i + 1}
-                              active={isActive && !activeLeague}
+                              active={isActive}
                               onClick={() => handleSportNavClick(sport.slug)}
                               icon={Icon ? <Icon className="size-4" /> : null}
                               label={sport.name}
                               suffix={
-                                <span className="flex items-center gap-1.5">
-                                  <span
-                                    className={`font-inter text-[11px] min-w-[28px] text-right ${
-                                      isActive && !activeLeague
-                                        ? "text-accent-text bg-accent-muted px-1.5 py-0.5 rounded font-semibold"
-                                        : "text-sidebar-text-muted font-medium"
-                                    }`}
-                                  >
-                                    {gameCount}
-                                  </span>
-                                  {/* Chevron */}
-                                  <svg
-                                    width="10" height="10" viewBox="0 0 10 10" fill="none"
-                                    className={`text-sidebar-text-muted transition-transform duration-150 ${isActive ? "rotate-90" : ""}`}
-                                  >
-                                    <path d="M3.5 2L6.5 5L3.5 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
+                                <span
+                                  className={`font-inter text-[11px] min-w-[28px] text-right ${
+                                    isActive
+                                      ? "text-accent-text bg-accent-muted px-1.5 py-0.5 rounded font-semibold"
+                                      : "text-sidebar-text-muted font-medium"
+                                  }`}
+                                >
+                                  {gameCount}
                                 </span>
                               }
                             />
-                            {/* League sub-items — show when sport is active */}
-                            {isActive && sport.countries && (
-                              <LeagueSubList
-                                sportSlug={sport.slug}
-                                countries={sport.countries}
-                                activeLeague={activeLeague}
-                                isLive={isLive}
-                                onLeagueClick={onLeagueClick}
-                              />
-                            )}
                           </div>
                         );
                       })}

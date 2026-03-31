@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useOddsFormat } from "./OddsFormatContext";
 
 export interface BetConfirmData {
   selections: {
@@ -26,6 +27,7 @@ export function BetConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { formatOdds } = useOddsFormat();
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onCancel();
@@ -64,7 +66,7 @@ export function BetConfirmModal({
                   {sel.marketName}: {sel.selectionName}
                 </span>
                 <span className="text-[13px] font-bold text-accent tabular-nums shrink-0">
-                  {sel.odds.toFixed(2)}
+                  {formatOdds(sel.odds)}
                 </span>
               </div>
             </div>

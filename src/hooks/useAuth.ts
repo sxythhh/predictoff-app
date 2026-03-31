@@ -10,6 +10,7 @@ interface DbUser {
   displayName: string | null;
   avatar: string | null;
   bio: string | null;
+  authProvider: string;
 }
 
 interface AuthContextValue {
@@ -19,6 +20,7 @@ interface AuthContextValue {
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  signInWithSocial: (provider: "google" | "twitter" | "apple") => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthContextValue>({
   signIn: async () => {},
   signOut: async () => {},
   refreshUser: async () => {},
+  signInWithSocial: () => {},
 });
 
 export function useAuth() {

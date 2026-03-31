@@ -1,7 +1,8 @@
 "use client";
-import { useChain } from "@azuro-org/sdk";
+import { useChain, useBaseBetslip } from "@azuro-org/sdk";
 import { useState } from "react";
 import { polygon, gnosis, chiliz, base, polygonAmoy, baseSepolia } from "wagmi/chains";
+import { clearAllBetslipMeta } from "./betslip-meta";
 
 type ChainEntry = {
   chain: { id: number; name: string };
@@ -22,8 +23,18 @@ const CHAINS: ChainEntry[] = [
 
 export function ChainSwitcher() {
   const { appChain, setAppChainId } = useChain();
+  const { clear } = useBaseBetslip();
   const [open, setOpen] = useState(false);
   const current = CHAINS.find((c) => c.chain.id === appChain.id) ?? CHAINS[0];
+
+  const switchChain = (chainId: number) => {
+    if (chainId !== appChain.id) {
+      clear();
+      clearAllBetslipMeta();
+    }
+    setAppChainId(chainId as any);
+    setOpen(false);
+  };
 
   return (
     <div className="relative">
@@ -55,8 +66,7 @@ export function ChainSwitcher() {
               <button
                 key={c.chain.id}
                 onClick={() => {
-                  setAppChainId(c.chain.id as any);
-                  setOpen(false);
+                  switchChain(c.chain.id);
                 }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-colors ${
                   c.chain.id === appChain.id
@@ -84,8 +94,7 @@ export function ChainSwitcher() {
               <button
                 key={c.chain.id}
                 onClick={() => {
-                  setAppChainId(c.chain.id as any);
-                  setOpen(false);
+                  switchChain(c.chain.id);
                 }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-colors ${
                   c.chain.id === appChain.id

@@ -43,3 +43,7 @@ export function getBetslipMeta(
 export function clearBetslipMeta(conditionId: string, outcomeId: string) {
   cache.delete(key(conditionId, outcomeId));
 }
+
+export function clearAllBetslipMeta() {
+  cache.clear();
+}

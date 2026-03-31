@@ -9,6 +9,7 @@ import { useFavorites } from "./useFavorites";
 import { useOpenGame } from "./GameModal";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
+import { useOddsFormat } from "./OddsFormatContext";
 
 /** Resolve "1"→home team, "2"→away team, "X"→"Draw", otherwise keep original */
 function resolveSelectionName(raw: string, game: GameData): string {
@@ -33,6 +34,7 @@ const OddsButton = memo(function OddsButton({
   game: GameData;
   marketName: string;
 }) {
+  const { formatOdds } = useOddsFormat();
   const { data: odds } = useSelectionOdds({
     selection: outcome,
     initialOdds: outcome.odds,
@@ -98,7 +100,7 @@ const OddsButton = memo(function OddsButton({
         {outcome.selectionName}
       </span>
       <span className={`text-[13px] font-bold tracking-tight ${isActive ? "text-white" : "text-text-primary"}`}>
-        {odds?.toFixed(2) ?? "—"}
+        {formatOdds(odds)}
       </span>
     </button>
   );

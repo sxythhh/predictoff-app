@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useAccount, useSignMessage, useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { SiweMessage } from "siwe";
 import { AuthContext, type DbUser } from "@/hooks/useAuth";
+import { applyReferral } from "@/hooks/useReferral";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { address, isConnected, chainId } = useAccount();
@@ -12,6 +13,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { connectAsync } = useConnect();
   const [user, setUser] = useState<DbUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const wasConnectedOnMount = useRef(isConnected);
 
   // Check existing session on mount
   const checkSession = useCallback(async () => {
@@ -29,6 +31,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkSession();
   }, [checkSession]);
+
+  // Auto sign-in only on NEW wallet connections (not page reloads with existing session)
+  useEffect(() => {
+    // Skip if wallet was already connected when the page loaded — session check handles that
+    if (wasConnectedOnMount.current) {
+      wasConnectedOnMount.current = false;
+      return;
+    }
+    // Wallet just connected fresh → trigger SIWE sign-in
+    if (isConnected && address && !user && !isLoading) {
+      signIn();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, address, isLoading]);
 
   // Auto sign-out if wallet disconnects
   useEffect(() => {
@@ -86,6 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (verifyRes.ok) {
         const data = await verifyRes.json();
         setUser(data.user);
+        // Apply any stored referral code after sign-in
+        applyReferral();
       }
     } catch (err) {
       console.error("Sign in failed:", err);
@@ -97,6 +115,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const signInWithSocial = useCallback(
+    async (provider: "google" | "twitter" | "apple") => {
+      // Fetch CSRF token from NextAuth, then POST to trigger OAuth flow
+      try {
+        const csrfRes = await fetch("/api/oauth/csrf");
+        const { csrfToken } = await csrfRes.json();
+
+        // Create a hidden form and submit it to trigger the OAuth redirect
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `/api/oauth/signin/${provider}`;
+
+        const csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "csrfToken";
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+
+        const callbackInput = document.createElement("input");
+        callbackInput.type = "hidden";
+        callbackInput.name = "callbackUrl";
+        callbackInput.value = "/";
+        form.appendChild(callbackInput);
+
+        document.body.appendChild(form);
+        form.submit();
+      } catch (err) {
+        console.error("Social sign-in failed:", err);
+      }
+    },
+    []
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -106,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signOut,
         refreshUser: checkSession,
+        signInWithSocial,
       }}
     >
       {children}

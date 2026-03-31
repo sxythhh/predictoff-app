@@ -9,10 +9,12 @@ import { LiveGameSections } from "@/components/waliet/LiveGameSections";
 import { PlayBetslip } from "@/components/waliet/PlayBetslip";
 import { useGameModal, GameModal, GameModalProvider } from "@/components/waliet/GameModal";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
-import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { AppSidebar, CountryFlag } from "@/components/sidebar/app-sidebar";
 import { SocialFeed } from "@/components/social/SocialFeed";
 import { WaveLeaderboard } from "@/components/waliet/WaveLeaderboard";
 import { sportIcons } from "@/components/waliet/sport-icons";
+import { WelcomeModal } from "@/components/waliet/WelcomeModal";
+import { useCaptureReferral } from "@/hooks/useReferral";
 
 // ─── SVG Icons ──────────────────────────────────────────────────
 
@@ -95,10 +97,151 @@ function ChevronDownIcon() {
 
 // SidebarLeft replaced by AppSidebar component
 
-function EventFilter() {
+import { useOddsFormat, type OddsFormat } from "@/components/waliet/OddsFormatContext";
+
+const ODDS_FORMATS: OddsFormat[] = [
+  "European",
+  "American",
+  "Fractional",
+  "Hong Kong",
+  "Indonesian",
+  "Malaysian",
+];
+
+function OddsFormatFooter() {
+  const [open, setOpen] = useState(false);
+  const { format: selected, setFormat } = useOddsFormat();
+
+  return (
+    <div className="flex flex-col sm:flex-row gap-4 sm:items-start">
+      {/* Dropdown */}
+      <div className="shrink-0">
+        <div className="text-[13px] font-semibold text-text-secondary mb-2">Odds Format</div>
+        <div className="relative">
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex items-center justify-between gap-6 h-10 px-4 rounded-xl bg-bg-input border border-border-input text-[14px] font-semibold text-text-primary min-w-[180px] hover:bg-bg-hover transition-colors"
+          >
+            {selected}
+            <svg
+              width="10" height="6" viewBox="0 0 10 6" fill="none"
+              className={`transition-transform ${open ? "rotate-180" : ""}`}
+            >
+              <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          {open && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+              <div className="absolute bottom-full mb-2 left-0 z-50 w-full rounded-xl bg-bg-card border border-border-input overflow-hidden shadow-xl">
+                {ODDS_FORMATS.map((fmt) => (
+                  <button
+                    key={fmt}
+                    onClick={() => { setFormat(fmt); setOpen(false); }}
+                    className={`w-full text-left px-4 py-2.5 text-[14px] font-semibold transition-colors ${
+                      selected === fmt
+                        ? "text-accent bg-accent/5"
+                        : "text-text-secondary hover:bg-bg-hover"
+                    }`}
+                  >
+                    {fmt}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Disclaimer */}
+      <p className="text-[12px] text-text-muted leading-relaxed sm:pt-7">
+        Although every effort is made to ensure data displayed on our site is accurate, this data is for information purposes and should be used as a guide only. In the event of any particular information being incorrect, we assume no liability for it.
+      </p>
+    </div>
+  );
+}
+
+function useDragScroll() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const hasMoved = useRef(false);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    isDragging.current = true;
+    hasMoved.current = false;
+    startX.current = e.pageX - el.offsetLeft;
+    scrollLeft.current = el.scrollLeft;
+    el.style.cursor = "grabbing";
+    el.style.userSelect = "none";
+  }, []);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current || !ref.current) return;
+    const x = e.pageX - ref.current.offsetLeft;
+    const walk = x - startX.current;
+    if (Math.abs(walk) > 3) hasMoved.current = true;
+    ref.current.scrollLeft = scrollLeft.current - walk;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    if (!ref.current) return;
+    isDragging.current = false;
+    ref.current.style.cursor = "";
+    ref.current.style.userSelect = "";
+  }, []);
+
+  const onClickCapture = useCallback((e: React.MouseEvent) => {
+    // If we dragged, prevent the click from firing on buttons
+    if (hasMoved.current) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, []);
+
+  return { ref, onMouseDown, onMouseMove, onMouseUp, onMouseLeave: onMouseUp, onClickCapture };
+}
+
+function EventFilter({
+  activeSport,
+  activeLeague,
+  onLeagueClick,
+  onClearLeague,
+}: {
+  activeSport: string | null;
+  activeLeague: string | null;
+  onLeagueClick: (sportSlug: string, leagueSlug: string) => void;
+  onClearLeague: () => void;
+}) {
   const { isLive, changeLive } = useLive();
   const [showFavourites, setShowFavourites] = useState(false);
   const [, startTransition] = useTransition();
+  const drag = useDragScroll();
+
+  // Fetch league data for the active sport
+  const { data: sports } = useSportsNavigation({ isLive });
+  const activeSportData = activeSport
+    ? sports?.find((s: any) => s.slug === activeSport)
+    : null;
+
+  // Flatten leagues for the active sport, sorted by game count
+  const leagues = activeSportData
+    ? activeSportData.countries
+        .flatMap((c: any) =>
+          c.leagues.map((l: any) => ({
+            key: `${c.slug}-${l.slug}`,
+            slug: l.slug,
+            name: l.name,
+            country: c.name,
+            count: isLive ? l.activeLiveGamesCount : l.activePrematchGamesCount,
+          }))
+        )
+        .filter((l: any) => l.count > 0)
+        .sort((a: any, b: any) => b.count - a.count)
+    : [];
 
   const switchMode = useCallback((live: boolean) => {
     startTransition(() => {
@@ -108,11 +251,20 @@ function EventFilter() {
   }, [changeLive]);
 
   return (
-    <div className="flex items-center gap-1.5 px-2 pt-3 pb-1">
+    <div
+      ref={drag.ref}
+      onMouseDown={drag.onMouseDown}
+      onMouseMove={drag.onMouseMove}
+      onMouseUp={drag.onMouseUp}
+      onMouseLeave={drag.onMouseLeave}
+      onClickCapture={drag.onClickCapture}
+      className="flex flex-nowrap items-center gap-1.5 px-2 pt-3 pb-1 overflow-x-auto cursor-grab"
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
       <button
         type="button"
         onClick={() => switchMode(false)}
-        className={`h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+        className={`shrink-0 h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
           !isLive && !showFavourites
             ? "bg-accent text-btn-primary-text"
             : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
@@ -126,7 +278,7 @@ function EventFilter() {
       <button
         type="button"
         onClick={() => switchMode(true)}
-        className={`h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+        className={`shrink-0 h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
           isLive && !showFavourites
             ? "bg-status-live text-white"
             : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
@@ -140,7 +292,7 @@ function EventFilter() {
       <button
         type="button"
         onClick={() => setShowFavourites(!showFavourites)}
-        className={`h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+        className={`shrink-0 h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
           showFavourites
             ? "bg-yellow-500/20 text-yellow-400"
             : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
@@ -151,6 +303,42 @@ function EventFilter() {
         </svg>
         Favourites
       </button>
+
+      {/* League pills — shown when a sport is selected */}
+      {activeSport && leagues.length > 0 && (
+        <>
+          <div className="shrink-0 w-px h-5 bg-border-subtle mx-1" />
+          <button
+            type="button"
+            onClick={onClearLeague}
+            className={`shrink-0 h-8 px-3 rounded-full text-[13px] font-medium transition-colors ${
+              !activeLeague
+                ? "bg-accent/15 text-accent"
+                : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
+            }`}
+          >
+            All
+          </button>
+          {leagues.map((league: any) => (
+            <button
+              key={league.key}
+              type="button"
+              onClick={() => onLeagueClick(activeSport, league.slug)}
+              className={`shrink-0 h-8 px-3 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                activeLeague === league.slug
+                  ? "bg-accent/15 text-accent"
+                  : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
+              }`}
+            >
+              <CountryFlag name={league.country} className="w-3.5 h-2.5 rounded-[1px] shrink-0" />
+              {league.name}
+              <span className={`text-[11px] tabular-nums ${activeLeague === league.slug ? "text-accent/60" : "text-text-muted"}`}>
+                {league.count}
+              </span>
+            </button>
+          ))}
+        </>
+      )}
     </div>
   );
 }
@@ -182,7 +370,17 @@ function BackToTop({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | nul
   );
 }
 
-function MainContent({ activeSport, activeLeague }: { activeSport: string | null; activeLeague: string | null }) {
+function MainContent({
+  activeSport,
+  activeLeague,
+  onLeagueClick,
+  onClearLeague,
+}: {
+  activeSport: string | null;
+  activeLeague: string | null;
+  onLeagueClick: (sportSlug: string, leagueSlug: string) => void;
+  onClearLeague: () => void;
+}) {
   const mainRef = useRef<HTMLElement>(null);
   return (
     <main ref={mainRef} className="flex-1 min-w-0 overflow-y-auto @container/main">
@@ -191,7 +389,12 @@ function MainContent({ activeSport, activeLeague }: { activeSport: string | null
       )}
 
       <div className="relative">
-        <EventFilter />
+        <EventFilter
+          activeSport={activeSport}
+          activeLeague={activeLeague}
+          onLeagueClick={onLeagueClick}
+          onClearLeague={onClearLeague}
+        />
 
         <div className="px-2">
           <LiveGameSections sportSlug={activeSport} leagueSlug={activeLeague} />
@@ -246,7 +449,12 @@ function MainContent({ activeSport, activeLeague }: { activeSport: string | null
           <span className="text-[15px] font-medium text-text-muted">Fair play</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-20 pt-1">
+        {/* Odds Format */}
+        <div className="mt-6 pt-6 border-t border-border-subtle">
+          <OddsFormatFooter />
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-20 pt-6">
           <span className="text-[15px] font-medium text-text-muted">&copy;2026 Waliet</span>
           <a href="mailto:help@waliet.com" className="text-[15px] font-medium text-text-muted hover:text-text-secondary">help@waliet.com</a>
         </div>
@@ -327,17 +535,13 @@ function MobileSportsDrawer({
   open,
   onClose,
   activeSport,
-  activeLeague,
   onSportClick,
-  onLeagueClick,
   sportIcons,
 }: {
   open: boolean;
   onClose: () => void;
   activeSport: string | null;
-  activeLeague: string | null;
   onSportClick: (slug: string | null) => void;
-  onLeagueClick: (sportSlug: string, leagueSlug: string) => void;
   sportIcons: SportIconMap;
 }) {
   const { isLive } = useLive();
@@ -403,50 +607,15 @@ function MobileSportsDrawer({
                       <button
                         onClick={() => onSportClick(sport.slug)}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 transition-colors cursor-pointer ${
-                          isActive && !activeLeague ? "bg-accent/10 text-accent" : "text-sidebar-text hover:bg-sidebar-hover"
+                          isActive ? "bg-accent/10 text-accent" : "text-sidebar-text hover:bg-sidebar-hover"
                         }`}
                       >
                         {Icon && <Icon className="size-5" />}
                         <span className="flex-1 text-[13px] font-medium text-left">{sport.name}</span>
-                        <span className="flex items-center gap-1.5">
-                          <span className={`font-inter text-[12px] ${isActive && !activeLeague ? "text-accent font-semibold" : "text-sidebar-text-muted"}`}>
-                            {gameCount}
-                          </span>
-                          <svg
-                            width="10" height="10" viewBox="0 0 10 10" fill="none"
-                            className={`text-sidebar-text-muted transition-transform duration-150 ${isActive ? "rotate-90" : ""}`}
-                          >
-                            <path d="M3.5 2L6.5 5L3.5 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
+                        <span className={`font-inter text-[12px] ${isActive ? "text-accent font-semibold" : "text-sidebar-text-muted"}`}>
+                          {gameCount}
                         </span>
                       </button>
-
-                      {/* League sub-items */}
-                      {isActive && sport.countries && (
-                        <div className="ml-4 pl-4 border-l border-sidebar-border">
-                          {sport.countries.map((country: any) =>
-                            country.leagues.map((league: any) => {
-                              const leagueCount = isLive ? league.activeLiveGamesCount : league.activePrematchGamesCount;
-                              if (leagueCount === 0) return null;
-                              const isLeagueActive = activeLeague === league.slug;
-                              return (
-                                <button
-                                  key={league.slug}
-                                  onClick={() => onLeagueClick(sport.slug, league.slug)}
-                                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md mb-0.5 text-left transition-colors cursor-pointer ${
-                                    isLeagueActive ? "bg-accent/10 text-accent" : "text-sidebar-text-muted hover:text-sidebar-text hover:bg-sidebar-hover"
-                                  }`}
-                                >
-                                  <span className="flex-1 text-[12px] font-medium truncate">{league.name}</span>
-                                  <span className={`font-inter text-[11px] ${isLeagueActive ? "text-accent" : "text-sidebar-text-muted"}`}>
-                                    {leagueCount}
-                                  </span>
-                                </button>
-                              );
-                            })
-                          )}
-                        </div>
-                      )}
                     </div>
                   );
                 })}
@@ -579,6 +748,7 @@ export default function Home() {
   const [betslipDrawerOpen, setBetslipDrawerOpen] = useState(false);
   const [mobileSportsOpen, setMobileSportsOpen] = useState(false);
   const gameModal = useGameModal();
+  useCaptureReferral();
 
   return (
     <GameModalProvider openGame={gameModal.open}>
@@ -591,9 +761,7 @@ export default function Home() {
             <div className="hidden lg:contents">
               <AppSidebar
                 activeSport={activeSport}
-                activeLeague={activeLeague}
                 onSportClick={(slug) => { setActiveSport(slug); setActiveLeague(null); setActivePage("sports"); }}
-                onLeagueClick={(sportSlug, leagueSlug) => { setActiveSport(sportSlug); setActiveLeague(leagueSlug); setActivePage("sports"); }}
                 sportIcons={sportIcons}
               />
             </div>
@@ -601,7 +769,12 @@ export default function Home() {
             {/* Mobile: show based on active tab */}
             <div className="contents lg:hidden">
               {(mobileTab === "sports" || mobileTab === "live") && (
-                <MainContent activeSport={activeSport} activeLeague={activeLeague} />
+                <MainContent
+                  activeSport={activeSport}
+                  activeLeague={activeLeague}
+                  onLeagueClick={(sportSlug, leagueSlug) => { setActiveSport(sportSlug); setActiveLeague(leagueSlug); }}
+                  onClearLeague={() => setActiveLeague(null)}
+                />
               )}
               {mobileTab === "social" && <SocialFeed />}
               {mobileTab === "bets" && (
@@ -611,7 +784,12 @@ export default function Home() {
 
             {/* Desktop: always show center + right */}
             <div className="hidden lg:contents">
-              {activePage === "leaderboard" ? <WaveLeaderboard /> : activePage === "social" ? <SocialFeed /> : <MainContent activeSport={activeSport} activeLeague={activeLeague} />}
+              {activePage === "leaderboard" ? <WaveLeaderboard /> : activePage === "social" ? <SocialFeed /> : <MainContent
+                  activeSport={activeSport}
+                  activeLeague={activeLeague}
+                  onLeagueClick={(sportSlug, leagueSlug) => { setActiveSport(sportSlug); setActiveLeague(leagueSlug); }}
+                  onClearLeague={() => setActiveLeague(null)}
+                />}
               <PlayBetslip />
             </div>
           </div>
@@ -630,9 +808,7 @@ export default function Home() {
           open={mobileSportsOpen}
           onClose={() => setMobileSportsOpen(false)}
           activeSport={activeSport}
-          activeLeague={activeLeague}
           onSportClick={(slug) => { setActiveSport(slug); setActiveLeague(null); setActivePage("sports"); setMobileSportsOpen(false); }}
-          onLeagueClick={(sportSlug, leagueSlug) => { setActiveSport(sportSlug); setActiveLeague(leagueSlug); setActivePage("sports"); setMobileSportsOpen(false); }}
           sportIcons={sportIcons}
         />
 
@@ -647,6 +823,7 @@ export default function Home() {
       {gameModal.isOpen && gameModal.gameId && (
         <GameModal gameId={gameModal.gameId} onClose={gameModal.close} />
       )}
+      <WelcomeModal />
       </SidebarProvider>
     </GameModalProvider>
   );

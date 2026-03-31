@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, createContext, useContext, useCallback } from "react";
+import { useState, createContext, useContext, useCallback, useRef, useEffect } from "react";
 import { useBaseBetslip, useDetailedBetslip, useChain } from "@azuro-org/sdk";
+import { useAccount } from "wagmi";
 import { getBetslipMeta } from "./betslip-meta";
 import { usePlayBalance, usePlacPlayBet, usePlayBets, PLAY_CURRENCY } from "./usePlayBalance";
 import { BetConfirmModal, type BetConfirmData } from "./BetConfirmModal";
@@ -9,6 +10,10 @@ import { Betslip } from "./Betslip";
 import { BetHistory } from "./BetHistory";
 import { BetSummaryCard } from "./BetSummaryCard";
 import { TeamLogo } from "./TeamLogo";
+import { useToast } from "./Toast";
+import { useOpenGame } from "./GameModal";
+import { BettingErrorBoundary } from "./ErrorBoundary";
+import { useOddsFormat } from "./OddsFormatContext";
 
 // ── Betslip collapse context ──────────────────────────────────
 const BetslipCollapseContext = createContext<{
@@ -72,6 +77,41 @@ function CollapsedBetslip() {
 }
 
 
+function PlayScrollMask({ children }: { children: React.ReactNode }) {
+  const [showTop, setShowTop] = useState(false);
+  const [showBottom, setShowBottom] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const update = useCallback(() => {
+    const el = containerRef.current?.querySelector("[data-scroll-inner]") as HTMLElement | null;
+    if (!el) return;
+    setShowTop(el.scrollTop > 4);
+    setShowBottom(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current?.querySelector("[data-scroll-inner]") as HTMLElement | null;
+    if (!el) return;
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", update); ro.disconnect(); };
+  }, [update]);
+
+  return (
+    <div ref={containerRef} className="relative">
+      {showTop && (
+        <div className="absolute top-0 left-0 right-0 h-8 z-10 pointer-events-none" style={{ background: "linear-gradient(to bottom, var(--bg-page), transparent)" }} />
+      )}
+      {children}
+      {showBottom && (
+        <div className="absolute bottom-0 left-0 right-0 h-8 z-10 pointer-events-none" style={{ background: "linear-gradient(to top, var(--bg-page), transparent)" }} />
+      )}
+    </div>
+  );
+}
+
 function PlayBetslipCard({
   item,
   odds,
@@ -82,10 +122,13 @@ function PlayBetslipCard({
   onRemove: () => void;
 }) {
   const meta = getBetslipMeta(item.conditionId, item.outcomeId);
+  const openGame = useOpenGame();
+  const { formatOdds } = useOddsFormat();
 
   return (
     <div
-      className="rounded-xl p-3 relative"
+      className="rounded-xl p-3 relative cursor-pointer"
+      onClick={() => openGame(item.gameId)}
       style={{
         background: "var(--bg-card)",
         boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.06), inset 0 -1px 0 0 rgba(0,0,0,0.15), inset 0 0 12px 0 rgba(255,255,255,0.02)",
@@ -93,7 +136,7 @@ function PlayBetslipCard({
     >
       {/* Remove button */}
       <button
-        onClick={onRemove}
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
         className="absolute top-2.5 right-2.5 text-text-muted hover:text-status-loss transition-colors cursor-pointer"
       >
         <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
@@ -134,9 +177,16 @@ function PlayBetslipCard({
             {meta?.marketName ?? "Market"}
           </span>
         </div>
-        <span className="text-[14px] font-bold text-accent tabular-nums shrink-0">
-          {odds?.toFixed(2) ?? "—"}
-        </span>
+        <div className="flex flex-col items-end shrink-0">
+          <span className="text-[14px] font-bold text-accent tabular-nums">
+            {formatOdds(odds)}
+          </span>
+          {odds && (
+            <span className="text-[10px] text-text-muted tabular-nums">
+              {((1 / odds) * 100).toFixed(0)}% chance
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -145,6 +195,7 @@ function PlayBetslipCard({
 function PlayBetHistory() {
   const bets = usePlayBets();
   const { currency } = usePlayBalance();
+  const { formatOdds } = useOddsFormat();
 
   if (bets.length === 0) {
     return (
@@ -202,7 +253,7 @@ function PlayBetHistory() {
                       </div>
                     </div>
                     <span className="text-[12px] font-semibold text-accent tabular-nums shrink-0">
-                      {leg.odds.toFixed(2)}
+                      {formatOdds(leg.odds)}
                     </span>
                   </div>
                 ))}
@@ -216,7 +267,7 @@ function PlayBetHistory() {
                     {bet.selectionName}
                   </span>
                   <span className="text-[13px] font-bold text-accent tabular-nums shrink-0 ml-2">
-                    {bet.odds.toFixed(2)}
+                    {formatOdds(bet.odds)}
                   </span>
                 </div>
               </div>
@@ -278,16 +329,35 @@ export function PlayBetslip({ isMobileDrawer }: { isMobileDrawer?: boolean } = {
 }
 
 function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
+  const { address } = useAccount();
+  const isWalletConnected = !!address;
   const { items, removeItem, clear } = useBaseBetslip();
   const { odds, totalOdds, isOddsFetching } = useDetailedBetslip();
   const { balance, currency, reset } = usePlayBalance();
   const placeBet = usePlacPlayBet();
+  const { toast } = useToast();
+  const { formatOdds } = useOddsFormat();
   const [amount, setAmount] = useState("10");
   const [tab, setTab] = useState<"betslip" | "history">("betslip");
   const [justBet, setJustBet] = useState(false);
   const [confirmData, setConfirmData] = useState<BetConfirmData | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [betMode, setBetMode] = useState<"combo" | "singles">("combo");
+  const [isPlacing, setIsPlacing] = useState(false);
+  const [clearConfirm, setClearConfirm] = useState(false);
+
+  // Reset confirm state when items change
+  useEffect(() => { setClearConfirm(false); }, [items.length]);
+
+  const handleClear = () => {
+    if (items.length <= 1 || clearConfirm) {
+      clear();
+      setClearConfirm(false);
+    } else {
+      setClearConfirm(true);
+      setTimeout(() => setClearConfirm(false), 3000);
+    }
+  };
 
   const canCombo = items.length > 1 && !items.some((i) => i.isExpressForbidden);
   const isCombo = items.length > 1 && betMode === "combo" && canCombo;
@@ -295,7 +365,7 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
   const isOverBalance = +amount > balance;
 
   const handlePlaceBet = () => {
-    if (!items.length || !+amount || isOverBalance) return;
+    if (!items.length || !+amount || isOverBalance || isPlacing) return;
 
     const selections = items.map((item) => {
       const meta = getBetslipMeta(item.conditionId, item.outcomeId);
@@ -319,6 +389,8 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
   };
 
   const executePlace = () => {
+    if (isPlacing) return;
+    setIsPlacing(true);
     setShowConfirm(false);
     setConfirmData(null);
 
@@ -363,8 +435,14 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
     }
 
     clear();
+    setIsPlacing(false);
     setJustBet(true);
     setTimeout(() => setJustBet(false), 2000);
+    toast(
+      isCombo ? `Combo bet placed!` : "Bet placed!",
+      "bet-placed",
+      `Stake: ${amount} ${currency} · Potential win: ${possibleWin} ${currency}`
+    );
   };
 
   return (
@@ -395,11 +473,15 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        <BettingErrorBoundary>
         {tab === "history" ? (
           <>
           <BetSummaryCard />
-          <PlayBetHistory />
+          {isWalletConnected ? <BetHistory /> : <PlayBetHistory />}
           </>
+        ) : isWalletConnected ? (
+          /* Real blockchain betslip when wallet connected */
+          <Betslip />
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">
             {justBet ? (
@@ -421,7 +503,23 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
                   </svg>
                 </div>
                 <p className="text-[13px] font-semibold text-text-secondary">No selections yet</p>
-                <p className="text-[12px] text-text-muted mt-1">Click on odds to add to your betslip</p>
+                <p className="text-[12px] text-text-muted mt-1 mb-4">Tap any odds button to get started</p>
+
+                {/* Quick guide */}
+                <div className="w-full flex flex-col gap-2 text-[11px]">
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-bg-surface">
+                    <span className="w-5 h-5 rounded-full bg-accent-muted flex items-center justify-center text-[10px] font-bold text-accent shrink-0">1</span>
+                    <span className="text-text-secondary">Browse events and tap odds to select</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-bg-surface">
+                    <span className="w-5 h-5 rounded-full bg-accent-muted flex items-center justify-center text-[10px] font-bold text-accent shrink-0">2</span>
+                    <span className="text-text-secondary">Add multiple picks for a combo bet</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-bg-surface">
+                    <span className="w-5 h-5 rounded-full bg-accent-muted flex items-center justify-center text-[10px] font-bold text-accent shrink-0">3</span>
+                    <span className="text-text-secondary">Set your stake and place your bet</span>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -458,25 +556,53 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
               ) : (
                 <span className="text-[13px] font-semibold text-text-primary">Single Bet</span>
               )}
-              <button onClick={clear} className="text-[11px] text-text-muted hover:text-status-loss transition-colors cursor-pointer">
-                Clear all
+              <button
+                onClick={handleClear}
+                className={`text-[11px] transition-colors cursor-pointer ${
+                  clearConfirm
+                    ? "text-red-400 hover:text-red-300 font-semibold"
+                    : "text-text-muted hover:text-status-loss"
+                }`}
+              >
+                {clearConfirm ? "Confirm clear?" : "Clear all"}
               </button>
             </div>
 
             {/* Selection cards */}
-            <div className="flex flex-col gap-2 px-3 max-h-[300px] overflow-y-auto">
-              {items.map((item) => {
-                const oddsKey = `${item.conditionId}-${item.outcomeId}`;
-                return (
-                  <PlayBetslipCard
-                    key={oddsKey}
-                    item={item}
-                    odds={odds?.[oddsKey]}
-                    onRemove={() => removeItem(item)}
-                  />
-                );
-              })}
-            </div>
+            <PlayScrollMask>
+              <div className="flex flex-col gap-2 px-3 max-h-[300px] overflow-y-auto" data-scroll-inner>
+                {items.map((item) => {
+                  const oddsKey = `${item.conditionId}-${item.outcomeId}`;
+                  return (
+                    <PlayBetslipCard
+                      key={oddsKey}
+                      item={item}
+                      odds={odds?.[oddsKey]}
+                      onRemove={() => removeItem(item)}
+                    />
+                  );
+                })}
+              </div>
+            </PlayScrollMask>
+
+            {/* Combo summary bar */}
+            {isCombo && totalOdds && (
+              <div className="mx-3 mt-2 p-2.5 rounded-lg bg-accent-muted border border-accent/10">
+                <div className="flex items-center justify-between text-[12px]">
+                  <span className="text-text-secondary font-medium">
+                    {items.length} legs combined
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-text-muted tabular-nums">
+                      {((1 / totalOdds) * 100).toFixed(1)}% prob
+                    </span>
+                    <span className="font-bold text-accent tabular-nums">
+                      {formatOdds(totalOdds)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Stake + place bet area */}
             <div className="px-3 pt-3 pb-4">
@@ -521,23 +647,49 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
               {/* Bet summary breakdown */}
               <div className="flex flex-col gap-1 mb-3 text-[12px]">
                 <div className="flex items-center justify-between">
-                  <span className="text-text-muted">Stake</span>
+                  <span className="text-text-muted">
+                    {!isCombo && items.length > 1 ? "Stake per bet" : "Stake"}
+                  </span>
                   <span className="text-text-secondary tabular-nums">{amount || "0"} {currency}</span>
                 </div>
+                {!isCombo && items.length > 1 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-muted">Total Stake</span>
+                    <span className="text-text-secondary tabular-nums">
+                      {(+amount * items.length).toFixed(2)} {currency}
+                    </span>
+                  </div>
+                )}
                 {isCombo && (
                   <div className="flex items-center justify-between">
                     <span className="text-text-muted">Total Odds</span>
                     <span className="font-semibold text-text-primary tabular-nums">
-                      {totalOdds?.toFixed(2) ?? "—"}
+                      {formatOdds(totalOdds)}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-text-muted">Potential Win</span>
+                  <span className="text-text-muted">
+                    {!isCombo && items.length > 1 ? "Max Potential Win" : "Potential Win"}
+                  </span>
                   <span className="font-semibold text-accent tabular-nums">
-                    {possibleWin} {currency}
+                    {!isCombo && items.length > 1
+                      ? items.reduce((sum, item) => {
+                          const key = `${item.conditionId}-${item.outcomeId}`;
+                          return sum + (odds?.[key] ?? 1) * +amount;
+                        }, 0).toFixed(2)
+                      : possibleWin
+                    } {currency}
                   </span>
                 </div>
+                {isCombo && totalOdds && +amount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-muted">Profit</span>
+                    <span className="font-semibold text-accent tabular-nums">
+                      +{(totalOdds * +amount - +amount).toFixed(2)} {currency}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Balance warning */}
@@ -554,14 +706,20 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
               {/* Place bet button */}
               <button
                 onClick={handlePlaceBet}
-                disabled={!items.length || !+amount || isOverBalance || isOddsFetching}
+                disabled={!items.length || !+amount || isOverBalance || isOddsFetching || isPlacing}
                 className="odds-glass odds-glass-active w-full h-11 rounded-lg font-semibold text-[14px] text-white cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.99]"
               >
-                Place Bet
+                {isCombo
+                  ? `Place Combo (${items.length})`
+                  : items.length > 1
+                    ? `Place ${items.length} Singles`
+                    : "Place Bet"
+                }
               </button>
             </div>
           </div>
         )}
+        </BettingErrorBoundary>
       </div>
       <BetConfirmModal
         open={showConfirm}

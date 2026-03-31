@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useWrapTokens, useNativeBalance, useBetTokenBalance, useChain } from "@azuro-org/sdk";
+import { useToast } from "./Toast";
 
 export function WrapTokenModal({
   open,
@@ -12,6 +13,7 @@ export function WrapTokenModal({
 }) {
   const [tab, setTab] = useState<"wrap" | "unwrap">("wrap");
   const [amount, setAmount] = useState("");
+  const { toast } = useToast();
 
   const { betToken } = useChain();
   const { data: nativeBalance } = useNativeBalance();
@@ -35,17 +37,39 @@ export function WrapTokenModal({
 
   const handleWrap = useCallback(() => {
     if (!amount || +amount <= 0) return;
+    const bal = nativeBalance?.balance ? Number(nativeBalance.balance) : 0;
+    if (+amount > bal) {
+      toast("Insufficient balance", "error", `You have ${bal.toFixed(4)} available`);
+      return;
+    }
     wrap(amount);
-  }, [amount, wrap]);
+  }, [amount, wrap, nativeBalance, toast]);
 
   const handleUnwrap = useCallback(() => {
     if (!amount || +amount <= 0) return;
+    const bal = betTokenBalance?.balance ? Number(betTokenBalance.balance) : 0;
+    if (+amount > bal) {
+      toast("Insufficient balance", "error", `You have ${bal.toFixed(4)} available`);
+      return;
+    }
     unwrap(amount);
-  }, [amount, unwrap]);
+  }, [amount, unwrap, betTokenBalance, toast]);
+
+  // Watch for tx errors
+  useEffect(() => {
+    if ((wrapTx as any).error) toast("Wrap failed", "error", (wrapTx as any).error instanceof Error ? (wrapTx as any).error.message : "Transaction reverted");
+  }, [(wrapTx as any).error, toast]);
+
+  useEffect(() => {
+    if ((unwrapTx as any).error) toast("Unwrap failed", "error", (unwrapTx as any).error instanceof Error ? (unwrapTx as any).error.message : "Transaction reverted");
+  }, [(unwrapTx as any).error, toast]);
 
   if (!open) return null;
 
   const isPending = tab === "wrap" ? wrapTx.isPending : unwrapTx.isPending;
+  const nativeBal_ = nativeBalance?.balance ? Number(nativeBalance.balance) : 0;
+  const tokenBal_ = betTokenBalance?.balance ? Number(betTokenBalance.balance) : 0;
+  const isOverBalance = tab === "wrap" ? (+amount > nativeBal_) : (+amount > tokenBal_);
 
   const nativeBal = nativeBalance?.balance
     ? Number(nativeBalance.balance).toFixed(4)
@@ -149,7 +173,7 @@ export function WrapTokenModal({
               {/* Wrap button */}
               <button
                 onClick={handleWrap}
-                disabled={isPending || !amount || +amount <= 0}
+                disabled={isPending || !amount || +amount <= 0 || isOverBalance}
                 className="w-full h-11 rounded-xl font-semibold text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-btn-primary-bg text-btn-primary-text hover:bg-accent-hover active:scale-[0.98]"
               >
                 {isPending ? (
@@ -212,7 +236,7 @@ export function WrapTokenModal({
               {/* Unwrap button */}
               <button
                 onClick={handleUnwrap}
-                disabled={isPending || !amount || +amount <= 0}
+                disabled={isPending || !amount || +amount <= 0 || isOverBalance}
                 className="w-full h-11 rounded-xl font-semibold text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-btn-primary-bg text-btn-primary-text hover:bg-accent-hover active:scale-[0.98]"
               >
                 {isPending ? (

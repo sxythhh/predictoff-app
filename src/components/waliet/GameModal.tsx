@@ -17,6 +17,7 @@ import { setBetslipMeta, clearBetslipMeta } from "./betslip-meta";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
 import { GameComments } from "@/components/social/GameComments";
+import { useOddsFormat } from "./OddsFormatContext";
 
 function resolveSelectionName(raw: string, game: GameData): string {
   const home = game.participants?.[0]?.name;
@@ -58,21 +59,40 @@ export function GameModalProvider({
 export function useGameModal() {
   const [gameId, setGameId] = useState<string | null>(null);
   const gameIdRef = useRef(gameId);
+  const prevUrlRef = useRef<string | null>(null);
   gameIdRef.current = gameId;
 
   const open = useCallback((id: string) => {
+    if (gameIdRef.current) {
+      // Already have a modal open — replace instead of push to avoid stacking
+      window.history.replaceState({ gameModal: id }, "", `/game/${id}`);
+    } else {
+      // First modal open — save the current URL and push
+      prevUrlRef.current = window.location.pathname + window.location.search;
+      window.history.pushState({ gameModal: id }, "", `/game/${id}`);
+    }
     setGameId(id);
-    window.history.pushState({ gameModal: id }, "", `/game/${id}`);
   }, []);
 
   const close = useCallback(() => {
+    if (gameIdRef.current) {
+      // Go back to the page that was open before the modal, using history.back()
+      // so the browser's back stack stays clean
+      window.history.back();
+    }
     setGameId(null);
-    window.history.replaceState(null, "", "/");
   }, []);
 
   useEffect(() => {
-    const onPopState = () => {
-      if (gameIdRef.current) setGameId(null);
+    const onPopState = (e: PopStateEvent) => {
+      // If we had a game modal open and user pressed back, close it
+      if (gameIdRef.current) {
+        setGameId(null);
+      }
+      // If the popped state has a gameModal, re-open it (forward navigation)
+      if (e.state?.gameModal) {
+        setGameId(e.state.gameModal);
+      }
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -94,6 +114,7 @@ function ModalOddsButton({
   marketName: string;
   sentimentPct?: number;
 }) {
+  const { formatOdds } = useOddsFormat();
   const { data: odds } = useSelectionOdds({
     selection: outcome,
     initialOdds: outcome.odds,
@@ -157,7 +178,7 @@ function ModalOddsButton({
         {sentimentPct != null && sentimentPct > 0 && (
           <span className="text-[10px] text-text-muted font-normal">{sentimentPct}%</span>
         )}
-        {odds?.toFixed(2) ?? "—"}
+        {formatOdds(odds)}
       </span>
     </button>
   );
@@ -193,7 +214,16 @@ function AllMarketsContent({ game }: { game: GameData }) {
   }
 
   if (!markets?.length) {
-    return <div className="text-center py-12 text-text-muted text-sm">No markets available</div>;
+    const isFinished = game.state === GameState.Finished || game.state === GameState.Canceled;
+    return (
+      <div className="text-center py-12 px-4">
+        <p className="text-text-muted text-sm">
+          {isFinished
+            ? "This game has ended — check resolved markets below"
+            : "No markets available for this game yet"}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -238,6 +268,7 @@ function AllMarketsContent({ game }: { game: GameData }) {
 /* ── Resolved Markets ── */
 
 function ResolvedMarketsContent({ game }: { game: GameData }) {
+  const { formatOdds } = useOddsFormat();
   const { data: markets, isFetching } = useResolvedMarkets({ gameId: game.gameId });
 
   if (isFetching) {
@@ -290,7 +321,7 @@ function ResolvedMarketsContent({ game }: { game: GameData }) {
                     >
                       <span className="text-[12px] font-medium">{outcome.selectionName}</span>
                       <span className="flex items-center gap-1.5">
-                        {outcome.odds?.toFixed(2) ?? "—"}
+                        {formatOdds(outcome.odds)}
                         {isWon ? (
                           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M13.3 4.5L6.5 11.3L2.7 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         ) : (

@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccount } from "wagmi";
 import Link from "next/link";
+import { ReferralCard } from "@/components/waliet/ReferralCard";
 
 function formatAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -198,11 +199,14 @@ function ProfileCard() {
   if (!isAuthenticated || !user) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
-        <div className="w-[99px] h-[99px] rounded-[22px] bg-bg-surface flex items-center justify-center">
-          <svg width="40" height="40" viewBox="0 0 20 20" fill="none" className="text-text-muted">
-            <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
-            <path d="M3 17.5C3 14.5 6 12.5 10 12.5C14 12.5 17 14.5 17 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
+        <div className="relative w-[99px] h-[99px]">
+          <div className="w-[99px] h-[99px] rounded-[22px] bg-bg-surface flex items-center justify-center">
+            <svg width="40" height="40" viewBox="0 0 20 20" fill="none" className="text-text-muted">
+              <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M3 17.5C3 14.5 6 12.5 10 12.5C14 12.5 17 14.5 17 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="absolute top-0 right-0 w-[1px] h-[99px] rounded-[22px] pointer-events-none" style={{ background: "#ED3440", filter: "blur(8.85px)", transform: "scaleX(-1)" }} />
         </div>
         <p className="text-text-muted text-sm">Connect wallet to view profile</p>
         <button
@@ -225,7 +229,7 @@ function ProfileCard() {
   return (
     <div className="flex items-start gap-5">
       {/* Avatar with glow */}
-      <div className="relative shrink-0">
+      <div className="relative shrink-0 w-[99px] h-[99px]">
         <div className="w-[99px] h-[99px] rounded-[22px] overflow-hidden bg-bg-surface">
           {user.avatar ? (
             <img src={user.avatar} alt={displayName} className="w-full h-full object-cover" />
@@ -238,10 +242,14 @@ function ProfileCard() {
             />
           )}
         </div>
-        {/* Red glow on left edge */}
+        {/* Red glow on right edge — Figma: 1px wide, blur 8.85px, #ED3440, flipped */}
         <div
-          className="absolute top-0 left-0 w-[1px] h-[99px] rounded-[22px]"
-          style={{ background: "#ed3440", filter: "blur(18px)" }}
+          className="absolute top-0 right-0 w-[1px] h-[99px] rounded-[22px] pointer-events-none"
+          style={{
+            background: "#ED3440",
+            filter: "blur(8.85px)",
+            transform: "scaleX(-1)",
+          }}
         />
       </div>
 
@@ -336,6 +344,7 @@ export default function ProfilePage() {
       <div className="max-w-[700px] mx-auto p-4 lg:p-8 flex flex-col gap-8">
         <ProfileCard />
         <StatsRow />
+        <ReferralCard />
         <RecentActivity />
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useAccount, useDisconnect } from "wagmi";
 import { useChain } from "@azuro-org/sdk";
 
 import { useTheme } from "@/components/ui/theme";
+import { useOddsFormat, type OddsFormat } from "./OddsFormatContext";
 
 interface SettingsDrawerProps {
   onClose: () => void;
@@ -228,7 +229,7 @@ function AccountSection() {
 }
 
 function PreferencesSection() {
-  const [oddsFormat, setOddsFormat] = useState("decimal");
+  const { format: oddsFormat, setFormat: setOddsFormat } = useOddsFormat();
   const { preference, setPreference } = useTheme();
 
   const themeOptions = [
@@ -284,12 +285,12 @@ function PreferencesSection() {
         {/* Odds Format */}
         <div className="flex flex-col gap-1.5">
           <span className="text-[12px] font-medium text-text-muted">Odds Format</span>
-          <div className="flex gap-2">
-            {["decimal", "fractional", "american"].map((fmt) => (
+          <div className="flex flex-wrap gap-2">
+            {(["European", "American", "Fractional", "Hong Kong", "Indonesian", "Malaysian"] as OddsFormat[]).map((fmt) => (
               <button
                 key={fmt}
                 onClick={() => setOddsFormat(fmt)}
-                className={`flex-1 h-9 rounded-lg text-[13px] font-medium capitalize transition-colors ${
+                className={`h-9 px-3 rounded-lg text-[13px] font-medium transition-colors ${
                   oddsFormat === fmt
                     ? "bg-accent-muted text-accent ring-1 ring-accent"
                     : "bg-border-subtle text-text-secondary hover:bg-bg-input"

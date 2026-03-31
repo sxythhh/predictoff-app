@@ -8,18 +8,27 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  walletAddress String    @unique
-  displayName   String?
-  avatar        String?
-  bio           String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  walletAddress     String    @unique
+  displayName       String?
+  avatar            String?
+  bio               String?
+  email             String?   @unique
+  authProvider      String    @default("wallet")
+  oauthId           String?
+  embeddedWalletKey String?
+  referralCode      String?   @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   comments      Comment[]
   commentLikes  CommentLike[]
   favorites     Favorite[]
   sessions      Session[]
+  referralsMade Referral[] @relation("referrer")
+  referredBy    Referral?  @relation("referred")
+
+  @@unique([authProvider, oauthId])
 }
 
 model Session {
@@ -67,4 +76,18 @@ model Favorite {
 
   @@unique([userId, gameId])
   @@index([userId])
+}
+
+model Referral {
+  id            String   @id @default(cuid())
+  referrerId    String
+  referredId    String   @unique
+  referralCode  String
+  createdAt     DateTime @default(now())
+
+  referrer User @relation("referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User @relation("referred", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@index([referralCode])
 }

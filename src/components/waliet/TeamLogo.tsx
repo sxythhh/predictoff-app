@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useCallback, type ReactNode } from "react";
+import { CountryFlag, getCountryCode } from "@/components/sidebar/app-sidebar";
 
 /**
  * Team logo with automatic fallback chain:
  * 1. Direct URL from Azuro
  * 2. Proxy via /api/image-proxy (bypasses CORS/CDN issues)
- * 3. Custom fallback (sport icon) or initials
+ * 3. Country flag (for national teams / international games)
+ * 4. Custom fallback (sport icon) or initials
  */
 export function TeamLogo({
   src,
@@ -19,8 +21,10 @@ export function TeamLogo({
   className?: string;
   fallback?: ReactNode;
 }) {
+  const isCountry = !!getCountryCode(name);
+
   const [state, setState] = useState<"direct" | "proxy" | "fallback">(
-    src ? "direct" : "fallback"
+    src && !isCountry ? "direct" : "fallback"
   );
 
   const onError = useCallback(() => {
@@ -30,7 +34,9 @@ export function TeamLogo({
     });
   }, []);
 
-  if (state === "fallback" || !src) {
+  if (state === "fallback" || !src || isCountry) {
+    // National teams get circle-flags
+    if (isCountry) return <CountryFlag name={name} className={className} />;
     return <>{fallback ?? <span className="text-[10px] font-bold text-text-muted">{name.slice(0, 2)}</span>}</>;
   }
 

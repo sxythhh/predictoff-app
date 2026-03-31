@@ -15,6 +15,7 @@ import { setBetslipMeta, clearBetslipMeta } from "@/components/waliet/betslip-me
 import { useLiveScore, LiveStats } from "@/components/waliet/LiveStats";
 import { MatchTracker } from "@/components/waliet/MatchTracker";
 import { MatchInfo } from "@/components/waliet/MatchInfo";
+import { useOddsFormat } from "@/components/waliet/OddsFormatContext";
 
 function resolveSelectionName(raw: string, game: GameData): string {
   const home = game.participants?.[0]?.name;
@@ -37,6 +38,7 @@ function OddsButton({
   game: GameData;
   marketName: string;
 }) {
+  const { formatOdds } = useOddsFormat();
   const { data: odds } = useSelectionOdds({
     selection: outcome,
     initialOdds: outcome.odds,
@@ -86,7 +88,7 @@ function OddsButton({
       <span className={`text-[12px] font-medium ${isActive ? "text-white/70" : "text-text-secondary"}`}>
         {outcome.selectionName}
       </span>
-      <span className={isActive ? "text-white" : ""}>{odds?.toFixed(2) ?? "—"}</span>
+      <span className={isActive ? "text-white" : ""}>{formatOdds(odds)}</span>
     </button>
   );
 }

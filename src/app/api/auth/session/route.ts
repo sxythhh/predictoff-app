@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       displayName: user.displayName,
       avatar: user.avatar,
       bio: user.bio,
+      authProvider: user.authProvider,
     },
   });
 }

@@ -16,6 +16,7 @@ import { useTheme } from "@/components/ui/theme";
 import { useLiveScore } from "./LiveStats";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
+import { useOddsFormat } from "./OddsFormatContext";
 
 function resolveSelectionName(raw: string, game: GameData): string {
   const home = game.participants?.[0]?.name;
@@ -40,6 +41,7 @@ function OddsBtn({
   game: GameData;
   marketName: string;
 }) {
+  const { formatOdds } = useOddsFormat();
   const { data: odds } = useSelectionOdds({
     selection: outcome,
     initialOdds: outcome.odds,
@@ -92,7 +94,7 @@ function OddsBtn({
         {outcome.selectionName}
       </span>
       <span className={`text-sm font-semibold ${isActive ? "text-white" : "text-text-primary"}`}>
-        {odds?.toFixed(2) ?? "---"}
+        {formatOdds(odds)}
       </span>
     </button>
   );
@@ -280,6 +282,66 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
   );
 });
 
+/* ── Scroll Nav Buttons ── */
+
+function ScrollNavButtons({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement | null> }) {
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+  }, [scrollRef]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    updateScrollState();
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    return () => el.removeEventListener("scroll", updateScrollState);
+  }, [scrollRef, updateScrollState]);
+
+  const scroll = useCallback((direction: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cardWidth = 292; // 280px card + 12px gap
+    el.scrollBy({ left: direction === "left" ? -cardWidth : cardWidth, behavior: "smooth" });
+  }, [scrollRef]);
+
+  return (
+    <div className="flex items-center gap-1 pl-1">
+      <button
+        onClick={() => scroll("left")}
+        disabled={!canScrollLeft}
+        className={`w-[26px] h-[26px] rounded-lg border flex items-center justify-center transition-colors ${
+          canScrollLeft
+            ? "border-border-primary text-text-secondary hover:bg-bg-hover cursor-pointer"
+            : "border-border-subtle text-text-muted/40 cursor-default"
+        }`}
+      >
+        <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+          <path d="M5.75625 9.75559C6.08125 9.43059 6.08125 8.90559 5.75625 8.58059L2.52375 5.34684L5.75625 2.11309C5.8334 2.03594 5.8946 1.94435 5.93636 1.84354C5.97811 1.74274 5.9996 1.6347 5.9996 1.52559C5.9996 1.41648 5.97811 1.30844 5.93636 1.20764C5.8946 1.10684 5.8334 1.01524 5.75625 0.938094C5.6791 0.860942 5.58751 0.799743 5.4867 0.757989C5.3859 0.716235 5.27786 0.694744 5.16875 0.694744C5.05964 0.694744 4.9516 0.716235 4.8508 0.757989C4.74999 0.799743 4.6584 0.860942 4.58125 0.938094L0.75625 4.76309C0.43125 5.08809 0.43125 5.61309 0.75625 5.93809L4.58125 9.76309C4.7389 9.9163 4.95046 10.0014 5.17029 10C5.39011 9.99858 5.60057 9.9108 5.75625 9.75559Z" fill="currentColor"/>
+        </svg>
+      </button>
+      <button
+        onClick={() => scroll("right")}
+        disabled={!canScrollRight}
+        className={`w-[26px] h-[26px] rounded-lg border flex items-center justify-center transition-colors ${
+          canScrollRight
+            ? "border-border-primary text-text-secondary hover:bg-bg-hover cursor-pointer"
+            : "border-border-subtle text-text-muted/40 cursor-default"
+        }`}
+      >
+        <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+          <path d="M0.24375 0.244407C-0.08125 0.569407 -0.08125 1.09441 0.24375 1.41941L3.47625 4.65316L0.24375 7.88691C0.166598 7.96406 0.105399 8.05565 0.0636444 8.15646C0.0218903 8.25726 0.000399724 8.3653 0.000399724 8.47441C0.000399723 8.58352 0.0218903 8.69156 0.0636444 8.79236C0.105399 8.89316 0.166598 8.98476 0.24375 9.06191C0.320902 9.13906 0.412494 9.20026 0.513298 9.24201C0.614101 9.28377 0.722142 9.30526 0.83125 9.30526C0.940359 9.30526 1.0484 9.28377 1.1492 9.24201C1.25001 9.20026 1.3416 9.13906 1.41875 9.06191L5.24375 5.23691C5.56875 4.91191 5.56875 4.38691 5.24375 4.06191L1.41875 0.236907C1.2611 0.083698 1.04954 -0.00138606 0.829714 1.7083e-05C0.609888 0.00142023 0.399427 0.0891981 0.24375 0.244407Z" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 /* ── Main Component ── */
 
 export function LiveTopEvents() {
@@ -420,6 +482,9 @@ export function LiveTopEvents() {
     <div className={`mt-4 relative transition-opacity duration-200 ${isFetching ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
       <div className="flex items-center justify-between mb-3 px-2">
         <h2 className="text-lg font-semibold">Top Events</h2>
+        <div className="hidden lg:block">
+          <ScrollNavButtons scrollRef={scrollRef} />
+        </div>
       </div>
 
       {/* Drag-to-scroll container */}
