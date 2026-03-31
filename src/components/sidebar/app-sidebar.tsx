@@ -655,11 +655,18 @@ export function AppSidebar({
                   <ProximityNavItem
                     index={0}
                     active={false}
+                    onClick={() => { window.location.href = "/tournaments"; }}
+                    icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2H12V6C12 8.21 10.21 10 8 10C5.79 10 4 8.21 4 6V2Z" stroke="currentColor" strokeWidth="1.2"/><path d="M6 12H10M8 10V12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
+                    label="Tournaments"
+                  />
+                  <ProximityNavItem
+                    index={1}
+                    active={false}
                     icon={null}
                     label="Responsible Gambling"
                   />
                   <ProximityNavItem
-                    index={1}
+                    index={2}
                     active={false}
                     icon={null}
                     label="Terms & Conditions"

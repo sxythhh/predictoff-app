@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccount } from "wagmi";
+import { useBetsSummary, useChain } from "@azuro-org/sdk";
 import Link from "next/link";
 import { ReferralCard } from "@/components/waliet/ReferralCard";
+import { ActivityFeed } from "@/components/social/ActivityFeed";
 
 function formatAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -190,11 +192,108 @@ function EditProfileForm({ user, onClose }: { user: { displayName: string | null
   );
 }
 
+/* ── Privacy Settings ── */
+function PrivacySettings({ onClose }: { onClose: () => void }) {
+  const { refreshUser } = useAuth();
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [showStats, setShowStats] = useState(true);
+  const [showBets, setShowBets] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/profile").then((r) => r.json()).then((data) => {
+      setVisibility(data.profileVisibility ?? "public");
+      setShowStats(data.showStats ?? true);
+      setShowBets(data.showBetHistory ?? true);
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profileVisibility: visibility, showStats, showBetHistory: showBets }),
+    });
+    await refreshUser();
+    setSaving(false);
+    onClose();
+  };
+
+  if (!loaded) return <div className="p-5 text-center text-text-muted text-sm">Loading...</div>;
+
+  return (
+    <div className="bg-bg-card rounded-xl border border-border-subtle p-5 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-[16px] font-semibold text-text-primary">Privacy Settings</h3>
+        <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors cursor-pointer">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {/* Profile visibility */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-[13px] font-medium text-text-primary">Public Profile</div>
+            <div className="text-[11px] text-text-muted">Others can view your profile</div>
+          </div>
+          <button
+            onClick={() => setVisibility(visibility === "public" ? "private" : "public")}
+            className={`w-10 h-6 rounded-full transition-colors ${visibility === "public" ? "bg-accent" : "bg-border-subtle"}`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-white transition-transform mx-1 ${visibility === "public" ? "translate-x-4" : ""}`} />
+          </button>
+        </div>
+
+        {/* Show stats */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-[13px] font-medium text-text-primary">Show Betting Stats</div>
+            <div className="text-[11px] text-text-muted">Win rate, profit, total bets</div>
+          </div>
+          <button
+            onClick={() => setShowStats(!showStats)}
+            className={`w-10 h-6 rounded-full transition-colors ${showStats ? "bg-accent" : "bg-border-subtle"}`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-white transition-transform mx-1 ${showStats ? "translate-x-4" : ""}`} />
+          </button>
+        </div>
+
+        {/* Show bet history */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-[13px] font-medium text-text-primary">Show Bet History</div>
+            <div className="text-[11px] text-text-muted">Recent bets visible on profile</div>
+          </div>
+          <button
+            onClick={() => setShowBets(!showBets)}
+            className={`w-10 h-6 rounded-full transition-colors ${showBets ? "bg-accent" : "bg-border-subtle"}`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-white transition-transform mx-1 ${showBets ? "translate-x-4" : ""}`} />
+          </button>
+        </div>
+      </div>
+
+      <button
+        onClick={save}
+        disabled={saving}
+        className="odds-glass odds-glass-active h-9 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 active:scale-[0.99]"
+      >
+        {saving ? "Saving..." : "Save"}
+      </button>
+    </div>
+  );
+}
+
 /* ── Profile Card (1:1 from Figma) ── */
 function ProfileCard() {
   const { user, isAuthenticated, signIn } = useAuth();
   const { address } = useAccount();
   const [editing, setEditing] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   if (!isAuthenticated || !user) {
     return (
@@ -221,6 +320,10 @@ function ProfileCard() {
 
   if (editing) {
     return <EditProfileForm user={user} onClose={() => setEditing(false)} />;
+  }
+
+  if (showPrivacy) {
+    return <PrivacySettings onClose={() => setShowPrivacy(false)} />;
   }
 
   const displayName = user.displayName ?? formatAddress(user.walletAddress);
@@ -282,7 +385,7 @@ function ProfileCard() {
             </svg>
             Edit Profile
           </ActionButton>
-          <ActionButton>
+          <ActionButton onClick={() => setShowPrivacy(true)}>
             Settings
           </ActionButton>
         </div>
@@ -294,18 +397,36 @@ function ProfileCard() {
 /* ── Stats Row ── */
 function StatsRow() {
   const { user } = useAuth();
+  const { address } = useAccount();
+  const { betToken } = useChain();
+  const { data: betStats } = useBetsSummary({ account: address ?? "0x" });
+  const [favCount, setFavCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/favorites").then((r) => r.ok ? r.json() : []).then((data) => {
+      setFavCount(Array.isArray(data) ? data.length : 0);
+    }).catch(() => {});
+  }, []);
+
   if (!user) return null;
+
+  const betsCount = betStats?.betsCount ?? 0;
+  const winRate = betsCount > 0 ? Math.round(((betStats?.wonBetsCount ?? 0) / betsCount) * 100) : 0;
+  const profit = Number(betStats?.totalProfit ?? 0);
+  const profitColor = profit > 0 ? "text-green-400" : profit < 0 ? "text-red-400" : "text-text-primary";
+
+  const stats = [
+    { label: "Total Bets", value: String(betsCount) },
+    { label: "Win Rate", value: `${winRate}%` },
+    { label: "Profit/Loss", value: `${profit >= 0 ? "+" : ""}${profit.toFixed(2)} ${betToken?.symbol ?? ""}`, color: profitColor },
+    { label: "Favorites", value: String(favCount) },
+  ];
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {[
-        { label: "Total Bets", value: "0" },
-        { label: "Win Rate", value: "0%" },
-        { label: "Profit/Loss", value: "$0.00" },
-        { label: "Favorites", value: "0" },
-      ].map((stat) => (
+      {stats.map((stat) => (
         <div key={stat.label} className="bg-bg-card rounded-xl border border-border-subtle p-4 text-center">
-          <div className="text-[18px] font-bold text-text-primary font-inter">{stat.value}</div>
+          <div className={`text-[18px] font-bold font-inter ${"color" in stat ? stat.color : "text-text-primary"}`}>{stat.value}</div>
           <div className="text-[12px] text-text-muted mt-1">{stat.label}</div>
         </div>
       ))}
@@ -313,15 +434,56 @@ function StatsRow() {
   );
 }
 
+/* ── Tournament Stats ── */
+function TournamentStats() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState({ joined: 0, won: 0, prizeTotal: 0 });
+
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/tournaments/my")
+      .then((r) => r.ok ? r.json() : { created: [], joined: [] })
+      .then((data) => {
+        const joined = data.joined?.length ?? 0;
+        const won = data.joined?.filter((e: any) => e.rank === 1).length ?? 0;
+        const prizeTotal = data.joined?.reduce((sum: number, e: any) => sum + (e.prizeAmount ?? 0), 0) ?? 0;
+        setStats({ joined, won, prizeTotal });
+      })
+      .catch(() => {});
+  }, [user]);
+
+  if (!user || stats.joined === 0) return null;
+
+  return (
+    <div>
+      <h3 className="text-[14px] font-semibold text-text-primary mb-3">Tournaments</h3>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-bg-card rounded-xl border border-border-subtle p-4 text-center">
+          <div className="text-[18px] font-bold text-text-primary font-inter">{stats.joined}</div>
+          <div className="text-[12px] text-text-muted mt-1">Joined</div>
+        </div>
+        <div className="bg-bg-card rounded-xl border border-border-subtle p-4 text-center">
+          <div className="text-[18px] font-bold text-yellow-400 font-inter">{stats.won}</div>
+          <div className="text-[12px] text-text-muted mt-1">Won</div>
+        </div>
+        <div className="bg-bg-card rounded-xl border border-border-subtle p-4 text-center">
+          <div className="text-[18px] font-bold text-accent font-inter">{stats.prizeTotal > 0 ? stats.prizeTotal.toFixed(2) : "—"}</div>
+          <div className="text-[12px] text-text-muted mt-1">Prize Earnings</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Recent Activity ── */
 function RecentActivity() {
+  const { user } = useAuth();
+  if (!user) return null;
+
   return (
     <div>
       <h3 className="text-[14px] font-semibold text-text-primary mb-3">Recent Activity</h3>
-      <div className="bg-bg-card rounded-xl border border-border-subtle p-8 text-center">
-        <p className="text-text-muted text-[13px]">No recent activity</p>
-        <p className="text-text-muted text-[11px] mt-1">Your bets and comments will appear here</p>
-      </div>
+      <ActivityFeed userId={user.id} />
     </div>
   );
 }
@@ -344,6 +506,7 @@ export default function ProfilePage() {
       <div className="max-w-[700px] mx-auto p-4 lg:p-8 flex flex-col gap-8">
         <ProfileCard />
         <StatsRow />
+        <TournamentStats />
         <ReferralCard />
         <RecentActivity />
       </div>

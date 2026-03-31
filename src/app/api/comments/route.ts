@@ -65,6 +65,15 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  // Record activity (fire-and-forget)
+  prisma.activity.create({
+    data: {
+      userId: user.id,
+      type: "comment",
+      metadata: { gameId, commentId: comment.id },
+    },
+  }).catch(() => {});
+
   return Response.json({
     id: comment.id,
     gameId: comment.gameId,

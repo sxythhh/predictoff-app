@@ -45,7 +45,7 @@ function SearchIcon() {
 const HEADER_TABS = [
   { id: "sports", label: "Events" },
   { id: "community", label: "Community" },
-  { id: "leaderboard", label: "Leaderboard" },
+  { id: "tournaments", label: "Tournaments" },
   { id: "updates", label: "Updates" },
 ] as const;
 
@@ -333,12 +333,14 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
 
-  const headerTab = activePage === "social" ? "community" : activePage === "leaderboard" ? "leaderboard" : "sports";
+  const headerTab = activePage === "social" ? "community" : "sports";
   const handleTabChange = useCallback((tab: string) => {
     if (tab === "community") {
       onPageChange?.("social");
-    } else if (tab === "leaderboard") {
-      onPageChange?.("leaderboard");
+    } else if (tab === "tournaments") {
+      // Navigate to tournaments page
+      window.location.href = "/tournaments";
+      return;
     } else {
       onPageChange?.("sports");
     }

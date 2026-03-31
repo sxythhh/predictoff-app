@@ -238,6 +238,21 @@ export function Betslip() {
         "bet-placed",
         `Stake: ${betAmount} ${betToken?.symbol ?? ""} · Potential win: ${win} ${betToken?.symbol ?? ""}`
       );
+      // Record activity
+      const meta = items[0] ? getBetslipMeta(items[0].conditionId, items[0].outcomeId) : null;
+      fetch("/api/activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "bet_placed",
+          metadata: {
+            gameTitle: isCombo ? `Combo (${items.length} legs)` : (meta?.gameTitle ?? "Unknown game"),
+            odds: isCombo ? totalOdds : (Object.values(odds ?? {})[0] ?? null),
+            amount: betAmount,
+            selections: items.length,
+          },
+        }),
+      }).catch(() => {});
       clear();
     },
     onError: (err) => {

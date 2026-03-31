@@ -16,6 +16,9 @@ export async function GET(request: NextRequest) {
     displayName: user.displayName,
     avatar: user.avatar,
     bio: user.bio,
+    profileVisibility: user.profileVisibility,
+    showBetHistory: user.showBetHistory,
+    showStats: user.showStats,
     createdAt: user.createdAt.toISOString(),
   });
 }
@@ -39,6 +42,15 @@ export async function PATCH(request: NextRequest) {
   }
   if (typeof body.avatar === "string") {
     updates.avatar = body.avatar.trim().slice(0, 500);
+  }
+  if (typeof body.profileVisibility === "string" && ["public", "private"].includes(body.profileVisibility)) {
+    updates.profileVisibility = body.profileVisibility;
+  }
+  if (typeof body.showBetHistory === "boolean") {
+    updates.showBetHistory = body.showBetHistory;
+  }
+  if (typeof body.showStats === "boolean") {
+    updates.showStats = body.showStats;
   }
 
   const updated = await prisma.user.update({

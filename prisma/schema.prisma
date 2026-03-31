@@ -18,15 +18,22 @@ model User {
   oauthId           String?
   embeddedWalletKey String?
   referralCode      String?   @unique
+  // Privacy
+  profileVisibility String    @default("public") // "public" | "private"
+  showBetHistory    Boolean   @default(true)
+  showStats         Boolean   @default(true)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  comments      Comment[]
-  commentLikes  CommentLike[]
-  favorites     Favorite[]
-  sessions      Session[]
-  referralsMade Referral[] @relation("referrer")
-  referredBy    Referral?  @relation("referred")
+  comments           Comment[]
+  commentLikes       CommentLike[]
+  favorites          Favorite[]
+  sessions           Session[]
+  activities         Activity[]
+  referralsMade      Referral[] @relation("referrer")
+  referredBy         Referral?  @relation("referred")
+  createdTournaments Tournament[]      @relation("createdTournaments")
+  tournamentEntries  TournamentEntry[] @relation("tournamentEntries")
 
   @@unique([authProvider, oauthId])
 }
@@ -90,4 +97,153 @@ model Referral {
 
   @@index([referrerId])
   @@index([referralCode])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "bet_placed" | "bet_won" | "bet_lost" | "comment" | "follow"
+  metadata  Json
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+// ── Tournament System ──────────────────────────────────────────
+
+model Tournament {
+  id                String   @id @default(cuid())
+  creatorId         String
+  title             String
+  description       String?
+  format            String   // "profit" | "pickem"
+  entryType         String   // "free" | "paid"
+  entryFee          Float?
+  currency          String?
+  prizePool         Float    @default(0)
+  prizeStructure    Json?    // { "1": 50, "2": 30, "3": 20 } percentages
+  maxParticipants   Int?
+  minParticipants   Int      @default(2)
+  scoringMethod     String   @default("profit") // "profit" | "roi" | "points"
+  scope             String   @default("open")   // "open" | "curated"
+  allowedGameIds    Json?    // string[] of Azuro gameIds
+  allowedSports     Json?    // string[] of sport slugs
+  registrationStart Int      // unix seconds
+  registrationEnd   Int
+  startsAt          Int
+  endsAt            Int
+  status            String   @default("draft") // "draft"|"open"|"active"|"scoring"|"completed"|"cancelled"
+  visibility        String   @default("public") // "public" | "unlisted" | "private"
+  inviteCode        String?  @unique
+  flagged           Boolean  @default(false)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  creator      User              @relation("createdTournaments", fields: [creatorId], references: [id], onDelete: Cascade)
+  entries      TournamentEntry[]
+  games        TournamentGame[]
+  picks        TournamentPick[]
+  betSnapshots TournamentBetSnapshot[]
+
+  @@index([creatorId])
+  @@index([status, startsAt])
+  @@index([format, status])
+  @@index([inviteCode])
+}
+
+model TournamentEntry {
+  id            String  @id @default(cuid())
+  tournamentId  String
+  userId        String
+  walletAddress String  // cached for subgraph queries
+  score         Float   @default(0)
+  rank          Int?
+  totalStaked   Float   @default(0)
+  totalPayout   Float   @default(0)
+  correctPicks  Int     @default(0)
+  totalPicks    Int     @default(0)
+  entryTxHash   String?
+  entryPaid     Boolean @default(false)
+  prizeAmount   Float?
+  prizeTxHash   String?
+  prizePaid     Boolean @default(false)
+  joinedAt      DateTime @default(now())
+
+  tournament   Tournament             @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         User                   @relation("tournamentEntries", fields: [userId], references: [id], onDelete: Cascade)
+  picks        TournamentPick[]
+  betSnapshots TournamentBetSnapshot[]
+
+  @@unique([tournamentId, userId])
+  @@index([tournamentId, score])
+  @@index([userId])
+}
+
+model TournamentGame {
+  id           String  @id @default(cuid())
+  tournamentId String
+  gameId       String  // Azuro gameId
+  sportName    String?
+  leagueName   String?
+  gameTitle    String? // cached: "Team A vs Team B"
+  startsAt     Int     // unix seconds
+  resolved     Boolean @default(false)
+  metadata     Json?   // cached game info
+
+  tournament Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  picks      TournamentPick[]
+
+  @@unique([tournamentId, gameId])
+  @@index([tournamentId])
+}
+
+model TournamentPick {
+  id               String  @id @default(cuid())
+  entryId          String
+  tournamentId     String
+  tournamentGameId String
+  conditionId      String
+  outcomeId        String
+  marketName       String?
+  selectionName    String?
+  isCorrect        Boolean? // null = pending
+  pointsAwarded    Float    @default(0)
+  createdAt        DateTime @default(now())
+
+  entry          TournamentEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tournament     Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentGame TournamentGame  @relation(fields: [tournamentGameId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, tournamentGameId, conditionId])
+  @@index([tournamentId])
+  @@index([entryId])
+}
+
+model TournamentBetSnapshot {
+  id           String   @id @default(cuid())
+  entryId      String
+  tournamentId String
+  tokenId      String   // Azuro bet tokenId
+  gameId       String   // Azuro gameId
+  amount       Float
+  possibleWin  Float
+  odds         Float
+  isWin        Boolean?
+  isLose       Boolean?
+  payout       Float?
+  betCreatedAt Int      // unix seconds
+  resolvedAt   Int?     // unix seconds
+  outcomes     Json     // cached outcome details
+  snapshotAt   DateTime @default(now())
+
+  entry      TournamentEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tournament Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, tokenId])
+  @@index([tournamentId])
+  @@index([entryId])
 }
