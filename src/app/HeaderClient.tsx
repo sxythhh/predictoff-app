@@ -152,7 +152,7 @@ function SearchButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 w-[276px] h-[35px] rounded-[10px] px-[10px] pr-[6px] bg-bg-card hover:bg-bg-hover transition-colors cursor-pointer"
+      className="flex items-center gap-2 w-[340px] h-[35px] rounded-[10px] px-[10px] pr-[6px] bg-bg-card hover:bg-bg-hover transition-colors cursor-pointer"
     >
       <div className="flex items-center justify-center w-[18px] h-[18px] shrink-0">
         <SearchIcon />
@@ -385,8 +385,8 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
             </div>
           </div>
 
-          {/* Center: search (fills remaining space, content centered) */}
-          <div className="hidden lg:flex flex-1 justify-center">
+          {/* Center: search (fills remaining space, nudged left) */}
+          <div className="hidden lg:flex flex-1 justify-center -ml-12">
             <SearchButton onClick={() => setSearchOpen(true)} />
           </div>
 
