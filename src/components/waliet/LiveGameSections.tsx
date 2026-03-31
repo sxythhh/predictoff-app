@@ -3,7 +3,7 @@
 import { useMemo, useRef } from "react";
 import { useSports, useLive } from "@azuro-org/sdk";
 import { GameOrderBy, OrderDirection, GameState, type GameData } from "@azuro-org/toolkit";
-import { GameCard } from "./GameCard";
+import { LazyGameCard } from "./LazyGameCard";
 
 const ACTIVE_STATES = new Set([GameState.Prematch, GameState.Live]);
 
@@ -77,7 +77,7 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 @[700px]/main:grid-cols-3 gap-2">
                       {activeGames.map((game: GameData) => (
-                        <GameCard
+                        <LazyGameCard
                           key={game.gameId}
                           game={game}
                           leagueUrl={leagueUrl}

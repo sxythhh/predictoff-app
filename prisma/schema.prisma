@@ -22,6 +22,14 @@ model User {
   profileVisibility String    @default("public") // "public" | "private"
   showBetHistory    Boolean   @default(true)
   showStats         Boolean   @default(true)
+  // Tipster
+  whopUserId        String?
+  whopBusinessId    String?
+  whopProductId     String?
+  whopPlanId        String?
+  isTipster         Boolean   @default(false)
+  tipsterBio        String?
+  subscriptionPrice Float?    // Monthly price in USD
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -34,6 +42,9 @@ model User {
   referredBy         Referral?  @relation("referred")
   createdTournaments Tournament[]      @relation("createdTournaments")
   tournamentEntries  TournamentEntry[] @relation("tournamentEntries")
+  tipsterPicks       TipsterPick[]          @relation("tipsterPicks")
+  subscriptions      TipsterSubscription[]  @relation("tipsterSubscriptions")
+  subscribers        TipsterSubscription[]  @relation("tipsterSubscribers")
 
   @@unique([authProvider, oauthId])
 }
@@ -330,4 +341,53 @@ model IndexedGame {
   @@index([state, startsAt])
   @@index([sportSlug, startsAt])
   @@index([startsAt])
+}
+
+// ── Tipster Picks Marketplace ─────────────────────────────────────
+
+model TipsterPick {
+  id            String    @id @default(cuid())
+  tipsterId     String
+  gameId        String    // Azuro gameId
+  gameTitle     String
+  sportSlug     String?
+  leagueName    String?
+  conditionId   String    // Azuro conditionId
+  outcomeId     String    // Azuro outcomeId
+  marketName    String    // "Match Winner"
+  selectionName String    // "Arsenal"
+  odds          Float
+  confidence    String?   // "high" | "medium" | "low"
+  analysis      String?   // Reasoning (max 500 chars)
+  startsAt      Int       // Game start time (unix seconds)
+  visibility    String    @default("free") // "free" | "premium"
+  isResolved    Boolean   @default(false)
+  isCorrect     Boolean?  // null=pending, true=hit, false=miss
+  resolvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  tipster User @relation("tipsterPicks", fields: [tipsterId], references: [id], onDelete: Cascade)
+
+  @@index([tipsterId, createdAt])
+  @@index([gameId])
+  @@index([visibility, createdAt])
+  @@index([isResolved])
+}
+
+model TipsterSubscription {
+  id               String    @id @default(cuid())
+  subscriberId     String
+  tipsterId        String
+  whopMembershipId String?
+  tier             String    @default("premium") // "premium" | "vip"
+  status           String    @default("active")  // "active" | "canceled" | "expired"
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime?
+
+  subscriber User @relation("tipsterSubscriptions", fields: [subscriberId], references: [id], onDelete: Cascade)
+  tipster    User @relation("tipsterSubscribers", fields: [tipsterId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriberId, tipsterId])
+  @@index([tipsterId, status])
+  @@index([subscriberId])
 }

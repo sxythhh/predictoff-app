@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 
-const VALID_TYPES = ["bet_placed", "bet_won", "bet_lost", "comment", "follow", "tournament_created", "tournament_joined", "tournament_won"];
+const VALID_TYPES = ["bet_placed", "bet_won", "bet_lost", "comment", "follow", "tournament_created", "tournament_joined", "tournament_won", "tipster_setup", "pick_shared", "pick_won", "pick_lost", "tipster_subscribed"];
 
 // GET /api/activity?userId=xxx&limit=20&cursor=xxx
 export async function GET(request: NextRequest) {
