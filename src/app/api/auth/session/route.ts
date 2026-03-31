@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
       bio: user.bio,
       authProvider: user.authProvider,
       createdAt: user.createdAt.toISOString(),
+      isTipster: user.isTipster,
+      whopBusinessId: user.whopBusinessId,
     },
   });
 }

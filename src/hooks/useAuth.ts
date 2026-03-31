@@ -12,6 +12,8 @@ interface DbUser {
   bio: string | null;
   authProvider: string;
   createdAt?: string;
+  isTipster?: boolean;
+  whopBusinessId?: string | null;
 }
 
 interface AuthContextValue {
