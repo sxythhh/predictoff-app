@@ -8,10 +8,11 @@ import {
   useBetTokenBalance,
   useBet,
   useBetFee,
+  useGame,
 } from "@azuro-org/sdk";
 import { type Address } from "viem";
 import { useAccount } from "wagmi";
-import { getBetslipMeta } from "./betslip-meta";
+import { getBetslipMeta, setBetslipMeta } from "./betslip-meta";
 import { WrapTokenModal } from "./WrapTokenModal";
 import { useToast } from "./Toast";
 import { TeamLogo } from "./TeamLogo";
@@ -70,11 +71,32 @@ function BetslipCard({
   legIndex?: number;
   isCombo: boolean;
 }) {
-  const meta = getBetslipMeta(item.conditionId, item.outcomeId);
+  const cachedMeta = getBetslipMeta(item.conditionId, item.outcomeId);
   const isForbidden = item.isExpressForbidden;
   const impliedProb = odds ? ((1 / odds) * 100).toFixed(0) : null;
   const openGame = useOpenGame();
   const { formatOdds } = useOddsFormat();
+
+  // Fetch game data from SDK when metadata is missing (e.g., after page refresh)
+  const { data: gameData } = useGame({ gameId: item.gameId, query: { enabled: !cachedMeta } });
+
+  // Backfill cache from SDK data
+  const meta = cachedMeta ?? (gameData ? (() => {
+    const backfilled = {
+      gameTitle: gameData.title,
+      marketName: "Market",
+      selectionName: `#${item.outcomeId}`,
+      sportName: gameData.sport?.name,
+      leagueName: gameData.league?.name,
+      startsAt: +gameData.startsAt,
+      team1Name: gameData.participants?.[0]?.name,
+      team2Name: gameData.participants?.[1]?.name,
+      team1Image: gameData.participants?.[0]?.image ?? undefined,
+      team2Image: gameData.participants?.[1]?.image ?? undefined,
+    };
+    setBetslipMeta(item.conditionId, item.outcomeId, backfilled);
+    return backfilled;
+  })() : undefined);
 
   return (
     <div

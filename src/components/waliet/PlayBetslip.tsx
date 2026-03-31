@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, createContext, useContext, useCallback, useRef, useEffect } from "react";
-import { useBaseBetslip, useDetailedBetslip, useChain } from "@azuro-org/sdk";
+import { useBaseBetslip, useDetailedBetslip, useChain, useGame } from "@azuro-org/sdk";
 import { useAccount } from "wagmi";
-import { getBetslipMeta } from "./betslip-meta";
+import { getBetslipMeta, setBetslipMeta } from "./betslip-meta";
 import { usePlayBalance, usePlacPlayBet, usePlayBets, PLAY_CURRENCY } from "./usePlayBalance";
 import { BetConfirmModal, type BetConfirmData } from "./BetConfirmModal";
 import { Betslip } from "./Betslip";
@@ -121,9 +121,28 @@ function PlayBetslipCard({
   odds: number | undefined;
   onRemove: () => void;
 }) {
-  const meta = getBetslipMeta(item.conditionId, item.outcomeId);
+  const cachedMeta = getBetslipMeta(item.conditionId, item.outcomeId);
   const openGame = useOpenGame();
   const { formatOdds } = useOddsFormat();
+
+  // Fetch game data from SDK when metadata is missing (e.g., after page refresh)
+  const { data: gameData } = useGame({ gameId: item.gameId, query: { enabled: !cachedMeta } });
+  const meta = cachedMeta ?? (gameData ? (() => {
+    const backfilled = {
+      gameTitle: gameData.title,
+      marketName: "Market",
+      selectionName: `#${item.outcomeId}`,
+      sportName: gameData.sport?.name,
+      leagueName: gameData.league?.name,
+      startsAt: +gameData.startsAt,
+      team1Name: gameData.participants?.[0]?.name,
+      team2Name: gameData.participants?.[1]?.name,
+      team1Image: gameData.participants?.[0]?.image ?? undefined,
+      team2Image: gameData.participants?.[1]?.image ?? undefined,
+    };
+    setBetslipMeta(item.conditionId, item.outcomeId, backfilled);
+    return backfilled;
+  })() : undefined);
 
   return (
     <div
