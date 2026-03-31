@@ -389,6 +389,19 @@ function ProfileCard() {
             Settings
           </ActionButton>
         </div>
+
+        {/* Tipster CTA */}
+        {user.isTipster ? (
+          <Link href="/picks" className="flex items-center gap-2 mt-3 text-[13px] text-accent font-medium hover:text-accent-hover">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+            Manage my picks
+          </Link>
+        ) : (
+          <Link href="/tipster/setup" className="flex items-center gap-2 mt-3 text-[13px] text-accent font-medium hover:text-accent-hover">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+            Become a Tipster — earn from your picks
+          </Link>
+        )}
       </div>
     </div>
   );

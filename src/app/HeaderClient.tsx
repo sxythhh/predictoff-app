@@ -44,9 +44,9 @@ function SearchIcon() {
 
 const HEADER_TABS = [
   { id: "sports", label: "Events" },
-  { id: "community", label: "Community" },
+  { id: "picks", label: "Picks" },
   { id: "tournaments", label: "Tournaments" },
-  { id: "updates", label: "Updates" },
+  { id: "tipsters", label: "Tipsters" },
 ] as const;
 
 function HeaderTabs({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
@@ -333,14 +333,14 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
 
-  const headerTab = activePage === "social" ? "community" : "sports";
+  const headerTab = "sports";
   const handleTabChange = useCallback((tab: string) => {
-    if (tab === "community") {
-      onPageChange?.("social");
+    if (tab === "picks") {
+      window.location.href = "/picks";
     } else if (tab === "tournaments") {
-      // Navigate to tournaments page
       window.location.href = "/tournaments";
-      return;
+    } else if (tab === "tipsters") {
+      window.location.href = "/tipsters";
     } else {
       onPageChange?.("sports");
     }

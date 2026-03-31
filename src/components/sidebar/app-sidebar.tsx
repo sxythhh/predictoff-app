@@ -664,21 +664,23 @@ export function AppSidebar({
                   <ProximityNavItem
                     index={0}
                     active={false}
-                    onClick={() => { window.location.href = "/tournaments"; }}
-                    icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2H12V6C12 8.21 10.21 10 8 10C5.79 10 4 8.21 4 6V2Z" stroke="currentColor" strokeWidth="1.2"/><path d="M6 12H10M8 10V12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
-                    label="Tournaments"
+                    onClick={() => { window.location.href = "/picks"; }}
+                    icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>}
+                    label="Picks Feed"
                   />
                   <ProximityNavItem
                     index={1}
                     active={false}
-                    icon={null}
-                    label="Responsible Gambling"
+                    onClick={() => { window.location.href = "/tipsters"; }}
+                    icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.2"/><path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
+                    label="Tipsters"
                   />
                   <ProximityNavItem
                     index={2}
                     active={false}
-                    icon={null}
-                    label="Terms & Conditions"
+                    onClick={() => { window.location.href = "/tournaments"; }}
+                    icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2H12V6C12 8.21 10.21 10 8 10C5.79 10 4 8.21 4 6V2Z" stroke="currentColor" strokeWidth="1.2"/><path d="M6 12H10M8 10V12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
+                    label="Tournaments"
                   />
                 </ProximityNavSection>
               </div>

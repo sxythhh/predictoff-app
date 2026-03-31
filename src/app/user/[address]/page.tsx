@@ -19,6 +19,11 @@ interface PublicUser {
   showBetHistory?: boolean;
   showStats?: boolean;
   favoritesCount?: number;
+  isTipster?: boolean;
+  tipsterBio?: string | null;
+  subscriptionPrice?: number | null;
+  totalPicks?: number;
+  subscriberCount?: number;
   createdAt?: string;
   isPrivate: boolean;
 }
@@ -167,6 +172,30 @@ export default function PublicProfilePage({ params }: { params: Promise<{ addres
               showStats={user.showStats ?? true}
               favoritesCount={user.favoritesCount ?? 0}
             />
+
+            {/* Tipster section */}
+            {user.isTipster && (
+              <div className="bg-bg-card rounded-xl border border-border-subtle p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-[14px] font-semibold text-text-primary flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+                    Tipster
+                  </h3>
+                  {user.subscriptionPrice && (
+                    <span className="text-[13px] font-semibold text-accent">${user.subscriptionPrice}/mo</span>
+                  )}
+                </div>
+                {user.tipsterBio && <p className="text-[13px] text-text-secondary mb-3">{user.tipsterBio}</p>}
+                <div className="flex items-center gap-4 text-[12px] text-text-muted">
+                  <span>{user.totalPicks ?? 0} picks</span>
+                  <span>{user.subscriberCount ?? 0} subscribers</span>
+                </div>
+                <Link href={`/tipster/${user.id}`} className="mt-3 inline-block text-[13px] text-accent font-medium hover:text-accent-hover">
+                  View picks →
+                </Link>
+              </div>
+            )}
+
             <div>
               <h3 className="text-[14px] font-semibold text-text-primary mb-3">Recent Activity</h3>
               <ActivityFeed userId={user.id} />

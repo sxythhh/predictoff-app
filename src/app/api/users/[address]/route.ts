@@ -21,8 +21,11 @@ export async function GET(
       profileVisibility: true,
       showBetHistory: true,
       showStats: true,
+      isTipster: true,
+      tipsterBio: true,
+      subscriptionPrice: true,
       createdAt: true,
-      _count: { select: { favorites: true } },
+      _count: { select: { favorites: true, tipsterPicks: true, subscribers: true } },
     },
   });
 
@@ -49,6 +52,11 @@ export async function GET(
     showBetHistory: user.showBetHistory,
     showStats: user.showStats,
     favoritesCount: user._count.favorites,
+    isTipster: user.isTipster,
+    tipsterBio: user.tipsterBio,
+    subscriptionPrice: user.subscriptionPrice,
+    totalPicks: user._count.tipsterPicks,
+    subscriberCount: user._count.subscribers,
     createdAt: user.createdAt.toISOString(),
     isPrivate: false,
   });

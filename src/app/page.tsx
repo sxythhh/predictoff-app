@@ -760,18 +760,18 @@ function MobileNav({
           <span className="relative z-10 font-inter text-[11px] font-medium leading-[14px] text-text-muted" style={{ marginBottom: 4 }}>Compete</span>
         </div>
 
-        {/* Social */}
-        <NavBtn label="Social" active={activeTab === "social"} onClick={() => onTabChange("social")}>
+        {/* Picks */}
+        <NavBtn label="Picks" active={false} onClick={() => { window.location.href = "/picks"; }}>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M17 10C17 13.866 13.866 17 10 17C8.68 17 7.44 16.64 6.38 16.01L3 17L3.99 13.62C3.36 12.56 3 11.32 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M7 9H13M7 12H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M10 2L12.5 7.5H18L13.5 11.5L15 17L10 13.5L5 17L6.5 11.5L2 7.5H7.5L10 2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
           </svg>
         </NavBtn>
 
-        {/* My Bets */}
-        <NavBtn label="My Bets" active={activeTab === "bets"} onClick={() => onTabChange("bets")}>
+        {/* Betslip */}
+        <NavBtn label="Betslip" active={activeTab === "bets"} onClick={() => onTabChange("bets")}>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M4 16V4M4 16H16M7 13V8M10 13V6M13 13V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M8 7H12M8 10H12M8 13H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </NavBtn>
       </div>
@@ -828,7 +828,7 @@ export default function Home() {
                   onClearSport={() => { setActiveSport(null); setActiveLeague(null); }}
                 />
               )}
-              {mobileTab === "social" && <SocialFeed />}
+              {/* Social feed removed — /picks page is the community feed now */}
               {mobileTab === "bets" && (
                 <PlayBetslip />
               )}
@@ -836,7 +836,7 @@ export default function Home() {
 
             {/* Desktop: always show center + right */}
             <div className="hidden lg:contents">
-              {activePage === "leaderboard" ? <WaveLeaderboard /> : activePage === "social" ? <SocialFeed /> : <MainContent
+              {activePage === "leaderboard" ? <WaveLeaderboard /> : <MainContent
                   activeSport={activeSport}
                   activeLeague={activeLeague}
                   onLeagueClick={(sportSlug, leagueSlug) => { setActiveSport(sportSlug); setActiveLeague(leagueSlug); }}

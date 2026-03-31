@@ -31,6 +31,11 @@ const ACTIVITY_ICONS: Record<string, { icon: string; color: string }> = {
   tournament_created: { icon: "trophy", color: "text-yellow-400" },
   tournament_joined: { icon: "trophy", color: "text-accent" },
   tournament_won: { icon: "trophy", color: "text-green-400" },
+  tipster_setup: { icon: "star", color: "text-yellow-400" },
+  pick_shared: { icon: "star", color: "text-accent" },
+  pick_won: { icon: "check", color: "text-green-400" },
+  pick_lost: { icon: "x", color: "text-red-400" },
+  tipster_subscribed: { icon: "user", color: "text-accent" },
 };
 
 function ActivityIcon({ type }: { type: string }) {
@@ -51,6 +56,9 @@ function ActivityIcon({ type }: { type: string }) {
       )}
       {config.icon === "user" && (
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M3 14C3 11.5 5.5 10 8 10C10.5 10 13 11.5 13 14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+      )}
+      {config.icon === "star" && (
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
       )}
       {config.icon === "trophy" && (
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2H12V6C12 8.21 10.21 10 8 10C5.79 10 4 8.21 4 6V2Z" stroke="currentColor" strokeWidth="1.3"/><path d="M6 12H10M8 10V12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M4 3H2V5C2 6.1 2.9 7 4 7" stroke="currentColor" strokeWidth="1.3"/><path d="M12 3H14V5C14 6.1 13.1 7 12 7" stroke="currentColor" strokeWidth="1.3"/></svg>
@@ -81,6 +89,16 @@ function activityText(activity: ActivityItem): string {
       return `Joined tournament "${m.tournamentTitle ?? ""}"`;
     case "tournament_won":
       return `Finished #${m.rank ?? "?"} in "${m.tournamentTitle ?? ""}"${m.prizeAmount ? ` — won ${m.prizeAmount.toFixed(2)}` : ""}`;
+    case "tipster_setup":
+      return "Became a tipster";
+    case "pick_shared":
+      return `Shared a pick: ${m.selectionName ?? ""} on ${m.gameTitle ?? "a game"}`;
+    case "pick_won":
+      return `Pick hit! ${m.selectionName ?? ""} on ${m.gameTitle ?? ""}`;
+    case "pick_lost":
+      return `Pick missed: ${m.selectionName ?? ""} on ${m.gameTitle ?? ""}`;
+    case "tipster_subscribed":
+      return `Subscribed to a tipster`;
     default:
       return activity.type;
   }
