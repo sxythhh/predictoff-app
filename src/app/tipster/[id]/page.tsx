@@ -37,7 +37,10 @@ export default function TipsterProfilePage({ params }: { params: Promise<{ id: s
   const handleSubscribe = async () => {
     if (!user) { window.location.href = "/"; return; }
     setSubscribing(true);
-    const res = await fetch(`/api/tipster/${id}/subscribe`, { method: "POST" });
+    const res = await fetch(`/api/tipster/${id}/subscribe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
     const data = await res.json();
     if (data.checkoutUrl) {
       window.open(data.checkoutUrl, "_blank");

@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useOddsFormat } from "../OddsFormatContext";
+import { useToast } from "../Toast";
 
 interface PickCardProps {
   pick: {
@@ -19,7 +21,7 @@ interface PickCardProps {
     isResolved: boolean;
     isCorrect?: boolean | null;
     createdAt: string;
-    tipster: { id: string; displayName: string | null; avatar: string | null; walletAddress: string };
+    tipster: { id: string; displayName: string | null; avatar: string | null; walletAddress: string; subscriptionPrice?: number | null };
     hasAccess: boolean;
   };
   showTipster?: boolean;
@@ -38,6 +40,8 @@ function timeAgo(dateStr: string): string {
 
 export function PickCard({ pick, showTipster = true }: PickCardProps) {
   const { formatOdds } = useOddsFormat();
+  const { toast } = useToast();
+  const [subscribing, setSubscribing] = useState(false);
   const isPremiumLocked = pick.visibility === "premium" && !pick.hasAccess;
   const now = Math.floor(Date.now() / 1000);
   const isUpcoming = now < pick.startsAt;
@@ -81,12 +85,30 @@ export function PickCard({ pick, showTipster = true }: PickCardProps) {
             </div>
             <p className="text-[13px] text-text-secondary">This analysis is only available to subscribers...</p>
           </div>
-          <div className="absolute inset-0 flex items-center justify-center bg-bg-card/60 rounded-lg">
-            <Link
-              href={`/tipster/${pick.tipster.id}`}
-              className="h-9 px-4 rounded-lg bg-accent text-btn-primary-text text-[13px] font-semibold hover:bg-accent-hover transition-colors"
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg-card/60 rounded-lg gap-2">
+            <button
+              disabled={subscribing}
+              onClick={async () => {
+                setSubscribing(true);
+                const res = await fetch(`/api/tipster/${pick.tipster.id}/subscribe`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                });
+                const data = await res.json();
+                if (data.checkoutUrl) {
+                  window.open(data.checkoutUrl, "_blank");
+                  toast("Complete payment in the new tab", "info");
+                } else {
+                  toast(data.error ?? "Subscription unavailable", "error");
+                }
+                setSubscribing(false);
+              }}
+              className="h-9 px-4 rounded-lg bg-accent text-btn-primary-text text-[13px] font-semibold hover:bg-accent-hover transition-colors disabled:opacity-50"
             >
-              Subscribe to unlock
+              {subscribing ? "..." : `Subscribe $${pick.tipster.subscriptionPrice ?? "?"}/mo`}
+            </button>
+            <Link href={`/tipster/${pick.tipster.id}`} className="text-[11px] text-text-muted hover:text-text-secondary">
+              View tipster profile
             </Link>
           </div>
         </div>

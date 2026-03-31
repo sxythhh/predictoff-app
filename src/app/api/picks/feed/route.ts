@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     include: {
-      tipster: { select: { id: true, walletAddress: true, displayName: true, avatar: true, isTipster: true } },
+      tipster: { select: { id: true, walletAddress: true, displayName: true, avatar: true, isTipster: true, subscriptionPrice: true } },
     },
   });
 

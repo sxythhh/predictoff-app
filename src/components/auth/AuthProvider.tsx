@@ -155,30 +155,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithSocial = useCallback(
     async (provider: "google" | "twitter" | "apple") => {
-      // Fetch CSRF token from NextAuth, then POST to trigger OAuth flow
       try {
-        const csrfRes = await fetch("/api/oauth/csrf");
+        // Fetch CSRF token — this also sets the authjs.csrf-token cookie
+        const csrfRes = await fetch("/api/oauth/csrf", { credentials: "include" });
         const { csrfToken } = await csrfRes.json();
 
-        // Create a hidden form and submit it to trigger the OAuth redirect
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = `/api/oauth/signin/${provider}`;
+        // POST via fetch with credentials to include the csrf cookie
+        const res = await fetch(`/api/oauth/signin/${provider}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ csrfToken, callbackUrl: "/" }),
+          credentials: "include",
+          redirect: "manual", // Don't follow redirect — we need the Location header
+        });
 
-        const csrfInput = document.createElement("input");
-        csrfInput.type = "hidden";
-        csrfInput.name = "csrfToken";
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
-
-        const callbackInput = document.createElement("input");
-        callbackInput.type = "hidden";
-        callbackInput.name = "callbackUrl";
-        callbackInput.value = "/";
-        form.appendChild(callbackInput);
-
-        document.body.appendChild(form);
-        form.submit();
+        // NextAuth returns a 302 to the OAuth provider
+        const redirectUrl = res.headers.get("Location") || res.url;
+        if (redirectUrl && redirectUrl !== window.location.href) {
+          window.location.href = redirectUrl;
+        }
       } catch (err) {
         console.error("Social sign-in failed:", err);
       }

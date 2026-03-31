@@ -7,6 +7,7 @@ import { prisma } from "./prisma";
 import { generateEmbeddedWallet } from "./embedded-wallet";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  debug: true,
   basePath: "/api/oauth",
   providers: [
     Google({

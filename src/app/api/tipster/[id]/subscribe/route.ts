@@ -12,6 +12,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const user = await getAuthUser(request);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
+  if (user.id === tipsterId) return Response.json({ error: "Cannot subscribe to yourself" }, { status: 400 });
+
   const tipster = await prisma.user.findUnique({ where: { id: tipsterId } });
   if (!tipster || !tipster.isTipster) return Response.json({ error: "Tipster not found" }, { status: 404 });
 
