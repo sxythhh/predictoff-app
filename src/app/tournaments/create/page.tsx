@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/waliet/Toast";
 import { GamePicker } from "@/components/waliet/tournaments/GamePicker";
 import type { TournamentGame } from "@/types/tournament";
@@ -13,6 +14,18 @@ const STEPS: Step[] = ["format", "details", "scope", "entry", "review"];
 export default function CreateTournamentPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, isAuthenticated, signIn } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <p className="text-text-secondary text-[15px]">Sign in to create a tournament</p>
+        <button onClick={signIn} className="h-10 px-6 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors">
+          Sign In
+        </button>
+      </div>
+    );
+  }
   const [step, setStep] = useState<Step>("format");
   const [submitting, setSubmitting] = useState(false);
 

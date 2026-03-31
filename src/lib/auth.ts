@@ -25,7 +25,8 @@ export async function getAuthUser(request: NextRequest) {
     }
 
     return session.user;
-  } catch {
+  } catch (err) {
+    console.error("[auth] Session lookup failed:", err);
     return null;
   }
 }
