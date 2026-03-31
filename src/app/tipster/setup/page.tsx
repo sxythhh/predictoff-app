@@ -8,7 +8,7 @@ import { useToast } from "@/components/waliet/Toast";
 
 export default function TipsterSetupPage() {
   const router = useRouter();
-  const { user, signIn } = useAuth();
+  const { user, signIn, refreshUser } = useAuth();
   const { toast } = useToast();
   const [tipsterBio, setTipsterBio] = useState("");
   const [price, setPrice] = useState("20");
@@ -43,12 +43,13 @@ export default function TipsterSetupPage() {
     });
     const data = await res.json();
     if (data.success) {
+      await refreshUser();
       toast("You're now a tipster!", "success");
-      router.push("/picks");
+      window.location.href = "/picks";
     } else {
       toast(data.error ?? "Setup failed", "error");
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
