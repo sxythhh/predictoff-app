@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (err) {
     console.error("SIWE verify error:", err);
-    return Response.json({ error: "Verification failed" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    return Response.json({ error: "Verification failed", detail: msg }, { status: 500 });
   }
 }

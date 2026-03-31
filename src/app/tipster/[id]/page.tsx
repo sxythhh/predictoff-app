@@ -49,13 +49,7 @@ export default function TipsterProfilePage({ params }: { params: Promise<{ id: s
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-page">
-        <header className="h-14 flex items-center px-3 lg:px-6 border-b border-border-primary">
-          <Link href="/tipsters" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span className="text-[14px] font-medium">Tipsters</span>
-          </Link>
-        </header>
+      <div>
         <div className="max-w-[600px] mx-auto p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 rounded-full bg-bg-surface animate-pulse" />
@@ -68,13 +62,7 @@ export default function TipsterProfilePage({ params }: { params: Promise<{ id: s
 
   if (!tipster) {
     return (
-      <div className="min-h-screen bg-bg-page">
-        <header className="h-14 flex items-center px-3 lg:px-6 border-b border-border-primary">
-          <Link href="/tipsters" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span className="text-[14px] font-medium">Tipsters</span>
-          </Link>
-        </header>
+      <div>
         <div className="max-w-[600px] mx-auto p-6 text-center py-16">
           <p className="text-text-secondary">Tipster not found</p>
         </div>
@@ -83,15 +71,12 @@ export default function TipsterProfilePage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="min-h-screen bg-bg-page text-text-primary" style={{ letterSpacing: "-0.02em" }}>
-      <header className="h-14 flex items-center px-3 lg:px-6 border-b border-border-primary">
-        <Link href="/tipsters" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span className="text-[14px] font-medium">Tipsters</span>
-        </Link>
-      </header>
-
+    <div className="text-text-primary" style={{ letterSpacing: "-0.02em" }}>
       <div className="max-w-[600px] mx-auto p-4 lg:p-6">
+        <Link href="/tipsters" className="flex items-center gap-1.5 text-[13px] text-text-muted hover:text-text-primary transition-colors mb-4">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Back to Tipsters
+        </Link>
         {/* Profile header */}
         <div className="flex items-start gap-4 mb-6">
           <div className="w-16 h-16 rounded-full bg-bg-surface overflow-hidden shrink-0">

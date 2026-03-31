@@ -33,29 +33,21 @@ export default function TournamentsPage() {
   }, [fetchTournaments]);
 
   return (
-    <div className="min-h-screen bg-bg-page text-text-primary" style={{ letterSpacing: "-0.02em" }}>
-      {/* Header */}
-      <header className="h-14 flex items-center justify-between px-3 lg:px-6 border-b border-border-primary">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-          <h1 className="text-[18px] font-semibold">Tournaments</h1>
-        </div>
-        <Link
-          href="/tournaments/create"
-          className="h-9 px-4 rounded-lg bg-accent text-btn-primary-text text-[13px] font-semibold hover:bg-accent-hover transition-colors flex items-center gap-2"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          Create
-        </Link>
-      </header>
-
+    <div className="text-text-primary" style={{ letterSpacing: "-0.02em" }}>
       <div className="max-w-[800px] mx-auto p-4 lg:p-6">
+        {/* Page header */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-[18px] font-semibold">Tournaments</h1>
+          <Link
+            href="/tournaments/create"
+            className="h-9 px-4 rounded-lg bg-accent text-btn-primary-text text-[13px] font-semibold hover:bg-accent-hover transition-colors flex items-center gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            Create
+          </Link>
+        </div>
         {/* Filter tabs */}
         <div className="flex items-center gap-1.5 mb-4">
           {([

@@ -52,14 +52,7 @@ export default function TipsterSetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-page text-text-primary" style={{ letterSpacing: "-0.02em" }}>
-      <header className="h-14 flex items-center px-3 lg:px-6 border-b border-border-primary">
-        <Link href="/" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span className="text-[14px] font-medium">Back</span>
-        </Link>
-      </header>
-
+    <div className="text-text-primary" style={{ letterSpacing: "-0.02em" }}>
       <div className="max-w-[500px] mx-auto p-4 lg:p-8">
         <h1 className="text-[24px] font-bold mb-2">Become a Tipster</h1>
         <p className="text-[14px] text-text-secondary mb-8">Share your betting expertise and earn from your picks. Your subscribers pay a monthly fee to access your premium analysis.</p>

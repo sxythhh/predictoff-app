@@ -107,16 +107,13 @@ export default function CreateTournamentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-page text-text-primary" style={{ letterSpacing: "-0.02em" }}>
-      <header className="h-14 flex items-center px-3 lg:px-6 border-b border-border-primary">
-        <Link href="/tournaments" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span className="text-[14px] font-medium">Cancel</span>
-        </Link>
-        <h1 className="text-[16px] font-semibold ml-4">Create Tournament</h1>
-      </header>
+    <div className="text-text-primary" style={{ letterSpacing: "-0.02em" }}>
 
       <div className="max-w-[500px] mx-auto p-4 lg:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-[18px] font-semibold">Create Tournament</h1>
+          <Link href="/tournaments" className="text-[13px] text-text-muted hover:text-text-primary transition-colors">Cancel</Link>
+        </div>
         {/* Progress */}
         <div className="flex items-center gap-1 mb-6">
           {STEPS.map((s, i) => (

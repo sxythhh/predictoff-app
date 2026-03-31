@@ -266,13 +266,7 @@ export default function TournamentDetailPage({ params }: { params: Promise<{ id:
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-page">
-        <header className="h-14 flex items-center px-3 lg:px-6 border-b border-border-primary">
-          <Link href="/tournaments" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span className="text-[14px] font-medium">Back</span>
-          </Link>
-        </header>
+      <div>
         <div className="max-w-[800px] mx-auto p-6">
           <div className="h-8 w-48 bg-bg-surface rounded animate-pulse mb-4" />
           <div className="h-24 bg-bg-card rounded-xl animate-pulse" />
@@ -283,13 +277,7 @@ export default function TournamentDetailPage({ params }: { params: Promise<{ id:
 
   if (!tournament) {
     return (
-      <div className="min-h-screen bg-bg-page">
-        <header className="h-14 flex items-center px-3 lg:px-6 border-b border-border-primary">
-          <Link href="/tournaments" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span className="text-[14px] font-medium">Back</span>
-          </Link>
-        </header>
+      <div>
         <div className="max-w-[800px] mx-auto p-6 text-center py-16">
           <p className="text-text-secondary">Tournament not found</p>
         </div>
@@ -304,12 +292,13 @@ export default function TournamentDetailPage({ params }: { params: Promise<{ id:
   const isCreator = user?.id === t.creator?.id;
 
   return (
-    <div className="min-h-screen bg-bg-page text-text-primary" style={{ letterSpacing: "-0.02em" }}>
-      <header className="h-14 flex items-center justify-between px-3 lg:px-6 border-b border-border-primary">
-        <Link href="/tournaments" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span className="text-[14px] font-medium">Tournaments</span>
-        </Link>
+    <div className="text-text-primary" style={{ letterSpacing: "-0.02em" }}>
+      <div className="max-w-[800px] mx-auto p-4 lg:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/tournaments" className="flex items-center gap-1.5 text-[13px] text-text-muted hover:text-text-primary transition-colors">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Back to Tournaments
+          </Link>
         {isCreator && ["active", "scoring"].includes(t.status) && (
           <button
             onClick={async () => {
@@ -325,9 +314,8 @@ export default function TournamentDetailPage({ params }: { params: Promise<{ id:
             Run Scoring
           </button>
         )}
-      </header>
+        </div>
 
-      <div className="max-w-[800px] mx-auto p-4 lg:p-6">
         {/* Title + status */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>

@@ -34,20 +34,15 @@ export default function PicksFeedPage() {
   }, [fetchPicks]);
 
   return (
-    <div className="min-h-screen bg-bg-page text-text-primary" style={{ letterSpacing: "-0.02em" }}>
-      <header className="h-14 flex items-center justify-between px-3 lg:px-6 border-b border-border-primary">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </Link>
-          <h1 className="text-[18px] font-semibold">Picks</h1>
-        </div>
-        <Link href="/tipsters" className="text-[13px] text-accent font-medium hover:text-accent-hover">
-          Browse Tipsters
-        </Link>
-      </header>
-
+    <div className="text-text-primary" style={{ letterSpacing: "-0.02em" }}>
       <div className="max-w-[600px] mx-auto p-4 lg:p-6">
+        {/* Page header */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-[18px] font-semibold">Picks</h1>
+          <Link href="/tipsters" className="text-[13px] text-accent font-medium hover:text-accent-hover">
+            Browse Tipsters
+          </Link>
+        </div>
         {/* Composer for tipsters */}
         {user?.isTipster && (
           <div className="mb-4">
