@@ -15,12 +15,20 @@ import { springs } from "@/lib/springs";
 
 function WalietLogo({ className }: { className?: string }) {
   return (
-    <img
-      src="/images/waliet-logo.png"
-      alt="Waliet"
-      className={className}
-      style={{ filter: "invert(var(--logo-invert))" }}
-    />
+    <>
+      {/* White logo for dark mode */}
+      <img
+        src="/images/waliet-logo.png"
+        alt="Waliet"
+        className={`hidden dark:block ${className ?? ""}`}
+      />
+      {/* Green logo for light mode */}
+      <img
+        src="/images/waliet-logo-green.svg"
+        alt="Waliet"
+        className={`block dark:hidden ${className ?? ""}`}
+      />
+    </>
   );
 }
 

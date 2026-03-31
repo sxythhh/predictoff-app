@@ -64,12 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, address, isLoading, user]);
 
-  // Auto sign-out if wallet disconnects
+  // Auto sign-out only when wallet ACTIVELY disconnects
+  // (not on initial page load when wagmi hasn't reconnected yet)
+  const walletEverConnected = useRef(false);
   useEffect(() => {
-    if (!isConnected && user) {
+    if (isConnected) walletEverConnected.current = true;
+  }, [isConnected]);
+
+  useEffect(() => {
+    if (!isConnected && user && walletEverConnected.current) {
       fetch("/api/auth/logout", { method: "POST" }).then(() => {
         setUser(null);
         lastSignedAddress.current = null;
+        walletEverConnected.current = false;
       });
     }
   }, [isConnected, user]);
