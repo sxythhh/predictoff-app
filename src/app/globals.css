@@ -343,24 +343,36 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Shadow via pseudo-element — transitions opacity (GPU) not box-shadow (paint) */
 .verified-card-hover {
   contain: layout style;
-  transition: box-shadow var(--hover-duration) var(--hover-easing);
+  position: relative;
+}
+.verified-card-hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--hover-duration, 380ms) var(--hover-easing, ease);
+  box-shadow:
+    0 2px 6px 0 rgba(0, 0, 0, 0.5),
+    0 8px 20px 0 rgba(0, 0, 0, 0.45),
+    0 24px 48px -8px rgba(0, 0, 0, 0.5),
+    0 48px 80px -12px rgba(0, 0, 0, 0.4);
+  will-change: opacity;
+}
+:root:not(.dark) .verified-card-hover::after {
+  box-shadow:
+    0 2px 6px 0 rgba(0, 0, 0, 0.06),
+    0 8px 20px 0 rgba(0, 0, 0, 0.05),
+    0 24px 48px -8px rgba(0, 0, 0, 0.06);
 }
 @media (min-width: 1024px) {
-  .group\/card:hover .verified-card-hover {
-    box-shadow:
-      0 2px 6px 0 rgba(0, 0, 0, 0.5),
-      0 8px 20px 0 rgba(0, 0, 0, 0.45),
-      0 24px 48px -8px rgba(0, 0, 0, 0.5),
-      0 48px 80px -12px rgba(0, 0, 0, 0.4);
-    transition: box-shadow var(--hover-duration) var(--hover-easing) var(--hover-delay);
-  }
-  :root:not(.dark) .group\/card:hover .verified-card-hover {
-    box-shadow:
-      0 2px 6px 0 rgba(0, 0, 0, 0.06),
-      0 8px 20px 0 rgba(0, 0, 0, 0.05),
-      0 24px 48px -8px rgba(0, 0, 0, 0.06);
+  .group\/card:hover .verified-card-hover::after {
+    opacity: 1;
+    transition-delay: var(--hover-delay, 0s);
   }
 }
 
