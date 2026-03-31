@@ -69,18 +69,25 @@ export function CountryFlag({ name, className = "w-4 h-4 rounded-full" }: { name
         src="/images/international-flag.png"
         alt={name}
         className={className}
+        width={64}
+        height={64}
         loading="lazy"
       />
     );
   }
   const code = getCountryCode(name);
   if (!code) return null;
+  // Render SVG at 64x64 intrinsic size so retina displays get crisp edges,
+  // then CSS classes scale it down to the desired display size
   return (
     <img
       src={`https://hatscripts.github.io/circle-flags/flags/${code}.svg`}
       alt={name}
       className={className}
+      width={64}
+      height={64}
       loading="lazy"
+      style={{ imageRendering: "auto" }}
     />
   );
 }

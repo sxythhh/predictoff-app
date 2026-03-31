@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useSearchGames } from "@azuro-org/sdk";
 import type { GameData } from "@azuro-org/toolkit";
 import { useToast } from "@/components/waliet/Toast";
+import { TeamLogo } from "@/components/waliet/TeamLogo";
 import type { TournamentGame } from "@/types/tournament";
 
 export function GamePicker({
@@ -105,8 +106,19 @@ export function GamePicker({
               return (
                 <div
                   key={game.gameId}
-                  className="flex items-center justify-between px-3 py-2 rounded-lg bg-bg-surface hover:bg-bg-hover transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-bg-surface hover:bg-bg-hover transition-colors"
                 >
+                  {/* Team logos */}
+                  <div className="flex items-center shrink-0">
+                    {game.participants?.slice(0, 2).map((p, i) => (
+                      <div
+                        key={p.name}
+                        className={`w-7 h-7 rounded-full bg-bg-hover flex items-center justify-center overflow-hidden ${i > 0 ? "-ml-2" : ""} ring-2 ring-bg-surface`}
+                      >
+                        <TeamLogo src={p.image} name={p.name} className="w-7 h-7 object-cover" />
+                      </div>
+                    ))}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-[13px] font-medium text-text-primary truncate">{game.title}</div>
                     <div className="text-[11px] text-text-muted">
