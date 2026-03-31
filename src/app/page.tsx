@@ -738,7 +738,7 @@ function MobileNav({
           </svg>
         </NavBtn>
 
-        {/* Tournaments — center notch button */}
+        {/* Betslip — center notch button */}
         <div className="relative flex flex-col items-center" style={{ width: 64 }}>
           {/* Notch cutout shape */}
           <svg className="absolute bottom-0 text-bg-card dark:text-bg-surface" width="64" height="61" viewBox="0 0 64 61" fill="none" style={{ pointerEvents: "none" }}>
@@ -746,18 +746,28 @@ function MobileNav({
           </svg>
           {/* Circle button */}
           <button
-            onClick={() => { window.location.href = "/tournaments"; }}
+            onClick={() => { onBetslipOpen(); window.dispatchEvent(new Event("open-betslip")); }}
             className="relative z-10 w-9 h-9 rounded-full flex items-center justify-center bg-accent active:scale-95 transition-transform cursor-pointer"
             style={{ marginBottom: 6 }}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 2H12V6C12 8.21 10.21 10 8 10C5.79 10 4 8.21 4 6V2Z" stroke="white" strokeWidth="1.3"/>
-              <path d="M6 12H10M8 10V12" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
-              <path d="M4 3H2V5C2 6.1 2.9 7 4 7" stroke="white" strokeWidth="1.3"/>
-              <path d="M12 3H14V5C14 6.1 13.1 7 12 7" stroke="white" strokeWidth="1.3"/>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <rect x="4" y="2" width="12" height="16" rx="2" stroke="white" strokeWidth="1.5"/>
+              <path d="M8 7H12M8 10H12M8 13H11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
+            {betslipCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-[15px] h-[15px] flex items-center justify-center rounded-full border-[0.5px] border-black font-inter text-[10px] font-extrabold leading-none tracking-[-0.3px] text-white"
+                style={{
+                  background: "#e6311f",
+                  boxShadow: "inset 0px 2px 0px 0px #ff7b7b, 0px 1px 0px 0px #000",
+                  WebkitTextStroke: "0.5px black",
+                  paintOrder: "stroke fill",
+                }}
+              >
+                {betslipCount}
+              </span>
+            )}
           </button>
-          <span className="relative z-10 font-inter text-[11px] font-medium leading-[14px] text-text-muted" style={{ marginBottom: 4 }}>Compete</span>
+          <span className="relative z-10 font-inter text-[11px] font-medium leading-[14px] text-text-muted" style={{ marginBottom: 4 }}>Betslip</span>
         </div>
 
         {/* Picks */}
@@ -767,11 +777,11 @@ function MobileNav({
           </svg>
         </NavBtn>
 
-        {/* Betslip */}
-        <NavBtn label="Betslip" active={false} onClick={() => { onBetslipOpen(); window.dispatchEvent(new Event("open-betslip")); }}>
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-            <path d="M8 7H12M8 10H12M8 13H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        {/* Compete */}
+        <NavBtn label="Compete" active={false} onClick={() => { window.location.href = "/tournaments"; }}>
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <path d="M4 2H12V6C12 8.21 10.21 10 8 10C5.79 10 4 8.21 4 6V2Z" stroke="currentColor" strokeWidth="1.2"/>
+            <path d="M6 12H10M8 10V12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
           </svg>
         </NavBtn>
       </div>
