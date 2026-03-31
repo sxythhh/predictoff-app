@@ -370,16 +370,70 @@ function BackToTop({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | nul
   );
 }
 
+function SportBreadcrumb({
+  activeSport,
+  activeLeague,
+  onClearSport,
+  onClearLeague,
+}: {
+  activeSport: string | null;
+  activeLeague: string | null;
+  onClearSport: () => void;
+  onClearLeague: () => void;
+}) {
+  const { isLive } = useLive();
+  const { data: sports } = useSportsNavigation({ isLive });
+
+  if (!activeSport) return null;
+
+  const sportData = sports?.find((s: any) => s.slug === activeSport);
+  const sportName = sportData?.name ?? activeSport;
+
+  let leagueName: string | null = null;
+  if (activeLeague && sportData) {
+    for (const country of sportData.countries) {
+      const league = country.leagues.find((l: any) => l.slug === activeLeague);
+      if (league) { leagueName = `${country.name} · ${league.name}`; break; }
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 px-3 pt-3 pb-0 lg:hidden">
+      <button onClick={onClearSport} className="text-[13px] text-text-muted hover:text-text-primary transition-colors">
+        All Events
+      </button>
+      <svg width="6" height="10" viewBox="0 0 6 10" fill="none" className="text-text-muted shrink-0">
+        <path d="M1 1L5 5L1 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      {activeLeague && leagueName ? (
+        <>
+          <button onClick={onClearLeague} className="text-[13px] text-text-muted hover:text-text-primary transition-colors">
+            {sportName}
+          </button>
+          <svg width="6" height="10" viewBox="0 0 6 10" fill="none" className="text-text-muted shrink-0">
+            <path d="M1 1L5 5L1 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span className="text-[13px] text-text-primary font-medium truncate">{leagueName}</span>
+        </>
+      ) : (
+        <span className="text-[13px] text-text-primary font-medium truncate">{sportName}</span>
+      )}
+    </div>
+  );
+}
+
 function MainContent({
   activeSport,
   activeLeague,
   onLeagueClick,
   onClearLeague,
+  onClearSport,
 }: {
   activeSport: string | null;
   activeLeague: string | null;
   onLeagueClick: (sportSlug: string, leagueSlug: string) => void;
   onClearLeague: () => void;
+  onClearSport: () => void;
 }) {
   const mainRef = useRef<HTMLElement>(null);
   return (
@@ -387,6 +441,13 @@ function MainContent({
       {!activeSport && (
         <LiveTopEvents />
       )}
+
+      <SportBreadcrumb
+        activeSport={activeSport}
+        activeLeague={activeLeague}
+        onClearSport={onClearSport}
+        onClearLeague={onClearLeague}
+      />
 
       <div className="relative">
         <EventFilter
@@ -764,6 +825,7 @@ export default function Home() {
                   activeLeague={activeLeague}
                   onLeagueClick={(sportSlug, leagueSlug) => { setActiveSport(sportSlug); setActiveLeague(leagueSlug); }}
                   onClearLeague={() => setActiveLeague(null)}
+                  onClearSport={() => { setActiveSport(null); setActiveLeague(null); }}
                 />
               )}
               {mobileTab === "social" && <SocialFeed />}
@@ -779,6 +841,7 @@ export default function Home() {
                   activeLeague={activeLeague}
                   onLeagueClick={(sportSlug, leagueSlug) => { setActiveSport(sportSlug); setActiveLeague(leagueSlug); }}
                   onClearLeague={() => setActiveLeague(null)}
+                  onClearSport={() => { setActiveSport(null); setActiveLeague(null); }}
                 />}
               <PlayBetslip />
             </div>
