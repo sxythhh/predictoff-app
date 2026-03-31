@@ -14,6 +14,7 @@ import { sportIcons } from "@/components/waliet/sport-icons";
 import { useCaptureReferral } from "@/hooks/useReferral";
 import { useAccount } from "wagmi";
 import { WalletModal } from "@/components/waliet/WalletModal";
+import { useWebHaptics } from "web-haptics/react";
 
 // Dynamic imports — these only load when needed (saves ~100KB on initial load)
 const SocialFeed = dynamic(() => import("@/components/social/SocialFeed").then(m => ({ default: m.SocialFeed })), { ssr: false });
@@ -766,12 +767,13 @@ function MobileNav({
 }) {
   const { isLive, changeLive } = useLive();
   const [, startTransition] = useTransition();
+  const haptic = useWebHaptics();
 
   function NavBtn({ label, active, onClick, children }: {
     label: string; active: boolean; onClick: () => void; children: React.ReactNode;
   }) {
     return (
-      <button onClick={onClick} className={`flex-1 flex flex-col items-center py-1 cursor-pointer ${active ? "text-text-primary" : "text-text-muted"}`}>
+      <button onClick={() => { haptic.trigger("selection"); onClick(); }} className={`flex-1 flex flex-col items-center py-1 cursor-pointer ${active ? "text-text-primary" : "text-text-muted"}`}>
         <div className="w-5 h-5 flex items-center justify-center">{children}</div>
         <span className="font-inter text-[11px] font-medium leading-[14px] mt-0.5">
           {label}

@@ -21,9 +21,14 @@ export default function TipstersPage() {
         {/* Page header */}
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-[18px] font-semibold">Tipsters</h1>
-          <Link href="/picks" className="text-[13px] text-accent font-medium hover:text-accent-hover">
-            View Picks Feed
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/tipsters/leaderboard" className="text-[13px] text-text-muted font-medium hover:text-text-secondary">
+              Leaderboard
+            </Link>
+            <Link href="/picks" className="text-[13px] text-accent font-medium hover:text-accent-hover">
+              Picks Feed
+            </Link>
+          </div>
         </div>
         <div className="mb-4">
           <p className="text-[13px] text-text-muted">Follow top tipsters and get access to their premium picks</p>
