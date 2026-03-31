@@ -332,19 +332,21 @@ function HeaderBalancePill() {
 export default function HeaderClient({ activePage, onPageChange }: { activePage?: string; onPageChange?: (page: string) => void } = {}) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
 
-  const headerTab = "sports";
+  const headerTab = pathname.startsWith("/picks") ? "picks"
+    : pathname.startsWith("/tournament") ? "tournaments"
+    : pathname.startsWith("/tipster") ? "tipsters"
+    : "sports";
   const handleTabChange = useCallback((tab: string) => {
-    if (tab === "picks") {
-      window.location.href = "/picks";
-    } else if (tab === "tournaments") {
-      window.location.href = "/tournaments";
-    } else if (tab === "tipsters") {
-      window.location.href = "/tipsters";
-    } else {
+    if (tab === "sports" && pathname === "/") {
       onPageChange?.("sports");
+      return;
     }
-  }, [onPageChange]);
+    const routes: Record<string, string> = { sports: "/", picks: "/picks", tournaments: "/tournaments", tipsters: "/tipsters" };
+    const target = routes[tab];
+    if (target && pathname !== target) window.location.href = target;
+  }, [onPageChange, pathname]);
   const handleClose = useCallback(() => setSearchOpen(false), []);
   const handleWalletClose = useCallback(() => setWalletOpen(false), []);
 
