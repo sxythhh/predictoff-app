@@ -13,18 +13,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { connectAsync } = useConnect();
   const [user, setUser] = useState<DbUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const wasConnectedOnMount = useRef(isConnected);
+  const sessionChecked = useRef(false);
+  const signingIn = useRef(false);
+  const lastSignedAddress = useRef<string | null>(null);
 
   // Check existing session on mount
   const checkSession = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/session");
       const data = await res.json();
-      setUser(data.user ?? null);
+      const sessionUser = data.user ?? null;
+      setUser(sessionUser);
+      if (sessionUser) {
+        lastSignedAddress.current = sessionUser.walletAddress?.toLowerCase() ?? null;
+      }
     } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
+      sessionChecked.current = true;
     }
   }, []);
 
@@ -32,28 +39,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession();
   }, [checkSession]);
 
-  // Auto sign-in only on NEW wallet connections (not page reloads with existing session)
+  // Auto sign-in ONLY when:
+  // 1. Session check completed (no race)
+  // 2. Wallet is connected with an address
+  // 3. No existing session for this address
+  // 4. Not already in the middle of signing in
   useEffect(() => {
-    // Skip if wallet was already connected when the page loaded — session check handles that
-    if (wasConnectedOnMount.current) {
-      wasConnectedOnMount.current = false;
-      return;
-    }
-    // Wallet just connected fresh → trigger SIWE sign-in
-    if (isConnected && address && !user && !isLoading) {
+    if (!sessionChecked.current || isLoading) return;
+    if (!isConnected || !address) return;
+    if (signingIn.current) return;
+
+    const addr = address.toLowerCase();
+
+    // Already have a session for this address — don't prompt again
+    if (user && user.walletAddress?.toLowerCase() === addr) return;
+
+    // Already signed this address in this page lifecycle — don't prompt again
+    if (lastSignedAddress.current === addr) return;
+
+    // No session + wallet connected = new connection, trigger SIWE
+    if (!user) {
       signIn();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, address, isLoading]);
+  }, [isConnected, address, isLoading, user]);
 
   // Auto sign-out if wallet disconnects
   useEffect(() => {
     if (!isConnected && user) {
-      fetch("/api/auth/logout", { method: "POST" }).then(() => setUser(null));
+      fetch("/api/auth/logout", { method: "POST" }).then(() => {
+        setUser(null);
+        lastSignedAddress.current = null;
+      });
     }
   }, [isConnected, user]);
 
   const signIn = useCallback(async () => {
+    if (signingIn.current) return; // Prevent concurrent sign-in attempts
+    signingIn.current = true;
+
     let walletAddress = address;
     let walletChainId = chainId;
 
@@ -65,11 +89,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         walletChainId = result.chainId;
       } catch (err) {
         console.error("Wallet connect failed:", err);
+        signingIn.current = false;
         return;
       }
     }
 
-    if (!walletAddress || !walletChainId) return;
+    if (!walletAddress || !walletChainId) {
+      signingIn.current = false;
+      return;
+    }
 
     try {
       // Get nonce
@@ -102,11 +130,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (verifyRes.ok) {
         const data = await verifyRes.json();
         setUser(data.user);
+        lastSignedAddress.current = walletAddress.toLowerCase();
         // Apply any stored referral code after sign-in
         applyReferral();
       }
     } catch (err) {
       console.error("Sign in failed:", err);
+    } finally {
+      signingIn.current = false;
     }
   }, [address, chainId, signMessageAsync, connectAsync]);
 

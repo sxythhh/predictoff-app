@@ -275,11 +275,13 @@ export const GameCard = memo(function GameCard({ game, leagueUrl }: { game: Game
         </div>
 
         {/* VS or Score */}
-        <div className="shrink-0 text-center w-12">
+        <div className="shrink-0 text-center min-w-[48px]">
           {isLive && liveData?.score ? (
-            <span className="text-[16px] font-bold text-text-primary tabular-nums">
+            <span className="text-[16px] font-bold text-text-primary tabular-nums whitespace-nowrap">
               {liveData.score.home}<span className="text-text-muted mx-0.5">-</span>{liveData.score.away}
             </span>
+          ) : isLive ? (
+            <span className="text-[11px] font-semibold text-status-live uppercase">Live</span>
           ) : (
             <span className="font-ibm-plex text-[14px] font-bold italic text-text-muted">VS</span>
           )}
