@@ -152,7 +152,7 @@ function SearchButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 w-[276px] h-[35px] rounded-[5px] px-[8px] pr-[5px] bg-bg-card hover:bg-bg-hover transition-colors cursor-pointer"
+      className="flex items-center gap-2 w-[276px] h-[35px] rounded-[10px] px-[10px] pr-[6px] bg-bg-card hover:bg-bg-hover transition-colors cursor-pointer"
     >
       <div className="flex items-center justify-center w-[18px] h-[18px] shrink-0">
         <SearchIcon />
@@ -160,7 +160,7 @@ function SearchButton({ onClick }: { onClick: () => void }) {
       <span className="flex-1 text-[14px] font-medium tracking-[-0.4px] text-[#616161] text-left">
         Find anything
       </span>
-      <div className="flex items-center justify-center w-[22px] h-[25px] rounded-[5px] shrink-0 bg-bg-active">
+      <div className="flex items-center justify-center w-[22px] h-[25px] rounded-[6px] shrink-0 bg-bg-active">
         <span className="font-inter text-[12px] font-normal text-text-muted">/</span>
       </div>
     </button>
@@ -373,25 +373,23 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
   return (
     <>
       <header className="w-full border-b border-border-primary bg-bg-page">
-        <div className="w-full h-14 flex items-center px-3 relative">
-          {/* Left: logo + search */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+        <div className="w-full h-14 flex items-center px-3 gap-3">
+          {/* Left: logo + tabs */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <WalietLogo className="w-6 h-6" />
-              <span className="text-[18px] font-bold tracking-tight text-text-primary -ml-0.5">Waliet</span>
+              <span className="text-[18px] font-bold tracking-tight text-text-primary -ml-0.5 hidden sm:inline">Waliet</span>
             </div>
-            <div className="hidden lg:block ml-1">
-              <SearchButton onClick={() => setSearchOpen(true)} />
+            <div className="hidden lg:block h-14">
+              <HeaderTabs activeTab={headerTab} onTabChange={handleTabChange} />
             </div>
-          </div>
-
-          {/* Center: tab bar (absolutely centered) */}
-          <div className="absolute left-1/2 -translate-x-1/2 h-full">
-            <HeaderTabs activeTab={headerTab} onTabChange={handleTabChange} />
           </div>
 
           {/* Right: search + balance pill */}
           <div className="flex items-center gap-2 ml-auto">
+            <div className="hidden lg:block">
+              <SearchButton onClick={() => setSearchOpen(true)} />
+            </div>
             {/* Mobile search icon */}
             <button
               onClick={() => setSearchOpen(true)}
