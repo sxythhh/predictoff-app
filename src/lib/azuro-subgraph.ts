@@ -213,3 +213,74 @@ export async function queryConditionResolutions(
 
   return result;
 }
+
+// Query game resolution status for the resolution tracker
+const GAME_RESOLUTION_QUERY = `
+  query GameResolutions($gameIds: [String!]!) {
+    games(where: { gameId_in: $gameIds }) {
+      gameId
+      status
+      conditions(first: 1, where: { status: Resolved }) {
+        conditionId
+        wonOutcomes {
+          outcomeId
+        }
+        outcomes {
+          outcomeId
+          selectionName
+        }
+      }
+    }
+  }
+`;
+
+export interface GameResolution {
+  gameId: string;
+  status: string;
+  winnerOutcome: string | null;
+}
+
+export async function queryGameResolutions(
+  gameIds: string[],
+  chainId?: number,
+): Promise<Map<string, GameResolution>> {
+  const url = SUBGRAPH_URLS[chainId ?? DEFAULT_CHAIN_ID];
+  if (!url) throw new Error(`No subgraph URL for chain ${chainId}`);
+
+  const result = new Map<string, GameResolution>();
+
+  for (let i = 0; i < gameIds.length; i += 50) {
+    const batch = gameIds.slice(i, i + 50);
+
+    const response = await fetchWithRetry(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: GAME_RESOLUTION_QUERY,
+        variables: { gameIds: batch },
+      }),
+    });
+
+    if (!response.ok) continue;
+    const data = await response.json();
+    const games = data?.data?.games ?? [];
+
+    for (const game of games) {
+      let winnerOutcome: string | null = null;
+      const condition = game.conditions?.[0];
+      if (condition?.wonOutcomes?.length) {
+        const wonId = condition.wonOutcomes[0].outcomeId;
+        const wonOut = condition.outcomes?.find((o: any) => o.outcomeId === wonId);
+        winnerOutcome = wonOut?.selectionName ?? null;
+      }
+
+      result.set(game.gameId, {
+        gameId: game.gameId,
+        status: game.status,
+        winnerOutcome,
+      });
+    }
+  }
+
+  return result;
+}

@@ -247,3 +247,87 @@ model TournamentBetSnapshot {
   @@index([tournamentId])
   @@index([entryId])
 }
+
+// ── Search & Indexing System ──────────────────────────────────────
+
+model IndexedSport {
+  id        String   @id @default(cuid())
+  sportId   String   @unique          // Azuro sportId
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  teams   IndexedTeam[]
+  leagues IndexedLeague[]
+
+  @@index([slug])
+}
+
+model IndexedTeam {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  image     String?
+  sportId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sport     IndexedSport   @relation(fields: [sportId], references: [id])
+  homeGames IndexedGame[]  @relation("homeTeam")
+  awayGames IndexedGame[]  @relation("awayTeam")
+
+  @@unique([name, sportId])
+  @@index([slug])
+  @@index([sportId])
+  @@index([name])
+}
+
+model IndexedLeague {
+  id          String   @id @default(cuid())
+  slug        String
+  name        String
+  countrySlug String
+  countryName String
+  sportId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sport IndexedSport  @relation(fields: [sportId], references: [id])
+  games IndexedGame[]
+
+  @@unique([slug, sportId])
+  @@index([sportId])
+  @@index([countrySlug])
+  @@index([name])
+}
+
+model IndexedGame {
+  id            String   @id @default(cuid())
+  azuroGameId   String   @unique
+  title         String
+  startsAt      Int
+  state         String   @default("prematch") // prematch | live | resolved | canceled
+  homeTeamId    String
+  awayTeamId    String
+  leagueId      String
+  sportSlug     String
+  countrySlug   String
+  resolvedAt    Int?
+  homeScore     Int?
+  awayScore     Int?
+  winnerId      String?  // IndexedTeam id, null for draw
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  homeTeam IndexedTeam   @relation("homeTeam", fields: [homeTeamId], references: [id])
+  awayTeam IndexedTeam   @relation("awayTeam", fields: [awayTeamId], references: [id])
+  league   IndexedLeague @relation(fields: [leagueId], references: [id])
+
+  @@index([homeTeamId, startsAt])
+  @@index([awayTeamId, startsAt])
+  @@index([leagueId, startsAt])
+  @@index([state, startsAt])
+  @@index([sportSlug, startsAt])
+  @@index([startsAt])
+}

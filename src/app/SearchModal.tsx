@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchGames } from "@azuro-org/sdk";
 import Link from "next/link";
+import { useEntitySearch } from "@/hooks/useEntitySearch";
+import { CountryFlag } from "@/components/sidebar/app-sidebar";
+import { TeamLogo } from "@/components/waliet/TeamLogo";
 
 function CloseIcon() {
   return (
@@ -54,6 +57,8 @@ export default function SearchModal({
   });
 
   const games = data?.games ?? [];
+  const { teams: entityTeams, leagues: entityLeagues } = useEntitySearch(query);
+  const hasEntities = entityTeams.length > 0 || entityLeagues.length > 0;
 
   useEffect(() => {
     if (open) {
@@ -133,25 +138,83 @@ export default function SearchModal({
                 <SkeletonRow key={i} />
               ))}
             </div>
-          ) : games.length === 0 ? (
+          ) : games.length === 0 && !hasEntities ? (
             <div className="flex flex-col items-center justify-center py-12 text-text-muted">
               <span className="text-2xl mb-2">🔍</span>
               <span className="text-[13px]">No results found for &ldquo;{query}&rdquo;</span>
             </div>
           ) : (
             <>
-              {/* Sport header */}
-              <div className="flex items-center gap-2 px-4 py-4">
-                <svg width="24" height="24" viewBox="0 0 17 17" fill="none">
-                  <path d="M0 8.5C0 6.24566 0.895533 4.08365 2.48959 2.48959C4.08365 0.895533 6.24566 0 8.5 0C10.7543 0 12.9163 0.895533 14.5104 2.48959C16.1045 4.08365 17 6.24566 17 8.5C17 10.7543 16.1045 12.9163 14.5104 14.5104C12.9163 16.1045 10.7543 17 8.5 17C6.24566 17 4.08365 16.1045 2.48959 14.5104C0.895533 12.9163 0 10.7543 0 8.5ZM5.41777 2.00077C4.46376 2.45445 3.62096 3.112 2.94885 3.927L3.79492 6.67838L5.11046 7.11646L7.84615 5.03723V3.61969L5.41777 2.00077ZM1.35477 9.32908C1.48554 10.4602 1.87785 11.5129 2.47023 12.4218H4.96008L5.79046 11.5914L4.71423 8.36138L3.37515 7.91546L1.35477 9.32908ZM7.04323 15.5432C8.00433 15.7411 8.99567 15.7411 9.95677 15.5432L10.9898 13.2208L10.1908 12.4231H6.80915L6.01146 13.2208L7.04323 15.5445V15.5432ZM14.5285 12.4231C15.1038 11.5417 15.4909 10.5269 15.6322 9.435L13.6131 7.92069L12.2858 8.36269L11.2095 11.5927L12.0399 12.4231H14.5285ZM14.0342 3.90608C13.3649 3.10015 12.5282 2.44955 11.5822 1.99946L9.15385 3.61969V5.03723L11.8895 7.11646L13.2025 6.67969L14.0342 3.90608Z" fill="#ABABFC"/>
-                </svg>
-                <span className="text-lg font-semibold text-text-primary">
-                  {data?.total ?? games.length} result{(data?.total ?? games.length) !== 1 ? "s" : ""}
-                </span>
-              </div>
+              {/* Teams */}
+              {entityTeams.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 px-2 mb-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Teams</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    {entityTeams.map((team) => (
+                      <Link
+                        key={team.id}
+                        href={`/team/${team.slug}`}
+                        onClick={onClose}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-bg-hover transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-bg-surface overflow-hidden flex items-center justify-center shrink-0">
+                          <TeamLogo src={team.image} name={team.name} className="w-8 h-8 object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[14px] font-medium text-text-primary truncate">{team.name}</div>
+                          <div className="text-[11px] text-text-muted">{team.sportName} · {team.upcomingGamesCount} upcoming</div>
+                        </div>
+                        <svg width="5" height="9" viewBox="0 0 5 9" fill="none" className="text-text-muted shrink-0">
+                          <path d="M0.5 1L4 4.5L0.5 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Leagues */}
+              {entityLeagues.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 px-2 mb-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Leagues</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    {entityLeagues.map((league) => (
+                      <Link
+                        key={league.id}
+                        href={`/league/${league.sportSlug}/${league.countrySlug}/${league.slug}`}
+                        onClick={onClose}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-bg-hover transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-bg-surface overflow-hidden flex items-center justify-center shrink-0">
+                          <CountryFlag name={league.countryName} className="w-6 h-6 rounded-full" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[14px] font-medium text-text-primary truncate">{league.name}</div>
+                          <div className="text-[11px] text-text-muted">{league.countryName} · {league.sportName} · {league.activeGamesCount} games</div>
+                        </div>
+                        <svg width="5" height="9" viewBox="0 0 5 9" fill="none" className="text-text-muted shrink-0">
+                          <path d="M0.5 1L4 4.5L0.5 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Games header */}
+              {games.length > 0 && (
+                <div className="flex items-center gap-2 px-2 mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Games</span>
+                  <span className="text-[11px] text-text-muted">{data?.total ?? games.length}</span>
+                </div>
+              )}
 
               {/* Results list */}
-              <div className="bg-bg-card rounded-lg overflow-hidden">
+              {games.length > 0 && <div className="bg-bg-card rounded-lg overflow-hidden">
                 {[...grouped.entries()].map(([leagueKey, leagueGames]) => (
                   <div key={leagueKey}>
                     {/* League header */}
@@ -218,7 +281,7 @@ export default function SearchModal({
                     })}
                   </div>
                 ))}
-              </div>
+              </div>}
             </>
           )}
         </div>
