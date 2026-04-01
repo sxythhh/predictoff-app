@@ -438,55 +438,53 @@ function SportBreadcrumb({
   );
 }
 
-function LoggedOutHero() {
-  return (
-    <div className="px-4 pt-6 pb-2">
-      <div className="relative rounded-2xl overflow-hidden p-8 md:p-12" style={{
-        background: "linear-gradient(135deg, #0a1a0f 0%, #0d2818 40%, #0a1a0f 100%)",
-        border: "1px solid rgba(51, 199, 113, 0.1)",
-      }}>
-        {/* Subtle glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(51,199,113,0.12) 0%, transparent 70%)" }} />
+function HeroEmbed() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-        <div className="relative z-10 max-w-xl">
-          <h1 className="text-[28px] md:text-[36px] font-bold text-white leading-tight tracking-[-0.5px]">
-            Bet on sports.<br />
-            <span className="text-[#33c771]">On-chain.</span>
-          </h1>
-          <p className="text-[15px] md:text-[16px] text-white/60 mt-3 leading-relaxed max-w-md">
-            No limits. No KYC. No account bans. Connect your wallet and start betting in seconds.
-          </p>
-          <div className="flex items-center gap-3 mt-6">
-            <WalletConnectHeroButton />
-            <div className="flex items-center gap-4 text-[13px] text-white/40">
-              <span className="flex items-center gap-1.5">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1L10 5.5H14.5L11 8.5L12.5 13L8 10L3.5 13L5 8.5L1.5 5.5H6L8 1Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/></svg>
-                No sign-up
-              </span>
-              <span className="flex items-center gap-1.5">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1"/><path d="M8 5V8.5L10.5 10" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
-                Instant payouts
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+  useEffect(() => {
+    const onBlur = () => {
+      if (document.activeElement === iframeRef.current) {
+        window.dispatchEvent(new Event("open-auth"));
+        window.focus();
+      }
+    };
+    window.addEventListener("blur", onBlur);
+
+    // Intercept wheel on the container and forward to the scroll parent
+    const container = containerRef.current;
+    const onWheel = (e: WheelEvent) => {
+      const scrollParent = container?.closest("[class*='overflow-y-auto']") as HTMLElement | null;
+      if (scrollParent) scrollParent.scrollTop += e.deltaY;
+    };
+    container?.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener("blur", onBlur);
+      container?.removeEventListener("wheel", onWheel);
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative w-full overflow-hidden" style={{ height: "clamp(400px, 50vh, 600px)" }}>
+      <iframe
+        ref={iframeRef}
+        src="https://friendly-popover-009361.framer.app/"
+        className="absolute inset-0 w-full h-full border-0"
+        loading="eager"
+        title="Waliet Hero"
+        allow="autoplay"
+        sandbox="allow-scripts allow-same-origin allow-popups"
+        scrolling="no"
+        style={{ overflow: "hidden" }}
+      />
     </div>
   );
 }
 
-function WalletConnectHeroButton() {
-  const [open, setOpen] = useState(false);
+function LoggedOutHero() {
   return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        className="h-11 px-6 rounded-lg bg-[#33c771] text-black text-[14px] font-semibold hover:bg-[#2ba85e] transition-colors cursor-pointer"
-      >
-        Connect Wallet
-      </button>
-      <WalletModal open={open} onClose={() => setOpen(false)} />
-    </>
+    <HeroEmbed />
   );
 }
 

@@ -351,13 +351,13 @@ const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameDa
 
   if (!visible) {
     return (
-      <div ref={ref} className="w-[280px] h-full">
+      <div ref={ref} className="w-[280px] h-[260px] flex items-center justify-center">
         <TopEventSkeleton />
       </div>
     );
   }
 
-  return <div ref={ref}><LiveEventCard game={game} /></div>;
+  return <div ref={ref} className="w-full h-full"><LiveEventCard game={game} /></div>;
 });
 
 /* ── Scroll Nav Buttons ── */
@@ -594,7 +594,7 @@ export function LiveTopEvents() {
       {/* Drag-to-scroll container */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto select-none pt-8 -mt-8 pb-28 -mb-28 pl-2 scrollbar-hide touch-auto lg:touch-pan-y scroll-pl-2 "
+        className="flex gap-3 overflow-x-auto select-none pt-8 -mt-8 pb-8 -mb-8 lg:pb-28 lg:-mb-28 pl-2 scrollbar-hide touch-auto lg:touch-pan-y scroll-pl-2"
         style={{ overscrollBehaviorX: "contain" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
