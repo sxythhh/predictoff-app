@@ -42,14 +42,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Handle Magic OAuth redirect (after Google login redirects back)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    // Magic OAuth adds a `magic_credential` or `magic_oauth_request_id` param
-    if (url.searchParams.has("magic_credential") || url.searchParams.has("magic_oauth_request_id")) {
+    const href = window.location.href;
+    // Magic OAuth adds various params — check for any magic-related param in query or hash
+    const params = new URLSearchParams(window.location.search);
+    const hasMagicParams = params.has("magic_credential") ||
+      params.has("magic_oauth_request_id") ||
+      params.has("provider") ||
+      (params.has("state") && params.has("code"));
+
+    if (hasMagicParams) {
       (async () => {
         try {
           const { getMagic } = await import("@/lib/magic");
           const magic = await getMagic();
-          const result = await (magic as any).oauth.getRedirectResult();
+          const result = await magic.oauth.getRedirectResult();
           const didToken = result.magic.idToken;
 
           // Authenticate via our Magic verify endpoint
@@ -61,12 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           if (res.ok) {
             await checkSession();
+          } else {
+            console.error("Magic verify failed:", await res.text());
           }
 
           // Clean URL
           window.history.replaceState({}, "", "/");
         } catch (err) {
           console.error("Magic OAuth callback error:", err);
+          // Clean URL even on error
           window.history.replaceState({}, "", "/");
         }
       })();
