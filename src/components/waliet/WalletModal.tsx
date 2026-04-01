@@ -250,13 +250,18 @@ export function WalletModal({
       const { getMagic } = await import("@/lib/magic");
       const magic = getMagic();
 
-      // Magic handles the Google OAuth popup/redirect
-      await (magic as any).oauth.loginWithRedirect({
+      // Unlock scroll before redirect
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+
+      // Magic redirects browser to Google OAuth
+      await magic.oauth.loginWithRedirect({
         provider: "google",
         redirectURI: window.location.origin,
       });
     } catch (err) {
       console.error("Google login error:", err);
+      alert("Google login failed: " + (err instanceof Error ? err.message : String(err)));
       setGoogleLoading(false);
     }
   }, [googleLoading]);
