@@ -4,6 +4,7 @@ import { useMemo, useRef } from "react";
 import { useSports, useLive } from "@azuro-org/sdk";
 import { GameOrderBy, OrderDirection, GameState, type GameData } from "@azuro-org/toolkit";
 import { LazyGameCard } from "./LazyGameCard";
+import { useFavorites } from "./useFavorites";
 
 const ACTIVE_STATES = new Set([GameState.Prematch, GameState.Live]);
 
@@ -18,8 +19,9 @@ function isGameActive(game: GameData): boolean {
   return true;
 }
 
-export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string | null; leagueSlug?: string | null }) {
+export function LiveGameSections({ sportSlug, leagueSlug, showFavourites }: { sportSlug?: string | null; leagueSlug?: string | null; showFavourites?: boolean }) {
   const { isLive } = useLive();
+  const { favorites } = useFavorites();
   const { data: sports, isFetching } = useSports(
     sportSlug
       ? {
@@ -45,7 +47,9 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
     if (!sports?.length) return null;
     return sports.map((sport) => {
       const totalGames = sport.countries.reduce(
-        (sum, c) => sum + c.leagues.reduce((s, l) => s + l.games.length, 0),
+        (sum, c) => sum + c.leagues.reduce((s, l) => s + l.games.filter(
+          (g: GameData) => isGameActive(g) && (!showFavourites || favorites.includes(g.gameId))
+        ).length, 0),
         0
       );
       if (totalGames === 0) return null;
@@ -64,7 +68,7 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
             {sport.countries.map((country) =>
               country.leagues.map((league) => {
                 const activeGames = league.games.filter(
-                  (g: GameData) => isGameActive(g)
+                  (g: GameData) => isGameActive(g) && (!showFavourites || favorites.includes(g.gameId))
                 );
                 if (!activeGames.length) return null;
                 const leagueUrl = `/${sport.slug}/${country.slug}/${league.slug}`;
@@ -92,7 +96,7 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
         </div>
       );
     });
-  }, [sports, sportSlug]);
+  }, [sports, sportSlug, showFavourites, favorites]);
 
   // Cache the last good content
   if (sportsContent) {
@@ -138,14 +142,14 @@ export function LiveGameSections({ sportSlug, leagueSlug }: { sportSlug?: string
     );
   }
 
-  if (!isFetching && !sports?.length) {
+  if (!isFetching && (!sports?.length || (showFavourites && sportsContent?.every((s) => s === null)))) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center mt-6">
         <p className="text-text-secondary text-sm font-medium">
-          No events available
+          {showFavourites ? "No favourite events" : "No events available"}
         </p>
         <p className="text-text-muted text-xs mt-1">
-          Check back later for upcoming matches
+          {showFavourites ? "Star some games to see them here" : "Check back later for upcoming matches"}
         </p>
       </div>
     );

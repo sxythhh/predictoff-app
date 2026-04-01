@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       avatar: user.avatar,
       banner: user.banner,
       bio: user.bio,
+      email: user.email,
       authProvider: user.authProvider,
       createdAt: user.createdAt.toISOString(),
       isTipster: user.isTipster,

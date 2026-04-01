@@ -181,13 +181,19 @@ export function SettingsDrawer({ onClose, open }: SettingsDrawerProps) {
 function DisconnectButton() {
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
+  const { signOut } = useAuth();
 
   if (!isConnected) return null;
+
+  const handleDisconnect = async () => {
+    await signOut();
+    disconnect();
+  };
 
   return (
     <button
       className="flex h-9 items-center justify-center gap-2 rounded-lg bg-border-subtle hover:bg-red-500/10 hover:text-red-400 text-text-muted transition-colors"
-      onClick={() => disconnect()}
+      onClick={handleDisconnect}
       type="button"
     >
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -202,6 +208,7 @@ function DisconnectButton() {
 function AccountSection() {
   const { address, isConnected } = useAccount();
   const { betToken, appChain } = useChain();
+  const { user } = useAuth();
 
   return (
     <div className="p-8 max-w-[600px]">
@@ -209,6 +216,16 @@ function AccountSection() {
 
       {isConnected && address ? (
         <div className="flex flex-col gap-5">
+          {user?.email && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[12px] font-medium text-text-muted">Email</span>
+              <div className="flex items-center gap-2 bg-border-subtle rounded-lg px-3 py-2.5 border border-border-subtle text-[13px] text-text-primary/80">
+                <span>{user.email}</span>
+                <span className="text-[11px] bg-accent/10 text-accent px-1.5 py-0.5 rounded font-medium">Verified</span>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col gap-1.5">
             <span className="text-[12px] font-medium text-text-muted">Wallet Address</span>
             <div className="flex items-center gap-2 bg-border-subtle rounded-lg px-3 py-2.5 border border-border-subtle">

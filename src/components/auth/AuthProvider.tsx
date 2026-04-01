@@ -57,9 +57,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Already signed this address in this page lifecycle — don't prompt again
     if (lastSignedAddress.current === addr) return;
 
-    // No session + wallet connected = new connection, trigger SIWE
+    // If user just authenticated via Magic (session exists but user state not yet updated),
+    // skip SIWE and refresh instead
     if (!user) {
-      signIn();
+      // Guard: mark as signing in BEFORE the async fetch to prevent concurrent calls
+      signingIn.current = true;
+
+      fetch("/api/auth/session").then(r => r.json()).then(data => {
+        if (data.user && data.user.walletAddress?.toLowerCase() === addr) {
+          // Session exists AND matches the connected wallet — use it
+          setUser(data.user);
+          lastSignedAddress.current = addr;
+          signingIn.current = false;
+        } else if (data.user) {
+          // Session exists but for a DIFFERENT wallet — ignore it, sign with current wallet
+          signingIn.current = false;
+          signIn();
+        } else {
+          // No session — trigger SIWE
+          signingIn.current = false;
+          signIn();
+        }
+      }).catch(() => {
+        signingIn.current = false;
+        signIn();
+      });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, address, isLoading, user]);
@@ -73,6 +95,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isConnected && user && walletEverConnected.current) {
+      // Logout from Magic if user signed in via Magic
+      if (user.authProvider === "magic") {
+        import("@/lib/magic").then(({ getMagic }) => {
+          try { getMagic().user.logout(); } catch {}
+        }).catch(() => {});
+      }
+
       fetch("/api/auth/logout", { method: "POST" }).then(() => {
         setUser(null);
         lastSignedAddress.current = null;

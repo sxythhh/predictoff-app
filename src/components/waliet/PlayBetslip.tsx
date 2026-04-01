@@ -631,7 +631,9 @@ function PlayBetslipInner({ isMobile }: { isMobile?: boolean } = {}) {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
+                  onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   placeholder="0.00"
+                  min="0"
                   className={`w-full h-10 px-3 pr-16 rounded-lg bg-bg-input text-text-primary text-[14px] font-semibold outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
                     isOverBalance
                       ? "border border-red-500/40 focus:border-red-500/60"

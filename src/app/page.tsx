@@ -216,14 +216,17 @@ function EventFilter({
   activeLeague,
   onLeagueClick,
   onClearLeague,
+  showFavourites,
+  setShowFavourites,
 }: {
   activeSport: string | null;
   activeLeague: string | null;
   onLeagueClick: (sportSlug: string, leagueSlug: string) => void;
   onClearLeague: () => void;
+  showFavourites: boolean;
+  setShowFavourites: (v: boolean) => void;
 }) {
   const { isLive, changeLive } = useLive();
-  const [showFavourites, setShowFavourites] = useState(false);
   const [, startTransition] = useTransition();
   const drag = useDragScroll();
 
@@ -338,7 +341,7 @@ function EventFilter({
             >
               <CountryFlag name={league.country} className="w-4 h-4 rounded-full shrink-0" />
               {league.name}
-              <span className={`text-[11px] tabular-nums ${activeLeague === league.slug ? "text-accent/60" : "text-text-muted"}`}>
+              <span className={`text-[11px] ${activeLeague === league.slug ? "text-accent/60" : "text-text-muted"}`}>
                 {league.count}
               </span>
             </button>
@@ -495,6 +498,7 @@ function MainContent({
 }) {
   const mainRef = useRef<HTMLElement>(null);
   const { isConnected: isWalletConnected } = useAccount();
+  const [showFavourites, setShowFavourites] = useState(false);
   return (
     <main ref={mainRef} className="flex-1 min-w-0 overflow-y-auto @container/main">
       {/* Hero section for logged-out users */}
@@ -517,10 +521,12 @@ function MainContent({
           activeLeague={activeLeague}
           onLeagueClick={onLeagueClick}
           onClearLeague={onClearLeague}
+          showFavourites={showFavourites}
+          setShowFavourites={setShowFavourites}
         />
 
         <div className="px-2">
-          <LiveGameSections sportSlug={activeSport} leagueSlug={activeLeague} />
+          <LiveGameSections sportSlug={activeSport} leagueSlug={activeLeague} showFavourites={showFavourites} />
         </div>
 
       {/* Breadcrumb */}
@@ -871,6 +877,8 @@ export default function Home() {
   const [activePage, setActivePage] = useState<"sports" | "social" | "leaderboard">("sports");
   const [betslipDrawerOpen, setBetslipDrawerOpen] = useState(false);
   const [mobileSportsOpen, setMobileSportsOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
   const { isConnected } = useAccount();
   const [isDesktop, setIsDesktop] = useState(false);
   const gameModal = useGameModal();
@@ -888,7 +896,7 @@ export default function Home() {
     <GameModalProvider openGame={gameModal.open}>
       <SidebarProvider>
       <div className="min-h-screen bg-bg-page flex flex-col">
-        <HeaderClient activePage={activePage} onPageChange={(p) => { setActivePage(p as "sports" | "social" | "leaderboard"); if (p === "social") setMobileTab("social"); }} />
+        <HeaderClient activePage={activePage} onPageChange={(p) => { setActivePage(p as "sports" | "social" | "leaderboard"); if (p === "social") setMobileTab("social"); }} onHowItWorks={!isConnected ? () => setWelcomeOpen(true) : undefined} />
         <div className="flex flex-1">
           <div className="w-full flex h-[calc(100vh-56px)]">
             {/* Desktop only: sidebar (not rendered on mobile = saves ~300 DOM nodes) */}
@@ -945,7 +953,8 @@ export default function Home() {
       {gameModal.isOpen && gameModal.gameId && (
         <GameModal gameId={gameModal.gameId} onClose={gameModal.close} />
       )}
-      <WelcomeModal />
+      <WelcomeModal open={welcomeOpen} onClose={() => setWelcomeOpen(false)} onSignUp={() => setAuthOpen(true)} />
+      <WalletModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </SidebarProvider>
     </GameModalProvider>
   );

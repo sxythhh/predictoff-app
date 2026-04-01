@@ -202,7 +202,7 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
   // Team colors in top corners — team1 top-left, team2 top-right
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const base = isDark ? "#111111" : "var(--bg-card)";
+  const base = isDark ? "#111111" : "#ffffff";
   const g1 = isDark ? d1 : lightenColor(c1, 0.55);
   const g2 = isDark ? d2 : lightenColor(c2, 0.55);
   // Team color gradients — smooth falloff, clear center
@@ -211,12 +211,12 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
   const teamGradient = `radial-gradient(circle at 0% 0%, ${a1}0.85) 0%, ${a1}0.4) 20%, ${a1}0.1) 38%, transparent 55%), radial-gradient(circle at 100% 0%, ${a2}0.85) 0%, ${a2}0.4) 20%, ${a2}0.1) 38%, transparent 55%), ${base}`;
 
   return (
-    <div className={`verified-card-hover rounded-xl bg-bg-card w-[280px] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:group-hover/card:z-30 ${
+    <div className={`verified-card-hover rounded-xl w-[280px] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:group-hover/card:z-30 ${
       isDark ? "transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] lg:group-hover/card:scale-[1.01]" : ""
-    } ${isDark ? "" : "ring-1 ring-black/[0.04]"}`}>
+    }`} style={{ background: teamGradient }}>
       {/* Team color gradient top — clickable, with border */}
       <div onClick={() => openGame(game.gameId)} className="cursor-pointer">
-        <div className="event-card-border relative h-[140px] flex flex-col items-center justify-center px-3 rounded-t-xl overflow-hidden" style={{ background: teamGradient }}>
+        <div className="event-card-border relative h-[140px] flex flex-col items-center justify-center px-3 rounded-t-xl overflow-hidden">
           {leagueInfo && (
             <div className="text-[11px] text-text-secondary mb-3 truncate max-w-full">{leagueInfo}</div>
           )}

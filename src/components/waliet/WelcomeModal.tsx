@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-
-const STORAGE_KEY = "waliet-onboarded";
+import { useState, useCallback } from "react";
 
 const STEPS = [
   {
@@ -37,101 +35,80 @@ const STEPS = [
   },
 ];
 
-export function WelcomeModal() {
-  const [show, setShow] = useState(false);
+export function WelcomeModal({ open, onClose, onSignUp }: { open: boolean; onClose: () => void; onSignUp?: () => void }) {
   const [step, setStep] = useState(0);
 
-  useEffect(() => {
-    try {
-      const seen = localStorage.getItem(STORAGE_KEY);
-      if (!seen) setShow(true);
-    } catch {
-      // SSR or localStorage blocked
-    }
-  }, []);
-
   const dismiss = useCallback(() => {
-    setShow(false);
-    try {
-      localStorage.setItem(STORAGE_KEY, "1");
-    } catch {}
-  }, []);
+    onClose();
+    setStep(0);
+  }, [onClose]);
 
   const next = useCallback(() => {
     if (step < STEPS.length - 1) {
       setStep((s) => s + 1);
     } else {
       dismiss();
+      onSignUp?.();
     }
-  }, [step, dismiss]);
+  }, [step, dismiss, onSignUp]);
 
-  if (!show) return null;
+  if (!open) return null;
 
   const current = STEPS[step];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={dismiss} />
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/60" onClick={dismiss} />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-[380px] bg-bg-modal rounded-2xl border border-border-subtle overflow-hidden">
-        {/* Skip button */}
-        <button
-          onClick={dismiss}
-          className="absolute top-4 right-4 text-[12px] text-text-muted hover:text-text-secondary transition-colors z-10"
-        >
-          Skip
-        </button>
+        {/* Modal */}
+        <div className="relative w-full max-w-[380px] bg-bg-modal rounded-2xl border border-border-subtle overflow-hidden">
+          {/* Skip button */}
+          <button
+            onClick={dismiss}
+            className="absolute top-4 right-4 text-[12px] text-text-muted hover:text-text-secondary transition-colors z-10 cursor-pointer"
+          >
+            Skip
+          </button>
 
-        {/* Content */}
-        <div className="flex flex-col items-center px-8 pt-10 pb-6">
-          {/* Icon */}
-          <div className="w-16 h-16 rounded-2xl bg-accent-muted flex items-center justify-center mb-5">
-            {current.icon}
-          </div>
+          {/* Content */}
+          <div className="flex flex-col items-center px-8 pt-10 pb-6">
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-accent-muted flex items-center justify-center mb-5">
+              {current.icon}
+            </div>
 
-          {/* Title */}
-          <h2 className="text-[18px] font-bold text-text-primary text-center mb-2">
-            {current.title}
-          </h2>
+            {/* Title */}
+            <h2 className="text-[18px] font-bold text-text-primary text-center mb-2">
+              {current.title}
+            </h2>
 
-          {/* Description */}
-          <p className="text-[14px] text-text-secondary text-center leading-relaxed mb-8">
-            {current.description}
-          </p>
+            {/* Description */}
+            <p className="text-[14px] text-text-secondary text-center leading-relaxed mb-8">
+              {current.description}
+            </p>
 
-          {/* Step indicators */}
-          <div className="flex items-center gap-1.5 mb-6">
-            {STEPS.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === step ? "w-6 bg-accent" : i < step ? "w-1.5 bg-accent/40" : "w-1.5 bg-border-primary"
-                }`}
-              />
-            ))}
-          </div>
+            {/* Step indicators */}
+            <div className="flex items-center gap-1.5 mb-6">
+              {STEPS.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === step ? "w-6 bg-accent" : i < step ? "w-1.5 bg-accent/40" : "w-1.5 bg-border-primary"
+                  }`}
+                />
+              ))}
+            </div>
 
-          {/* Action buttons */}
-          <div className="flex gap-2 w-full">
-            {step > 0 && (
-              <button
-                onClick={() => setStep((s) => s - 1)}
-                className="flex-1 h-11 rounded-lg text-[14px] font-semibold text-text-secondary bg-bg-surface hover:bg-bg-hover transition-colors"
-              >
-                Back
-              </button>
-            )}
+            {/* Action button */}
             <button
               onClick={next}
-              className="flex-1 h-11 rounded-lg text-[14px] font-semibold bg-btn-primary-bg text-btn-primary-text hover:bg-btn-primary-hover transition-colors"
+              className="w-full h-11 rounded-lg text-[14px] font-semibold bg-btn-primary-bg text-btn-primary-text hover:bg-btn-primary-hover transition-[transform,colors] duration-150 ease-[cubic-bezier(0.2,0,0,1)] active:scale-[0.97] cursor-pointer"
             >
               {step === STEPS.length - 1 ? "Get Started" : "Next"}
             </button>
           </div>
         </div>
       </div>
-    </div>
   );
 }

@@ -202,6 +202,7 @@ export function Betslip() {
     selectedFreebet,
     selectFreebet,
     isFreebetsFetching,
+    states,
   } = useDetailedBetslip();
   const { data: balanceData } = useBetTokenBalance();
   const { data: feeData } = useBetFee();
@@ -319,8 +320,22 @@ export function Betslip() {
 
   const impliedComboProb = isCombo && totalOdds ? ((1 / totalOdds) * 100) : null;
 
+  // Build a specific message for unavailable markets
+  const unavailableNames = (() => {
+    if (!states) return [];
+    return items
+      .filter((item) => states[item.conditionId] && states[item.conditionId] !== "Active")
+      .map((item) => {
+        const meta = getBetslipMeta(item.conditionId, item.outcomeId);
+        const state = states[item.conditionId];
+        const name = meta?.selectionName ?? meta?.marketName ?? "Selection";
+        const reason = state === "Stopped" ? "suspended" : state === "Canceled" ? "cancelled" : state === "Resolved" ? "already settled" : "unavailable";
+        return `${name} is ${reason}`;
+      });
+  })();
+
   const DISABLE_MESSAGES: Record<string, string> = {
-    ConditionState: "One or more markets are unavailable",
+    ConditionState: unavailableNames.length ? unavailableNames.join(". ") : "One or more markets are unavailable",
     BetAmountGreaterThanMaxBet: `Max bet is ${maxBet?.toFixed(2)} ${betToken?.symbol ?? ""}`,
     BetAmountLowerThanMinBet: `Min bet is ${minBet?.toFixed(2)} ${betToken?.symbol ?? ""}`,
     ComboWithForbiddenItem: "One selection can\u2019t be combined in a combo",
@@ -464,7 +479,9 @@ export function Betslip() {
                   type="number"
                   value={betAmount}
                   onChange={(e) => changeBetAmount(e.target.value)}
+                  onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   placeholder="0.00"
+                  min="0"
                   className={`w-full h-10 px-3 pr-16 rounded-lg bg-bg-input text-text-primary text-[14px] font-semibold outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
                     isOverMax || isOverBalance
                       ? "border border-red-500/40 focus:border-red-500/60"

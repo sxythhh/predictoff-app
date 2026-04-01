@@ -237,7 +237,7 @@ export const GameCard = memo(function GameCard({ game, leagueUrl }: { game: Game
 
   return (
     <div
-      className="bg-bg-modal rounded-xl border border-border-subtle p-3 cursor-pointer flex flex-col game-card-shadow"
+      className="bg-bg-modal rounded-xl border border-border-subtle/50 p-3 cursor-pointer flex flex-col game-card-shadow"
       onClick={() => openGame(gameId)}
     >
       {/* Top: time + live badge + favorite */}
@@ -255,7 +255,7 @@ export const GameCard = memo(function GameCard({ game, leagueUrl }: { game: Game
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); toggle(gameId); }}
-          className="w-6 h-6 flex items-center justify-center"
+          className={`w-6 h-6 flex items-center justify-center rounded-md cursor-pointer transition-colors ${fav ? "bg-yellow-400/15" : "hover:bg-bg-hover"}`}
           title={fav ? "Remove from favorites" : "Add to favorites"}
         >
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none">

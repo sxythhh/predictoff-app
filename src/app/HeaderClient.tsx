@@ -344,7 +344,23 @@ function HeaderBalancePill() {
   );
 }
 
-/* ── Header right section: balance pill (logged in) or join button (logged out) ── */
+/* ── "How it works" link with ? icon ── */
+function HowItWorksLink({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group hidden lg:flex items-center gap-1.5 text-[13px] font-medium text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+    >
+      <span className="flex items-center justify-center w-4 h-4 rounded-full bg-text-muted group-hover:bg-text-primary transition-colors shrink-0">
+        <span className="text-[11px] font-semibold leading-none text-bg-page">?</span>
+      </span>
+      How it works
+    </button>
+  );
+}
+
+/* ── Header right section: balance pill (logged in) or login/signup (logged out) ── */
 function HeaderRightSection({ onWalletOpen }: { onWalletOpen: () => void }) {
   const { isConnected } = useAccount();
   const { isAuthenticated } = useAuth();
@@ -354,16 +370,24 @@ function HeaderRightSection({ onWalletOpen }: { onWalletOpen: () => void }) {
   }
 
   return (
-    <button
-      onClick={onWalletOpen}
-      className="h-9 px-5 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors cursor-pointer"
-    >
-      Join
-    </button>
+    <div className="flex items-center gap-2.5">
+      <button
+        onClick={onWalletOpen}
+        className="h-10 px-5 rounded-lg text-accent text-[14px] font-semibold hover:bg-bg-hover transition-colors cursor-pointer"
+      >
+        Log In
+      </button>
+      <button
+        onClick={onWalletOpen}
+        className="h-10 px-5 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors cursor-pointer"
+      >
+        Sign Up
+      </button>
+    </div>
   );
 }
 
-export default function HeaderClient({ activePage, onPageChange }: { activePage?: string; onPageChange?: (page: string) => void } = {}) {
+export default function HeaderClient({ activePage, onPageChange, onHowItWorks }: { activePage?: string; onPageChange?: (page: string) => void; onHowItWorks?: () => void } = {}) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
@@ -414,9 +438,10 @@ export default function HeaderClient({ activePage, onPageChange }: { activePage?
             </div>
           </div>
 
-          {/* Center: search (fills remaining space, nudged left) */}
-          <div className="hidden lg:flex flex-1 justify-center -ml-12">
+          {/* Center: search + how it works */}
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-3 -ml-12">
             <SearchButton onClick={() => setSearchOpen(true)} />
+            {onHowItWorks && <HowItWorksLink onClick={onHowItWorks} />}
           </div>
 
           {/* Right: balance pill or join button */}

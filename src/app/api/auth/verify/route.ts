@@ -4,6 +4,7 @@ import { SiweMessage } from "siwe";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { SESSION_COOKIE } from "@/lib/auth";
+import { nonceStore } from "../nonce/route";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,15 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Invalid signature" }, { status: 401 });
     }
 
+    // Validate and consume nonce (prevents replay attacks)
+    const nonce = siweMessage.nonce;
+    const storedNonce = nonceStore.get(nonce);
+    if (!storedNonce || storedNonce.expiresAt < Date.now()) {
+      nonceStore.delete(nonce);
+      return Response.json({ error: "Nonce expired or not found" }, { status: 401 });
+    }
+    nonceStore.delete(nonce); // Consume — prevents reuse
+
     const address = result.data.address.toLowerCase();
 
     // Upsert user
@@ -29,7 +39,8 @@ export async function POST(request: NextRequest) {
       create: { walletAddress: address },
     });
 
-    // Create session (30 days)
+    // Clean up existing sessions and create new one (30 days)
+    await prisma.session.deleteMany({ where: { userId: user.id } });
     const token = randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
@@ -45,6 +56,8 @@ export async function POST(request: NextRequest) {
         avatar: user.avatar,
         banner: user.banner,
         bio: user.bio,
+        email: user.email,
+        authProvider: user.authProvider,
       },
     });
 

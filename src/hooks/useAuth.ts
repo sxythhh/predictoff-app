@@ -11,6 +11,7 @@ interface DbUser {
   avatar: string | null;
   banner: string | null;
   bio: string | null;
+  email: string | null;
   authProvider: string;
   createdAt?: string;
   isTipster?: boolean;
