@@ -114,15 +114,10 @@ const GameMarkets = memo(function GameMarkets({ game }: { game: GameData }) {
 
   if (isFetching || !markets?.length) {
     return (
-      <div className="flex gap-2 mt-1">
-        <div className="flex-1">
-          <div className="h-3 w-10 rounded bg-border-subtle mb-1.5" />
-          <div className="flex gap-1">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex-1 h-[38px] rounded bg-border-subtle animate-pulse" />
-            ))}
-          </div>
-        </div>
+      <div className="flex gap-1 mt-3">
+        <div className="flex-1 h-[38px] rounded bg-border-subtle" />
+        <div className="flex-1 h-[38px] rounded bg-border-subtle" />
+        <div className="flex-1 h-[38px] rounded bg-border-subtle" />
       </div>
     );
   }

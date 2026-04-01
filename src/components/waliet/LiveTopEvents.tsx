@@ -112,11 +112,10 @@ const EventCardMarkets = memo(function EventCardMarkets({ game }: { game: GameDa
   if (isFetching || !markets?.length) {
     return (
       <div className="p-3 pt-2">
-        <div className="text-[11px] text-text-secondary text-center mb-2">Loading...</div>
         <div className="flex gap-1">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex-1 h-9 rounded-lg animate-pulse" style={{ background: "var(--border-subtle)" }} />
-          ))}
+          <div className="flex-1 h-9 rounded-lg" style={{ background: "var(--border-subtle)" }} />
+          <div className="flex-1 h-9 rounded-lg" style={{ background: "var(--border-subtle)" }} />
+          <div className="flex-1 h-9 rounded-lg" style={{ background: "var(--border-subtle)" }} />
         </div>
       </div>
     );
@@ -283,29 +282,27 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
 /* ── Top event card skeleton (matches real card shape) ── */
 function TopEventSkeleton() {
   return (
-    <div className="rounded-xl bg-bg-card w-[280px] overflow-hidden">
-      {/* Gradient area */}
+    <div className="rounded-xl bg-bg-card w-[280px] overflow-hidden animate-pulse">
       <div className="h-[140px] flex flex-col items-center justify-center px-3 rounded-t-xl bg-bg-surface">
-        <div className="w-24 h-3 rounded bg-border-subtle animate-pulse mb-4" />
+        <div className="w-24 h-3 rounded bg-border-subtle mb-4" />
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 w-full px-3">
           <div className="flex flex-col items-center gap-1.5">
-            <div className="w-10 h-10 rounded-full bg-border-subtle animate-pulse" />
-            <div className="w-16 h-3 rounded bg-border-subtle animate-pulse" />
+            <div className="w-10 h-10 rounded-full bg-border-subtle" />
+            <div className="w-16 h-3 rounded bg-border-subtle" />
           </div>
-          <div className="w-8 h-5 rounded bg-border-subtle animate-pulse" />
+          <div className="w-8 h-5 rounded bg-border-subtle" />
           <div className="flex flex-col items-center gap-1.5">
-            <div className="w-10 h-10 rounded-full bg-border-subtle animate-pulse" />
-            <div className="w-16 h-3 rounded bg-border-subtle animate-pulse" />
+            <div className="w-10 h-10 rounded-full bg-border-subtle" />
+            <div className="w-16 h-3 rounded bg-border-subtle" />
           </div>
         </div>
       </div>
-      {/* Odds area */}
       <div className="p-3 pt-2 border-x border-b border-border-subtle rounded-b-xl">
-        <div className="w-20 h-3 rounded bg-border-subtle animate-pulse mx-auto mb-2" />
+        <div className="w-20 h-3 rounded bg-border-subtle mx-auto mb-2" />
         <div className="flex gap-1">
-          <div className="flex-1 h-9 rounded-lg bg-border-subtle animate-pulse" />
-          <div className="flex-1 h-9 rounded-lg bg-border-subtle animate-pulse" />
-          <div className="flex-1 h-9 rounded-lg bg-border-subtle animate-pulse" />
+          <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
+          <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
+          <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
         </div>
       </div>
     </div>

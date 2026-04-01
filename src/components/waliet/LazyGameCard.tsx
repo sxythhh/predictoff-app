@@ -90,27 +90,16 @@ function GameCardSkeleton({ game }: { game: GameData }) {
     <div className="bg-bg-modal rounded-xl p-4 game-card-shadow min-h-[140px] flex flex-col justify-between">
       <div className="flex items-center justify-between mb-3">
         <span className="text-[11px] text-text-muted">{timeStr}</span>
-        <div className="w-12 h-3 rounded bg-border-subtle animate-pulse" />
       </div>
       <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-full bg-border-subtle animate-pulse shrink-0" />
-          <span className="text-[13px] text-text-primary truncate">{team1}</span>
-        </div>
+        <span className="text-[13px] text-text-primary truncate">{team1}</span>
         <span className="text-[11px] text-text-muted shrink-0">vs</span>
-        <div className="flex items-center gap-2 min-w-0 justify-end">
-          <span className="text-[13px] text-text-primary truncate">{team2}</span>
-          <div className="w-6 h-6 rounded-full bg-border-subtle animate-pulse shrink-0" />
-        </div>
+        <span className="text-[13px] text-text-primary truncate text-right">{team2}</span>
       </div>
       <div className="flex gap-1">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="flex-1 h-9 rounded-lg animate-pulse"
-            style={{ background: "var(--border-subtle)" }}
-          />
-        ))}
+        <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
+        <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
+        <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
       </div>
     </div>
   );
