@@ -1,7 +1,6 @@
 "use client";
 
 import { Magic } from "magic-sdk";
-import { OAuthExtension } from "@magic-ext/oauth";
 
 let magicInstance: any = null;
 
@@ -14,6 +13,10 @@ export function getMagic() {
 
   const key = process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY;
   if (!key) throw new Error("NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY is not set");
+
+  // Dynamically require OAuthExtension to avoid SSR issues
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { OAuthExtension } = require("@magic-ext/oauth");
 
   magicInstance = new Magic(key, {
     network: {
