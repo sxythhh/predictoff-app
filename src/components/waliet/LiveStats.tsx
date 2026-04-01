@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLiveStatistics } from "@azuro-org/sdk";
 import { GameState, type GameData } from "@azuro-org/toolkit";
+import { useTick } from "@/hooks/useTick";
 
 /** Extract score from any sport's scoreboard */
 function extractScore(scoreBoard: any): { home: string; away: string } | null {
@@ -98,30 +99,22 @@ export function useLiveScore(game: GameData, enabled = true) {
   });
 
   const serverSeconds = stats?.clock?.clock_seconds ?? null;
-  const [clockSeconds, setClockSeconds] = useState<number | null>(serverSeconds);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const serverSecondsRef = useRef(serverSeconds);
+  const syncedAtRef = useRef<number>(Date.now());
+  const now = useTick();
 
-  // Sync local clock to server value whenever it changes — but don't restart the interval
+  // Sync to server value whenever it changes
   useEffect(() => {
     if (serverSeconds != null) {
       serverSecondsRef.current = serverSeconds;
-      setClockSeconds(serverSeconds);
+      syncedAtRef.current = Date.now();
     }
   }, [serverSeconds]);
 
-  // Single stable interval — only restarts when enabled changes
-  useEffect(() => {
-    if (serverSecondsRef.current == null || !enabled) return;
-
-    intervalRef.current = setInterval(() => {
-      setClockSeconds((prev) => (prev != null ? prev + 1 : prev));
-    }, 1000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [enabled]);
+  // Derive clock from server value + elapsed time (no setInterval needed)
+  const clockSeconds = serverSecondsRef.current != null && enabled
+    ? serverSecondsRef.current + Math.floor((now - syncedAtRef.current) / 1000)
+    : null;
 
   if (!enabled || !isAvailable || !stats?.scoreBoard) return null;
 

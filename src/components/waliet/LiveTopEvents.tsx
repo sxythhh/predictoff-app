@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState, useEffect, memo } from "react";
+import { useRef, useCallback, useState, useEffect, memo, useMemo } from "react";
 import {
   useSports,
   useLive,
@@ -17,6 +17,7 @@ import { useLiveScore } from "./LiveStats";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
 import { useSplashReady } from "./Web3Boundary";
+import { useTick } from "@/hooks/useTick";
 import { useOddsFormat } from "./OddsFormatContext";
 
 function resolveSelectionName(raw: string, game: GameData): string {
@@ -140,13 +141,7 @@ const EventCardMarkets = memo(function EventCardMarkets({ game }: { game: GameDa
 /* ── Countdown Timer ── */
 
 const CountdownTimer = memo(function CountdownTimer({ startsAt }: { startsAt: number }) {
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
+  const now = useTick();
   const diff = startsAt * 1000 - now;
   if (diff <= 0) return null;
 
@@ -205,10 +200,12 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
   const base = isDark ? "#111111" : "#ffffff";
   const g1 = isDark ? d1 : lightenColor(c1, 0.55);
   const g2 = isDark ? d2 : lightenColor(c2, 0.55);
-  // Team color gradients — smooth falloff, clear center
-  const a1 = g1.replace('rgb(', 'rgba(').replace(')', ',');
-  const a2 = g2.replace('rgb(', 'rgba(').replace(')', ',');
-  const teamGradient = `radial-gradient(circle at 0% 0%, ${a1}0.85) 0%, ${a1}0.4) 20%, ${a1}0.1) 38%, transparent 55%), radial-gradient(circle at 100% 0%, ${a2}0.85) 0%, ${a2}0.4) 20%, ${a2}0.1) 38%, transparent 55%), ${base}`;
+  // Team color gradients — memoized to avoid recalculation on every render
+  const teamGradient = useMemo(() => {
+    const a1 = g1.replace('rgb(', 'rgba(').replace(')', ',');
+    const a2 = g2.replace('rgb(', 'rgba(').replace(')', ',');
+    return `radial-gradient(circle at 0% 0%, ${a1}0.85) 0%, ${a1}0.4) 20%, ${a1}0.1) 38%, transparent 55%), radial-gradient(circle at 100% 0%, ${a2}0.85) 0%, ${a2}0.4) 20%, ${a2}0.1) 38%, transparent 55%), ${base}`;
+  }, [g1, g2, base]);
 
   return (
     <div className={`verified-card-hover rounded-xl w-[280px] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:group-hover/card:z-30 ${
@@ -476,7 +473,7 @@ export function LiveTopEvents() {
     gameOrderBy: GameOrderBy.Turnover,
     filter: { maxGamesPerLeague: 3 },
     isLive,
-    query: { refetchInterval: isLive ? 15_000 : 60_000 },
+    query: { refetchInterval: isLive ? (typeof window !== "undefined" && window.innerWidth < 768 ? 30_000 : 15_000) : 60_000 },
   });
 
   // Use prefetched data until SDK data arrives

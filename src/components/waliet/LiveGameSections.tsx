@@ -29,13 +29,13 @@ export function LiveGameSections({ sportSlug, leagueSlug, showFavourites }: { sp
           orderDir: OrderDirection.Asc,
           filter: { sportSlug, ...(leagueSlug ? { leagueSlug } : {}) },
           isLive,
-          query: { refetchInterval: isLive ? 15_000 : 60_000 },
+          query: { refetchInterval: isLive ? (typeof window !== "undefined" && window.innerWidth < 768 ? 30_000 : 15_000) : 60_000 },
         }
       : {
           gameOrderBy: GameOrderBy.Turnover,
           filter: { maxGamesPerLeague: 5 },
           isLive,
-          query: { refetchInterval: isLive ? 15_000 : 60_000 },
+          query: { refetchInterval: isLive ? (typeof window !== "undefined" && window.innerWidth < 768 ? 30_000 : 15_000) : 60_000 },
         }
   );
 

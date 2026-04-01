@@ -10,6 +10,7 @@ import { useOpenGame } from "./GameModal";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
 import { useOddsFormat } from "./OddsFormatContext";
+import { useTick } from "@/hooks/useTick";
 
 /** Resolve "1"→home team, "2"→away team, "X"→"Draw", otherwise keep original */
 function resolveSelectionName(raw: string, game: GameData): string {
@@ -149,16 +150,9 @@ const GameMarkets = memo(function GameMarkets({ game }: { game: GameData }) {
 });
 
 function useCountdown(startsAt: number) {
-  const [now, setNow] = useState(() => Date.now());
+  const now = useTick();
   const startMs = startsAt * 1000;
   const diffMs = startMs - now;
-  // Tick faster when close to kickoff: every 1s within 1 hour, every 30s otherwise
-  const tickMs = diffMs < 3_600_000 ? 1_000 : 30_000;
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), tickMs);
-    return () => clearInterval(interval);
-  }, [tickMs]);
 
   const diffMinutes = Math.floor(diffMs / 60_000);
   const diffHours = Math.floor(diffMinutes / 60);

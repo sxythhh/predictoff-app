@@ -378,7 +378,7 @@ input:-webkit-autofill:active {
 
 /* Shadow via pseudo-element — transitions opacity (GPU) not box-shadow (paint) */
 .verified-card-hover {
-  contain: layout style;
+  contain: layout style paint;
   position: relative;
 }
 .verified-card-hover::after {
