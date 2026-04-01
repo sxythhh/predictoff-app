@@ -12,10 +12,10 @@ export async function getMagic() {
   const key = process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY;
   if (!key) throw new Error("NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY is not set");
 
-  // Use Function constructor to completely bypass Turbopack static analysis
-  const dynamicImport = new Function("specifier", "return import(specifier)");
-  const { Magic } = await dynamicImport("magic-sdk");
-  const { OAuthExtension } = await dynamicImport("@magic-ext/oauth");
+  /* eslint-disable @typescript-eslint/no-require-imports */
+  const { Magic } = require("magic-sdk");
+  const { OAuthExtension } = require("@magic-ext/oauth");
+  /* eslint-enable @typescript-eslint/no-require-imports */
 
   magicInstance = new Magic(key, {
     network: {
