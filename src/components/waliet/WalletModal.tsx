@@ -315,7 +315,7 @@ export function WalletModal({
             {/* Continue with Google */}
             <button
               onClick={() => signInWithSocial("google")}
-              className="w-full h-[52px] flex items-center justify-center gap-2.5 rounded-[7.2px] bg-accent hover:brightness-110 text-btn-primary-text text-[14px] font-semibold tracking-[-0.02em] border-t border-border-subtle transition-all active:scale-[0.97] cursor-pointer"
+              className="w-full h-[52px] flex items-center justify-center gap-2.5 rounded-[7.2px] bg-accent hover:brightness-110 text-btn-primary-text text-[15px] font-semibold tracking-[-0.02em] border-t border-border-subtle transition-all active:scale-[0.97] cursor-pointer"
             >
               <GoogleIcon />
               Continue with Google
@@ -342,7 +342,7 @@ export function WalletModal({
                 <button
                   onClick={handleEmailLogin}
                   disabled={!email.trim() || emailLoading}
-                  className="h-9 px-4 rounded-[7.2px] bg-accent text-btn-primary-text text-[14px] font-medium tracking-[-0.09px] transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-9 px-4 rounded-[7.2px] bg-accent text-btn-primary-text text-[14px] font-medium tracking-[-0.02em] transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {emailLoading ? (
                     <span className="flex items-center justify-center w-full">

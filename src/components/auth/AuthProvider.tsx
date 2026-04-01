@@ -64,15 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signingIn.current = true;
 
       fetch("/api/auth/session").then(r => r.json()).then(data => {
-        if (data.user && data.user.walletAddress?.toLowerCase() === addr) {
-          // Session exists AND matches the connected wallet — use it
+        if (data.user) {
+          // Session exists — use it (don't re-prompt SIWE even if wallet differs)
           setUser(data.user);
-          lastSignedAddress.current = addr;
+          lastSignedAddress.current = data.user.walletAddress?.toLowerCase() ?? addr;
           signingIn.current = false;
-        } else if (data.user) {
-          // Session exists but for a DIFFERENT wallet — ignore it, sign with current wallet
-          signingIn.current = false;
-          signIn();
         } else {
           // No session — trigger SIWE
           signingIn.current = false;

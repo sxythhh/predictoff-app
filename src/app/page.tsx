@@ -691,12 +691,12 @@ function MobileSportsDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 bg-black/60 transition-opacity duration-300 lg:hidden ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 lg:hidden ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={onClose}
       />
       {/* Drawer — slides in from left, full width on mobile */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-full sm:w-[320px] lg:hidden transition-transform duration-300 ease-out ${open ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-40 w-full sm:w-[320px] lg:hidden transition-transform duration-300 ease-out ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex flex-col h-full bg-sidebar-bg">
           {/* Header */}
@@ -888,6 +888,17 @@ export default function Home() {
   const [isDesktop, setIsDesktop] = useState(false);
   const gameModal = useGameModal();
   useCaptureReferral();
+
+  useEffect(() => {
+    const openDrawer = () => setMobileSportsOpen(true);
+    const closeDrawer = () => setMobileSportsOpen(false);
+    window.addEventListener("open-sports-drawer", openDrawer);
+    window.addEventListener("close-sports-drawer", closeDrawer);
+    return () => {
+      window.removeEventListener("open-sports-drawer", openDrawer);
+      window.removeEventListener("close-sports-drawer", closeDrawer);
+    };
+  }, []);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1024px)");

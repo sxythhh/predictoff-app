@@ -433,7 +433,7 @@ export default function HeaderClient({ activePage, onPageChange, onHowItWorks }:
 
   return (
     <>
-      <header className="w-full border-b border-border-primary bg-bg-page">
+      <header className="w-full border-b border-border-primary bg-bg-page sticky top-0 z-40">
         <div className="w-full h-14 flex items-center px-3 gap-3">
           {/* Left: logo + tabs */}
           <div className="flex items-center gap-3 shrink-0">
