@@ -1,20 +1,59 @@
 "use client";
 
-import { useRef, useState, useEffect, memo } from "react";
+import { useRef, useState, useEffect, memo, useCallback } from "react";
 import { type GameData } from "@azuro-org/toolkit";
 import { GameCard } from "./GameCard";
 
 /**
- * Wraps GameCard with IntersectionObserver — only renders the full card
- * (with its hooks: useActiveMarkets, useGameState, useSelectionOdds)
- * when the card is within 300px of the viewport. Shows a lightweight
- * placeholder skeleton otherwise.
- *
- * This avoids the N+1 query problem on initial load:
- * - Without: 15 cards × 4 hooks = 60 queries on mount
- * - With: only visible cards (~5-6) load = ~20-24 queries
+ * Shared IntersectionObserver — ONE instance observes ALL lazy cards.
+ * Each card creates its own observer in the old code (30+ observers).
+ * This reduces to 1 observer total.
  */
 const IS_MOBILE = typeof window !== "undefined" && window.innerWidth < 1024;
+
+let sharedObserver: IntersectionObserver | null = null;
+const callbacks = new Map<Element, () => void>();
+
+function getSharedObserver() {
+  if (sharedObserver) return sharedObserver;
+  sharedObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const cb = callbacks.get(entry.target);
+          if (cb) {
+            cb();
+            callbacks.delete(entry.target);
+            sharedObserver!.unobserve(entry.target);
+          }
+        }
+      }
+    },
+    { rootMargin: "300px 0px" }
+  );
+  return sharedObserver;
+}
+
+function useNearViewport(ref: React.RefObject<HTMLElement | null>) {
+  const [isNear, setIsNear] = useState(!IS_MOBILE);
+
+  useEffect(() => {
+    if (!IS_MOBILE) return;
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = getSharedObserver();
+    callbacks.set(el, () => setIsNear(true));
+    observer.observe(el);
+
+    return () => {
+      callbacks.delete(el);
+      observer.unobserve(el);
+    };
+  }, [ref]);
+
+  return isNear;
+}
 
 export const LazyGameCard = memo(function LazyGameCard({
   game,
@@ -24,28 +63,7 @@ export const LazyGameCard = memo(function LazyGameCard({
   leagueUrl: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isNearViewport, setIsNearViewport] = useState(!IS_MOBILE);
-
-  useEffect(() => {
-    // Skip lazy loading on desktop — render everything immediately
-    if (!IS_MOBILE) return;
-
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsNearViewport(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "300px 0px" }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const isNearViewport = useNearViewport(ref);
 
   return (
     <div ref={ref}>
@@ -61,7 +79,6 @@ export const LazyGameCard = memo(function LazyGameCard({
 /**
  * Lightweight placeholder that matches GameCard dimensions.
  * Shows team names and basic info but fires ZERO hooks/queries.
- * Uses data already available from the useSports response (no extra fetch).
  */
 function GameCardSkeleton({ game }: { game: GameData }) {
   const team1 = game.participants?.[0]?.name ?? "Team 1";
@@ -71,13 +88,10 @@ function GameCardSkeleton({ game }: { game: GameData }) {
 
   return (
     <div className="bg-bg-modal rounded-xl p-4 game-card-shadow min-h-[140px] flex flex-col justify-between">
-      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-[11px] text-text-muted">{timeStr}</span>
         <div className="w-12 h-3 rounded bg-border-subtle animate-pulse" />
       </div>
-
-      {/* Teams */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-6 h-6 rounded-full bg-border-subtle animate-pulse shrink-0" />
@@ -89,8 +103,6 @@ function GameCardSkeleton({ game }: { game: GameData }) {
           <div className="w-6 h-6 rounded-full bg-border-subtle animate-pulse shrink-0" />
         </div>
       </div>
-
-      {/* Odds skeleton */}
       <div className="flex gap-1">
         {[1, 2, 3].map((i) => (
           <div

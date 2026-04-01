@@ -312,7 +312,26 @@ function TopEventSkeleton() {
   );
 }
 
-/* ── Lazy wrapper for off-screen top event cards on mobile ── */
+/* ── Shared observer for lazy top event cards ── */
+let topEventObserver: IntersectionObserver | null = null;
+const topEventCallbacks = new Map<Element, () => void>();
+
+function getTopEventObserver() {
+  if (topEventObserver) return topEventObserver;
+  topEventObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const cb = topEventCallbacks.get(entry.target);
+          if (cb) { cb(); topEventCallbacks.delete(entry.target); topEventObserver!.unobserve(entry.target); }
+        }
+      }
+    },
+    { rootMargin: "200px 0px" }
+  );
+  return topEventObserver;
+}
+
 const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameData }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -320,12 +339,10 @@ const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameDa
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { rootMargin: "200px 0px" }
-    );
+    const observer = getTopEventObserver();
+    topEventCallbacks.set(el, () => setVisible(true));
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => { topEventCallbacks.delete(el); observer.unobserve(el); };
   }, []);
 
   if (!visible) {

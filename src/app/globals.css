@@ -448,10 +448,12 @@ input:-webkit-autofill:active {
 .odds-increased { animation: odds-flash-up 600ms ease-out; }
 .odds-decreased { animation: odds-flash-down 600ms ease-out; }
 
-/* ── Mobile-only perf optimizations for top events cards ── */
-@media (max-width: 1023px) {
+/* ── Perf optimizations for top events cards ── */
+.top-events-card-perf {
+  contain: layout style paint;
+}
+@media (min-width: 1024px) {
   .top-events-card-perf {
-    contain: layout style paint;
     will-change: transform;
   }
 }

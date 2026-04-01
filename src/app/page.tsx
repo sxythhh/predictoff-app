@@ -354,11 +354,18 @@ function EventFilter({
 
 function BackToTop({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | null> }) {
   const [visible, setVisible] = useState(false);
+  const visibleRef = useRef(false);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const onScroll = () => setVisible(el.scrollTop > 400);
+    const onScroll = () => {
+      const shouldShow = el.scrollTop > 400;
+      if (shouldShow !== visibleRef.current) {
+        visibleRef.current = shouldShow;
+        setVisible(shouldShow);
+      }
+    };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, [scrollRef]);
@@ -368,7 +375,7 @@ function BackToTop({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | nul
   return (
     <button
       onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
-      className="fixed left-1/2 -translate-x-1/2 bottom-20 lg:bottom-6 z-30 flex items-center gap-2 h-10 px-4 rounded-full bg-bg-card/90 backdrop-blur-md border border-border-subtle shadow-[0_4px_24px_rgba(0,0,0,0.25)] text-text-primary hover:bg-bg-hover transition-colors cursor-pointer"
+      className="fixed left-1/2 -translate-x-1/2 bottom-20 lg:bottom-6 z-30 flex items-center gap-2 h-10 px-4 rounded-full bg-bg-card/90 lg:backdrop-blur-md border border-border-subtle shadow-[0_4px_24px_rgba(0,0,0,0.25)] text-text-primary hover:bg-bg-hover transition-colors cursor-pointer"
       style={{ animation: "back-to-top-in 0.3s ease-out" }}
     >
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-text-secondary">
