@@ -88,7 +88,7 @@ function OddsBtn({
   return (
     <button
       onClick={handleClick}
-      className={`odds-glass flex-1 flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+      className={`odds-glass flex-1 flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer ${
         isActive ? "odds-glass-active" : ""
       }`}
     >

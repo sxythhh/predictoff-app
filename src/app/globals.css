@@ -299,50 +299,33 @@ input:-webkit-autofill:active {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Glass inner shadow — odds buttons on top event cards.
-   Exact effect from clipper campaign budget-header, adapted for small buttons. */
-/* Mobile: simplified odds-glass (no multi-gradient, no box-shadow) */
-@media (max-width: 1023px) {
-  .odds-glass {
-    background: #ededef !important;
-    border: 0.83px solid rgba(0, 0, 0, 0.06) !important;
-    box-shadow: none !important;
-  }
-  .dark .odds-glass {
-    background: #181818 !important;
-    border: 0.83px solid rgba(255, 255, 255, 0.06) !important;
-    box-shadow: none !important;
-  }
+/* Glass inner shadow — odds buttons */
+.odds-glass {
+  background:
+    linear-gradient(180deg, #ffffff -10.42%, rgba(255, 255, 255, 0.01) 68.75%)
+      padding-box,
+    linear-gradient(0deg, #ededef, #ededef) padding-box,
+    linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)
+      border-box !important;
+  border: 0.83px solid transparent !important;
+  box-shadow:
+    0px 1px 2px rgba(0, 0, 0, 0.04),
+    0px 0.5px 1px rgba(0, 0, 0, 0.03) !important;
 }
-/* Desktop: full glassmorphism */
-@media (min-width: 1024px) {
-  .odds-glass {
-    background:
-      linear-gradient(180deg, #ffffff -10.42%, rgba(255, 255, 255, 0.01) 68.75%)
-        padding-box,
-      linear-gradient(0deg, #ededef, #ededef) padding-box,
-      linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)
-        border-box !important;
-    border: 0.83px solid transparent !important;
-    box-shadow:
-      0px 1px 2px rgba(0, 0, 0, 0.04),
-      0px 0.5px 1px rgba(0, 0, 0, 0.03) !important;
-  }
-  .dark .odds-glass {
-    background:
-      radial-gradient(
-          60.93% 50% at 51.43% 0%,
-          rgba(255, 255, 255, 0.05) 0%,
-          rgba(255, 255, 255, 0.003) 100%
-        )
-        padding-box,
-      linear-gradient(0deg, #181818, #181818) padding-box,
-      linear-gradient(180deg, #131313 0%, #2a2a2a 50%, #131313 100%) border-box !important;
-    box-shadow:
-      0px 1px 3px rgba(0, 0, 0, 0.12),
-      0px 1px 2px rgba(0, 0, 0, 0.08),
-      inset 0px 0.5px 0px rgba(255, 255, 255, 0.08) !important;
-  }
+.dark .odds-glass {
+  background:
+    radial-gradient(
+        60.93% 50% at 51.43% 0%,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.003) 100%
+      )
+      padding-box,
+    linear-gradient(0deg, #181818, #181818) padding-box,
+    linear-gradient(180deg, #131313 0%, #2a2a2a 50%, #131313 100%) border-box !important;
+  box-shadow:
+    0px 1px 3px rgba(0, 0, 0, 0.12),
+    0px 1px 2px rgba(0, 0, 0, 0.08),
+    inset 0px 0.5px 0px rgba(255, 255, 255, 0.08) !important;
 }
 /* Active (selected) state — solid accent with glass treatment */
 .odds-glass.odds-glass-active {

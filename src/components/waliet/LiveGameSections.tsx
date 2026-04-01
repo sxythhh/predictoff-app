@@ -108,23 +108,29 @@ export function LiveGameSections({ sportSlug, leagueSlug, showFavourites }: { sp
     return (
       <div className="flex flex-col gap-6 mt-6">
         <div>
-          <div className="h-6 w-40 rounded bg-border-subtle mb-3 ml-1" />
+          <div className="h-6 w-40 rounded-md bg-border-subtle mb-3 ml-1" />
           <div className="grid grid-cols-1 sm:grid-cols-2 @[700px]/main:grid-cols-3 gap-2">
             {Array.from({ length: 2 }).map((_, j) => (
-              <div key={j} className="bg-bg-modal rounded-xl p-4 game-card-shadow animate-pulse">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-16 h-3 rounded bg-border-subtle" />
-                  <div className="w-6 h-6 rounded bg-border-subtle" />
+              <div key={j} className="bg-bg-modal rounded-xl border border-border-subtle/50 p-3 game-card-shadow animate-pulse">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-16 h-4 rounded-md bg-border-subtle" />
+                  <div className="w-6 h-6 rounded-md bg-border-subtle" />
                 </div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-full bg-border-subtle" />
-                  <div className="w-6 h-3 rounded bg-border-subtle" />
-                  <div className="w-6 h-6 rounded-full bg-border-subtle" />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="w-7 h-7 rounded-full bg-border-subtle shrink-0" />
+                    <div className="w-20 h-3 rounded-md bg-border-subtle" />
+                  </div>
+                  <div className="w-8 h-4 rounded-md bg-border-subtle shrink-0" />
+                  <div className="flex items-center gap-2 flex-1 justify-end">
+                    <div className="w-20 h-3 rounded-md bg-border-subtle" />
+                    <div className="w-7 h-7 rounded-full bg-border-subtle shrink-0" />
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
-                  <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
-                  <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
+                <div className="flex gap-1 mt-auto pt-2">
+                  <div className="flex-1 h-[38px] rounded-lg bg-border-subtle" />
+                  <div className="flex-1 h-[38px] rounded-lg bg-border-subtle" />
+                  <div className="flex-1 h-[38px] rounded-lg bg-border-subtle" />
                 </div>
               </div>
             ))}

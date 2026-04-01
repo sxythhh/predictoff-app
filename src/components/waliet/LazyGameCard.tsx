@@ -87,19 +87,33 @@ function GameCardSkeleton({ game }: { game: GameData }) {
   const timeStr = startsAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
 
   return (
-    <div className="bg-bg-modal rounded-xl p-4 game-card-shadow min-h-[140px] flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] text-text-muted">{timeStr}</span>
+    <div className="bg-bg-modal rounded-xl border border-border-subtle/50 p-3 flex flex-col game-card-shadow">
+      {/* Time row — matches GameCard mb-2 */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[13px] font-semibold text-text-secondary">{timeStr}</span>
+        <div className="w-6 h-6" />
       </div>
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="text-[13px] text-text-primary truncate">{team1}</span>
-        <span className="text-[11px] text-text-muted shrink-0">vs</span>
-        <span className="text-[13px] text-text-primary truncate text-right">{team2}</span>
+      {/* Teams row — w-7 h-7 logo placeholders to match real card */}
+      <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-7 h-7 rounded-full bg-border-subtle shrink-0" />
+          <span className="text-[13px] font-medium text-text-primary truncate">{team1}</span>
+        </div>
+        <div className="shrink-0 text-center min-w-[48px]">
+          <span className="font-ibm-plex text-[14px] font-bold italic text-text-muted">VS</span>
+        </div>
+        <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+          <span className="text-[13px] font-medium text-text-primary truncate text-right">{team2}</span>
+          <div className="w-7 h-7 rounded-full bg-border-subtle shrink-0" />
+        </div>
       </div>
-      <div className="flex gap-1">
-        <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
-        <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
-        <div className="flex-1 h-9 rounded-lg bg-border-subtle" />
+      {/* Odds row */}
+      <div className="mt-auto pt-2">
+        <div className="flex gap-1">
+          <div className="flex-1 h-[38px] rounded-lg bg-border-subtle" />
+          <div className="flex-1 h-[38px] rounded-lg bg-border-subtle" />
+          <div className="flex-1 h-[38px] rounded-lg bg-border-subtle" />
+        </div>
       </div>
     </div>
   );
