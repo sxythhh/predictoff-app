@@ -894,6 +894,13 @@ export default function Home() {
     const closeDrawer = () => setMobileSportsOpen(false);
     window.addEventListener("open-sports-drawer", openDrawer);
     window.addEventListener("close-sports-drawer", closeDrawer);
+
+    // Check if browse was requested from another page
+    if (sessionStorage.getItem("open-browse")) {
+      sessionStorage.removeItem("open-browse");
+      setMobileSportsOpen(true);
+    }
+
     return () => {
       window.removeEventListener("open-sports-drawer", openDrawer);
       window.removeEventListener("close-sports-drawer", closeDrawer);

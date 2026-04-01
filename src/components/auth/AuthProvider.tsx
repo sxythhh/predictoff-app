@@ -39,6 +39,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession();
   }, [checkSession]);
 
+  // Handle Magic OAuth redirect (after Google login redirects back)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    // Magic OAuth adds a `magic_credential` or `magic_oauth_request_id` param
+    if (url.searchParams.has("magic_credential") || url.searchParams.has("magic_oauth_request_id")) {
+      (async () => {
+        try {
+          const { getMagic } = await import("@/lib/magic");
+          const magic = getMagic();
+          const result = await (magic as any).oauth.getRedirectResult();
+          const didToken = result.magic.idToken;
+
+          // Authenticate via our Magic verify endpoint
+          const res = await fetch("/api/auth/magic-verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ didToken }),
+          });
+
+          if (res.ok) {
+            await checkSession();
+          }
+
+          // Clean URL
+          window.history.replaceState({}, "", "/");
+        } catch (err) {
+          console.error("Magic OAuth callback error:", err);
+          window.history.replaceState({}, "", "/");
+        }
+      })();
+    }
+  }, [checkSession]);
+
   // Auto sign-in ONLY when:
   // 1. Session check completed (no race)
   // 2. Wallet is connected with an address

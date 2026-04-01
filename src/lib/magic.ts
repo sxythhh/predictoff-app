@@ -1,10 +1,11 @@
 "use client";
 
 import { Magic } from "magic-sdk";
+import { OAuthExtension } from "@magic-ext/oauth";
 
-let magicInstance: Magic | null = null;
+let magicInstance: any = null;
 
-export function getMagic(): Magic {
+export function getMagic() {
   if (typeof window === "undefined") {
     throw new Error("Magic SDK can only be initialized in the browser");
   }
@@ -19,6 +20,7 @@ export function getMagic(): Magic {
       rpcUrl: "https://polygon-bor-rpc.publicnode.com",
       chainId: 137,
     },
+    extensions: [new OAuthExtension()] as any,
   });
 
   return magicInstance;

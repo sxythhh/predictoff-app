@@ -131,6 +131,7 @@ export function WalletModal({
   const [fundOpen, setFundOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Close modal on successful NEW connect
   const [connectedOnOpen, setConnectedOnOpen] = useState(isConnected);
@@ -242,6 +243,24 @@ export function WalletModal({
     }
   }, [email, emailLoading, connectors, connect, refreshUser, onClose]);
 
+  const handleGoogleLogin = useCallback(async () => {
+    if (googleLoading) return;
+    setGoogleLoading(true);
+    try {
+      const { getMagic } = await import("@/lib/magic");
+      const magic = getMagic();
+
+      // Magic handles the Google OAuth popup/redirect
+      await (magic as any).oauth.loginWithRedirect({
+        provider: "google",
+        redirectURI: window.location.origin,
+      });
+    } catch (err) {
+      console.error("Google login error:", err);
+      setGoogleLoading(false);
+    }
+  }, [googleLoading]);
+
   if (!open) return null;
 
   return (
@@ -314,11 +333,21 @@ export function WalletModal({
 
             {/* Continue with Google */}
             <button
-              onClick={() => signInWithSocial("google")}
-              className="w-full h-[52px] flex items-center justify-center gap-2.5 rounded-[7.2px] bg-accent hover:brightness-110 text-btn-primary-text text-[15px] font-semibold tracking-[-0.02em] border-t border-border-subtle transition-all active:scale-[0.97] cursor-pointer"
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+              className="w-full h-[52px] flex items-center justify-center gap-2.5 rounded-[7.2px] bg-accent hover:brightness-110 text-btn-primary-text text-[15px] font-semibold tracking-[-0.02em] border-t border-border-subtle transition-all active:scale-[0.97] cursor-pointer disabled:opacity-70"
             >
-              <GoogleIcon />
-              Continue with Google
+              {googleLoading ? (
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  Continue with Google
+                </>
+              )}
             </button>
 
             {/* OR divider */}

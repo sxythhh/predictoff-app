@@ -13,7 +13,7 @@ function NavBtn({ label, active, onClick, children, haptic }: {
     <button onClick={() => { haptic.trigger("selection"); onClick(); }} className={`relative flex-1 flex flex-col items-center justify-center h-full cursor-pointer ${active ? "text-text-primary" : "text-text-muted"}`}>
       {/* Active indicator bar — flush with top border */}
       {active && <div className="absolute -top-px left-[30%] right-[30%] h-[2.5px] bg-white" />}
-      <div className="w-6 h-6 flex items-center justify-center">{children}</div>
+      <div className="w-6 h-6 flex items-center justify-center mt-1">{children}</div>
       <span className="font-inter text-[11px] font-medium leading-[14px]">
         {label}
       </span>
@@ -56,8 +56,14 @@ export function GlobalMobileNav() {
 
   const openBrowse = useCallback(() => {
     haptic.trigger("selection");
-    window.dispatchEvent(new Event("open-sports-drawer"));
-  }, [haptic]);
+    if (pathname !== "/") {
+      // Navigate home first, then open drawer after mount
+      sessionStorage.setItem("open-browse", "1");
+      router.push("/");
+    } else {
+      window.dispatchEvent(new Event("open-sports-drawer"));
+    }
+  }, [haptic, pathname, router]);
 
   return (
     <>
