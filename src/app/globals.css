@@ -300,58 +300,55 @@ input:-webkit-autofill:active {
 }
 
 /* Glass inner shadow — odds buttons */
-.odds-glass {
-  background:
-    linear-gradient(180deg, #ffffff -10.42%, rgba(255, 255, 255, 0.01) 68.75%)
-      padding-box,
-    linear-gradient(0deg, #ededef, #ededef) padding-box,
-    linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)
-      border-box !important;
-  border: 0.83px solid transparent !important;
-  box-shadow:
-    0px 1px 2px rgba(0, 0, 0, 0.04),
-    0px 0.5px 1px rgba(0, 0, 0, 0.03) !important;
-}
-.dark .odds-glass {
-  background:
-    radial-gradient(
-        60.93% 50% at 51.43% 0%,
-        rgba(255, 255, 255, 0.05) 0%,
-        rgba(255, 255, 255, 0.003) 100%
-      )
-      padding-box,
-    linear-gradient(0deg, #181818, #181818) padding-box,
-    linear-gradient(180deg, #131313 0%, #2a2a2a 50%, #131313 100%) border-box !important;
-  box-shadow:
-    0px 1px 3px rgba(0, 0, 0, 0.12),
-    0px 1px 2px rgba(0, 0, 0, 0.08),
-    inset 0px 0.5px 0px rgba(255, 255, 255, 0.08) !important;
-}
-/* Active (selected) state — solid accent with glass treatment */
-.odds-glass.odds-glass-active {
-  background:
-    linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
-    linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff) 0%, color-mix(in srgb, var(--accent) 90%, #fff) 50%, color-mix(in srgb, var(--accent) 70%, #fff) 100%) border-box !important;
-  border: 0.83px solid transparent !important;
-  box-shadow:
-    0px 1px 3px rgba(0, 0, 0, 0.1),
-    0px 1px 2px rgba(0, 0, 0, 0.08),
-    inset 0px 0.5px 0px rgba(255, 255, 255, 0.35) !important;
-}
-.dark .odds-glass.odds-glass-active {
-  background:
-    linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
-    linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #000) 0%, color-mix(in srgb, var(--accent) 80%, #fff) 50%, color-mix(in srgb, var(--accent) 60%, #000) 100%) border-box !important;
-}
-
-/* Press interaction — scale + radial light burst */
-.odds-glass {
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease;
-}
-.odds-glass:active {
-  transform: scale(0.97);
+@layer utilities {
+  .odds-glass {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease;
+    background:
+      linear-gradient(180deg, #ffffff -10.42%, rgba(255, 255, 255, 0.01) 68.75%)
+        padding-box,
+      linear-gradient(0deg, #ededef, #ededef) padding-box,
+      linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)
+        border-box;
+    border: 0.83px solid transparent;
+    box-shadow:
+      0px 1px 2px rgba(0, 0, 0, 0.04),
+      0px 0.5px 1px rgba(0, 0, 0, 0.03);
+  }
+  .odds-glass:active {
+    transform: scale(0.97);
+  }
+  .dark .odds-glass {
+    background:
+      radial-gradient(
+          60.93% 50% at 51.43% 0%,
+          rgba(255, 255, 255, 0.05) 0%,
+          rgba(255, 255, 255, 0.003) 100%
+        )
+        padding-box,
+      linear-gradient(0deg, #181818, #181818) padding-box,
+      linear-gradient(180deg, #131313 0%, #2a2a2a 50%, #131313 100%) border-box;
+    box-shadow:
+      0px 1px 3px rgba(0, 0, 0, 0.12),
+      0px 1px 2px rgba(0, 0, 0, 0.08),
+      inset 0px 0.5px 0px rgba(255, 255, 255, 0.08);
+  }
+  .odds-glass.odds-glass-active {
+    background:
+      linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
+      linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff) 0%, color-mix(in srgb, var(--accent) 90%, #fff) 50%, color-mix(in srgb, var(--accent) 70%, #fff) 100%) border-box;
+    border: 0.83px solid transparent;
+    box-shadow:
+      0px 1px 3px rgba(0, 0, 0, 0.1),
+      0px 1px 2px rgba(0, 0, 0, 0.08),
+      inset 0px 0.5px 0px rgba(255, 255, 255, 0.35);
+  }
+  .dark .odds-glass.odds-glass-active {
+    background:
+      linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
+      linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #000) 0%, color-mix(in srgb, var(--accent) 80%, #fff) 50%, color-mix(in srgb, var(--accent) 60%, #000) 100%) border-box;
+  }
 }
 
 /* Safe area padding for mobile nav */
