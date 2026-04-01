@@ -273,7 +273,7 @@ function EventFilter({
       <button
         type="button"
         onClick={() => switchMode(false)}
-        className={`shrink-0 h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+        className={`shrink-0 h-8 px-3.5 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
           !isLive && !showFavourites
             ? "bg-accent text-btn-primary-text"
             : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
@@ -287,7 +287,7 @@ function EventFilter({
       <button
         type="button"
         onClick={() => switchMode(true)}
-        className={`shrink-0 h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+        className={`shrink-0 h-8 px-3.5 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
           isLive && !showFavourites
             ? "bg-status-live text-white"
             : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
@@ -301,7 +301,7 @@ function EventFilter({
       <button
         type="button"
         onClick={() => setShowFavourites(!showFavourites)}
-        className={`shrink-0 h-8 px-3.5 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+        className={`shrink-0 h-8 px-3.5 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
           showFavourites
             ? "bg-yellow-500/20 text-yellow-400"
             : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
@@ -320,7 +320,7 @@ function EventFilter({
           <button
             type="button"
             onClick={onClearLeague}
-            className={`shrink-0 h-8 px-3 rounded-full text-[13px] font-medium transition-colors ${
+            className={`shrink-0 h-8 px-3 rounded-lg text-[13px] font-medium transition-colors ${
               !activeLeague
                 ? "bg-accent/15 text-accent"
                 : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
@@ -333,7 +333,7 @@ function EventFilter({
               key={league.key}
               type="button"
               onClick={() => onLeagueClick(activeSport, league.slug)}
-              className={`shrink-0 h-8 px-3 rounded-full text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              className={`shrink-0 h-8 px-3 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
                 activeLeague === league.slug
                   ? "bg-accent/15 text-accent"
                   : "bg-bg-surface text-text-secondary hover:bg-bg-hover"

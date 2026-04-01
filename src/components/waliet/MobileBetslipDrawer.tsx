@@ -7,14 +7,27 @@ import { useWebHaptics } from "web-haptics/react";
 export function MobileBetslipDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const startYRef = useRef<number | null>(null);
   const haptic = useWebHaptics();
 
-  // Reset drag state when open changes
+  // Mount on open, unmount after close animation
   useEffect(() => {
-    setDragY(0);
-    setIsDragging(false);
-    startYRef.current = null;
+    if (open) {
+      setMounted(true);
+    } else {
+      const timer = setTimeout(() => setMounted(false), 350);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  // Reset drag state
+  useEffect(() => {
+    if (open) {
+      setDragY(0);
+      setIsDragging(false);
+      startYRef.current = null;
+    }
   }, [open]);
 
   useEffect(() => {
@@ -45,22 +58,29 @@ export function MobileBetslipDrawer({ open, onClose }: { open: boolean; onClose:
     startYRef.current = null;
   };
 
-  if (!open && dragY === 0) {
-    return null;
-  }
+  if (!mounted) return null;
 
   return (
     <>
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-black/60 lg:hidden"
-        style={{ opacity: open ? Math.max(0, 1 - dragY / 300) : 0 }}
+        className="fixed inset-0 z-50 lg:hidden transition-opacity duration-300"
+        style={{
+          backgroundColor: "rgba(0,0,0,0.6)",
+          opacity: open ? Math.max(0, 1 - dragY / 300) : 0,
+          pointerEvents: open ? "auto" : "none",
+        }}
         onClick={() => { haptic.trigger("light"); onClose(); }}
       />
+
+      {/* Drawer */}
       <div
         className="fixed inset-x-0 bottom-0 z-50 lg:hidden"
         style={{
-          transform: `translateY(${dragY}px)`,
-          transition: isDragging ? "none" : "transform 0.3s ease-out",
+          transform: open
+            ? `translateY(${dragY}px)`
+            : "translateY(100%)",
+          transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
           maxHeight: "85vh",
         }}
         onTouchStart={handleTouchStart}
