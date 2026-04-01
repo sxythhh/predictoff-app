@@ -40,7 +40,7 @@ const CarouselCard = memo(function CarouselCard({
       className="carousel-card rounded-2xl overflow-hidden border border-white/[0.06] shadow-2xl"
       style={{ background: gradient }}
     >
-      <div className="overflow-y-auto max-h-[calc(85vh-56px)]">
+      <div data-card-scroll className="overflow-y-auto max-h-[calc(85vh-56px)]">
         <ModalHeader
           game={game}
           onClose={onClose}
@@ -74,6 +74,7 @@ export function ModalCarousel({
   const [dragY, setDragY] = useState(0);
   const startYRef = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
   const haptic = useWebHaptics();
 
   // Build the list of game IDs for the carousel
@@ -124,30 +125,63 @@ export function ModalCarousel({
     return () => el.removeEventListener("scrollend", handleScrollEnd);
   }, [handleScrollEnd]);
 
-  // Drag to dismiss
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const target = e.target as HTMLElement;
-    // Only start vertical drag from the handle area or if scrolled to top
-    if (target.closest("[data-drag-handle]")) {
-      startYRef.current = e.touches[0].clientY;
-    }
-  };
+  // Drag to dismiss — works from handle OR anywhere when content scrolled to top
+  const draggingRef = useRef(false);
+  const dragYRef = useRef(0);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (startYRef.current === null) return;
-    const dy = e.touches[0].clientY - startYRef.current;
-    if (dy > 0) setDragY(dy);
-  };
+  useEffect(() => {
+    const el = drawerRef.current;
+    if (!el) return;
 
-  const handleTouchEnd = () => {
-    if (dragY > 120) {
-      haptic.trigger("light");
-      setOpen(false);
-      setTimeout(onClose, 320);
-    }
-    setDragY(0);
-    startYRef.current = null;
-  };
+    const onTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      const isHandle = !!target.closest("[data-drag-handle]");
+      const scrollable = target.closest("[data-card-scroll]");
+      const isScrolledToTop = !scrollable || scrollable.scrollTop <= 0;
+
+      if (isHandle || isScrolledToTop) {
+        startYRef.current = e.touches[0].clientY;
+        draggingRef.current = false;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (startYRef.current === null) return;
+      const dy = e.touches[0].clientY - startYRef.current;
+      if (dy > 0) {
+        if (dy > 8) draggingRef.current = true;
+        if (draggingRef.current) {
+          e.preventDefault();
+          dragYRef.current = dy;
+          setDragY(dy);
+        }
+      } else {
+        startYRef.current = null;
+        draggingRef.current = false;
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (dragYRef.current > 100) {
+        haptic.trigger("light");
+        setOpen(false);
+        setTimeout(onClose, 320);
+      }
+      dragYRef.current = 0;
+      setDragY(0);
+      startYRef.current = null;
+      draggingRef.current = false;
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [haptic, onClose]);
 
   const handleBackdropClick = () => {
     haptic.trigger("light");
@@ -169,14 +203,12 @@ export function ModalCarousel({
 
       {/* Drawer */}
       <div
+        ref={drawerRef}
         className="absolute inset-x-0 bottom-0 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
         style={{
           transform: open ? `translateY(${dragY}px)` : "translateY(100%)",
           maxHeight: "88vh",
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         {/* Drag handle */}
         <div

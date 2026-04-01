@@ -10,9 +10,9 @@ function NavBtn({ label, active, onClick, children, haptic }: {
   label: string; active: boolean; onClick: () => void; children: React.ReactNode; haptic: ReturnType<typeof useWebHaptics>;
 }) {
   return (
-    <button onClick={() => { haptic.trigger("selection"); onClick(); }} className={`relative flex-1 flex flex-col items-center justify-center h-full cursor-pointer ${active ? "text-text-primary" : "text-text-muted"}`}>
+    <button onClick={() => { haptic.trigger("selection"); onClick(); }} className={`relative flex-1 flex flex-col items-center justify-center h-full cursor-pointer ${active ? "text-text-primary" : "text-text-secondary"}`}>
       {/* Active indicator bar — flush with top border */}
-      {active && <div className="absolute -top-px left-[30%] right-[30%] h-[2.5px] bg-white" />}
+      {active && <div className="absolute -top-px left-[30%] right-[30%] h-[2.5px] bg-black dark:bg-white" />}
       <div className="w-6 h-6 flex items-center justify-center mt-1">{children}</div>
       <span className="font-inter text-[11px] font-medium leading-[14px]">
         {label}
