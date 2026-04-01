@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["magic-sdk", "@magic-ext/oauth", "@magic-sdk/commons", "@magic-sdk/provider", "@magic-sdk/types"],
   experimental: {
     optimizePackageImports: [
       "wagmi",

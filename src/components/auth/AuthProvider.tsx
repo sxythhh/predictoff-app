@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (async () => {
         try {
           const { getMagic } = await import("@/lib/magic");
-          const magic = getMagic();
+          const magic = await getMagic();
           const result = await (magic as any).oauth.getRedirectResult();
           const didToken = result.magic.idToken;
 
@@ -127,8 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isConnected && user && walletEverConnected.current) {
       // Logout from Magic if user signed in via Magic
       if (user.authProvider === "magic") {
-        import("@/lib/magic").then(({ getMagic }) => {
-          try { getMagic().user.logout(); } catch {}
+        import("@/lib/magic").then(async ({ getMagic }) => {
+          try { const m = await getMagic(); m.user.logout(); } catch {}
         }).catch(() => {});
       }
 

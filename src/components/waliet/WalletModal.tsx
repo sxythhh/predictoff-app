@@ -186,7 +186,7 @@ export function WalletModal({
     setEmailError(null);
     try {
       const { getMagic } = await import("@/lib/magic");
-      const magic = getMagic();
+      const magic = await getMagic();
 
       // Magic handles OTP UI — this blocks until user verifies
       await magic.auth.loginWithEmailOTP({ email: email.trim() });
@@ -248,7 +248,7 @@ export function WalletModal({
     setGoogleLoading(true);
     try {
       const { getMagic } = await import("@/lib/magic");
-      const magic = getMagic();
+      const magic = await getMagic();
 
       // Unlock scroll before redirect
       document.documentElement.style.overflow = "";

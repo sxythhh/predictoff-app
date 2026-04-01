@@ -1,10 +1,8 @@
 "use client";
 
-import { Magic } from "magic-sdk";
-
 let magicInstance: any = null;
 
-export function getMagic() {
+export async function getMagic() {
   if (typeof window === "undefined") {
     throw new Error("Magic SDK can only be initialized in the browser");
   }
@@ -14,16 +12,17 @@ export function getMagic() {
   const key = process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY;
   if (!key) throw new Error("NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY is not set");
 
-  // Dynamically require OAuthExtension to avoid SSR issues
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { OAuthExtension } = require("@magic-ext/oauth");
+  // Use Function constructor to completely bypass Turbopack static analysis
+  const dynamicImport = new Function("specifier", "return import(specifier)");
+  const { Magic } = await dynamicImport("magic-sdk");
+  const { OAuthExtension } = await dynamicImport("@magic-ext/oauth");
 
   magicInstance = new Magic(key, {
     network: {
       rpcUrl: "https://polygon-bor-rpc.publicnode.com",
       chainId: 137,
     },
-    extensions: [new OAuthExtension()] as any,
+    extensions: [new OAuthExtension()],
   });
 
   return magicInstance;
