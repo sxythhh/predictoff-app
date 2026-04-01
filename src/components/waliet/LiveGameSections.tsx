@@ -85,6 +85,7 @@ export function LiveGameSections({ sportSlug, leagueSlug, showFavourites }: { sp
                           key={game.gameId}
                           game={game}
                           leagueUrl={leagueUrl}
+                          siblingIds={activeGames.map((g: GameData) => g.gameId)}
                         />
                       ))}
                     </div>

@@ -32,7 +32,7 @@ function resolveSelectionName(raw: string, game: GameData): string {
 }
 
 /* ── Context: allows any component to open the game modal ── */
-const GameModalContext = createContext<{ openGame: (id: string) => void }>({
+const GameModalContext = createContext<{ openGame: (id: string, siblingIds?: string[]) => void }>({
   openGame: () => {},
 });
 
@@ -45,7 +45,7 @@ export function GameModalProvider({
   openGame,
 }: {
   children: React.ReactNode;
-  openGame: (id: string) => void;
+  openGame: (id: string, siblingIds?: string[]) => void;
 }) {
   return (
     <GameModalContext.Provider value={{ openGame }}>
@@ -58,38 +58,42 @@ export function GameModalProvider({
 
 export function useGameModal() {
   const [gameId, setGameId] = useState<string | null>(null);
+  const [siblingIds, setSiblingIds] = useState<string[]>([]);
   const gameIdRef = useRef(gameId);
   const prevUrlRef = useRef<string | null>(null);
   gameIdRef.current = gameId;
 
-  const open = useCallback((id: string) => {
+  const open = useCallback((id: string, siblings?: string[]) => {
     if (gameIdRef.current) {
-      // Already have a modal open — replace instead of push to avoid stacking
       window.history.replaceState({ gameModal: id }, "", `/game/${id}`);
     } else {
-      // First modal open — save the current URL and push
       prevUrlRef.current = window.location.pathname + window.location.search;
       window.history.pushState({ gameModal: id }, "", `/game/${id}`);
     }
     setGameId(id);
+    setSiblingIds(siblings ?? []);
   }, []);
 
   const close = useCallback(() => {
     if (gameIdRef.current) {
-      // Go back to the page that was open before the modal, using history.back()
-      // so the browser's back stack stays clean
       window.history.back();
     }
     setGameId(null);
+    setSiblingIds([]);
+  }, []);
+
+  // Navigate to a sibling game within the carousel (replaceState, no back stack)
+  const navigateToSibling = useCallback((id: string) => {
+    window.history.replaceState({ gameModal: id }, "", `/game/${id}`);
+    setGameId(id);
   }, []);
 
   useEffect(() => {
     const onPopState = (e: PopStateEvent) => {
-      // If we had a game modal open and user pressed back, close it
       if (gameIdRef.current) {
         setGameId(null);
+        setSiblingIds([]);
       }
-      // If the popped state has a gameModal, re-open it (forward navigation)
       if (e.state?.gameModal) {
         setGameId(e.state.gameModal);
       }
@@ -98,7 +102,7 @@ export function useGameModal() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  return { gameId, isOpen: gameId !== null, open, close };
+  return { gameId, siblingIds, isOpen: gameId !== null, open, close, navigateToSibling };
 }
 
 /* ── Odds Button ── */

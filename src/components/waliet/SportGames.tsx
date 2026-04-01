@@ -100,6 +100,7 @@ export function SportGames({
                       key={game.gameId}
                       game={game}
                       leagueUrl={leagueUrl}
+                      siblingIds={league.games.map((g: any) => g.gameId)}
                     />
                   ))}
                 </div>

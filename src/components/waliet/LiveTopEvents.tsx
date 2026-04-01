@@ -176,7 +176,7 @@ const CountdownTimer = memo(function CountdownTimer({ startsAt }: { startsAt: nu
 
 /* ── Event Card with hover expand ── */
 
-const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) {
+const LiveEventCard = memo(function LiveEventCard({ game, siblingIds }: { game: GameData; siblingIds?: string[] }) {
   const { participants, startsAt } = game;
   const openGame = useOpenGame();
   const liveData = useLiveScore(game);
@@ -218,7 +218,7 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
       isDark ? "transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] lg:group-hover/card:scale-[1.01]" : ""
     }`} style={{ background: teamGradient }}>
       {/* Team color gradient top — clickable, with border */}
-      <div onClick={() => openGame(game.gameId)} className="cursor-pointer">
+      <div onClick={() => openGame(game.gameId, siblingIds)} className="cursor-pointer">
         <div className="event-card-border relative h-[140px] flex flex-col items-center justify-center px-3 rounded-t-xl overflow-hidden">
           {leagueInfo && (
             <div className="text-[11px] text-text-secondary mb-3 truncate max-w-full">{leagueInfo}</div>
@@ -273,7 +273,7 @@ const LiveEventCard = memo(function LiveEventCard({ game }: { game: GameData }) 
           <div className="overflow-hidden opacity-0 lg:group-hover/card:opacity-100 lg:transition-opacity verified-expand-ease" style={{ "--expand-stagger": "20ms" } as React.CSSProperties}>
             <div className="px-3 pb-3">
               <button
-                onClick={() => openGame(game.gameId)}
+                onClick={() => openGame(game.gameId, siblingIds)}
                 className="w-full flex items-center justify-center h-8 rounded-lg bg-bg-active hover:bg-bg-input text-[12px] font-semibold text-text-primary transition-colors cursor-pointer"
               >
                 View all markets
@@ -336,7 +336,7 @@ function getTopEventObserver() {
   return topEventObserver;
 }
 
-const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameData }) {
+const LazyTopEventCard = memo(function LazyTopEventCard({ game, siblingIds }: { game: GameData; siblingIds?: string[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -357,7 +357,7 @@ const LazyTopEventCard = memo(function LazyTopEventCard({ game }: { game: GameDa
     );
   }
 
-  return <div ref={ref} className="w-full h-full"><LiveEventCard game={game} /></div>;
+  return <div ref={ref} className="w-full h-full"><LiveEventCard game={game} siblingIds={siblingIds} /></div>;
 });
 
 /* ── Scroll Nav Buttons ── */
@@ -602,19 +602,21 @@ export function LiveTopEvents() {
         onPointerCancel={onPointerUp}
         onClickCapture={onClickCapture}
       >
-        {displayGames.map((game, i) => (
-          <div
-            key={game.gameId}
-            className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer top-events-card-perf"
-          >
-            {/* On mobile, only render first 3 cards eagerly — rest load on scroll */}
-            {i < 3 || typeof window === "undefined" || window.innerWidth >= 1024 ? (
-              <LiveEventCard game={game} />
-            ) : (
-              <LazyTopEventCard game={game} />
-            )}
-          </div>
-        ))}
+        {displayGames.map((game, i) => {
+          const allIds = displayGames.map((g) => g.gameId);
+          return (
+            <div
+              key={game.gameId}
+              className="group/card card-wrapper relative w-[280px] h-[260px] shrink-0 text-left lg:hover:z-30 cursor-pointer top-events-card-perf"
+            >
+              {i < 3 || typeof window === "undefined" || window.innerWidth >= 1024 ? (
+                <LiveEventCard game={game} siblingIds={allIds} />
+              ) : (
+                <LazyTopEventCard game={game} siblingIds={allIds} />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

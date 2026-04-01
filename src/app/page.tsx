@@ -8,7 +8,7 @@ import { LiveTopEvents } from "@/components/waliet/LiveTopEvents";
 import { LiveGameSections } from "@/components/waliet/LiveGameSections";
 const PlayBetslip = dynamic(() => import("@/components/waliet/PlayBetslip").then(m => ({ default: m.PlayBetslip })), { ssr: false });
 import { useGameModal, GameModalProvider } from "@/components/waliet/GameModal";
-const GameModal = dynamic(() => import("@/components/waliet/GameModal").then(m => ({ default: m.GameModal })), { ssr: false });
+const GameModalV2 = dynamic(() => import("@/components/waliet/game-modal").then(m => ({ default: m.GameModalV2 })), { ssr: false });
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { AppSidebar, CountryFlag } from "@/components/sidebar/app-sidebar";
 import { sportIcons } from "@/components/waliet/sport-icons";
@@ -974,7 +974,12 @@ export default function Home() {
 
       {/* Interceptive game modal */}
       {gameModal.isOpen && gameModal.gameId && (
-        <GameModal gameId={gameModal.gameId} onClose={gameModal.close} />
+        <GameModalV2
+          gameId={gameModal.gameId}
+          siblingIds={gameModal.siblingIds}
+          onClose={gameModal.close}
+          onNavigate={gameModal.navigateToSibling}
+        />
       )}
       <WelcomeModal open={welcomeOpen} onClose={() => setWelcomeOpen(false)} onSignUp={() => setAuthOpen(true)} />
       <WalletModal open={authOpen} onClose={() => setAuthOpen(false)} />

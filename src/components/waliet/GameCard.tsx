@@ -223,7 +223,7 @@ function GameTime({ startsAt, isLive }: { startsAt: string; isLive: boolean }) {
   );
 }
 
-export const GameCard = memo(function GameCard({ game, leagueUrl }: { game: GameData; leagueUrl: string }) {
+export const GameCard = memo(function GameCard({ game, leagueUrl, siblingIds }: { game: GameData; leagueUrl: string; siblingIds?: string[] }) {
   const { gameId, participants, startsAt } = game;
   const openGame = useOpenGame();
 
@@ -243,7 +243,7 @@ export const GameCard = memo(function GameCard({ game, leagueUrl }: { game: Game
   return (
     <div
       className="bg-bg-modal rounded-xl border border-border-subtle/50 p-3 cursor-pointer flex flex-col game-card-shadow"
-      onClick={() => openGame(gameId)}
+      onClick={() => openGame(gameId, siblingIds)}
     >
       {/* Top: time + live badge + favorite */}
       <div className="flex items-center justify-between mb-2">

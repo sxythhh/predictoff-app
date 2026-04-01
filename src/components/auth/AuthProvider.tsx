@@ -67,6 +67,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           if (res.ok) {
             await checkSession();
+
+            // Connect Magic wallet to wagmi so isConnected becomes true
+            // (same pattern as email login in WalletModal)
+            try {
+              const magicProvider = magic.rpcProvider;
+              if (magicProvider) {
+                const originalProvider = (window as any).ethereum;
+                (window as any).ethereum = magicProvider;
+                await new Promise<void>((resolve) => {
+                  const timeout = setTimeout(() => resolve(), 10_000);
+                  connectAsync({ connector: injected() })
+                    .then(() => { clearTimeout(timeout); resolve(); })
+                    .catch(() => { clearTimeout(timeout); resolve(); })
+                    .finally(() => {
+                      if (originalProvider) {
+                        (window as any).ethereum = originalProvider;
+                      }
+                    });
+                });
+              }
+            } catch (err) {
+              console.error("Magic wagmi connect failed:", err);
+            }
           } else {
             console.error("Magic verify failed:", await res.text());
           }
@@ -80,7 +103,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       })();
     }
-  }, [checkSession]);
+  }, [checkSession, connectAsync]);
+
+  // Reconnect Magic wallet to wagmi on page refresh if user has a Magic session
+  const magicReconnected = useRef(false);
+  useEffect(() => {
+    if (!sessionChecked.current || isLoading) return;
+    if (isConnected) return; // Already connected
+    if (!user || user.authProvider !== "magic") return;
+    if (magicReconnected.current) return;
+    magicReconnected.current = true;
+
+    (async () => {
+      try {
+        const { getMagic } = await import("@/lib/magic");
+        const magic = await getMagic();
+        const isLoggedIn = await magic.user.isLoggedIn();
+        if (!isLoggedIn) return;
+
+        const magicProvider = magic.rpcProvider;
+        if (magicProvider) {
+          const originalProvider = (window as any).ethereum;
+          (window as any).ethereum = magicProvider;
+          try {
+            await connectAsync({ connector: injected() });
+          } catch {}
+          if (originalProvider) {
+            (window as any).ethereum = originalProvider;
+          }
+        }
+      } catch (err) {
+        console.error("Magic reconnect failed:", err);
+      }
+    })();
+  }, [isLoading, isConnected, user, connectAsync]);
 
   // Auto sign-in ONLY when:
   // 1. Session check completed (no race)

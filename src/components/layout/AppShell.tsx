@@ -5,7 +5,8 @@ import HeaderClient from "@/app/HeaderClient";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/sidebar/sidebar-context";
 import { PlayBetslip } from "@/components/waliet/PlayBetslip";
-import { GameModalProvider, useGameModal, GameModal } from "@/components/waliet/GameModal";
+import { GameModalProvider, useGameModal } from "@/components/waliet/GameModal";
+import { GameModalV2 } from "@/components/waliet/game-modal";
 import { sportIcons } from "@/components/waliet/sport-icons";
 
 function MobileBetslipDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -99,7 +100,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Game modal */}
         {gameModal.isOpen && gameModal.gameId && (
-          <GameModal gameId={gameModal.gameId} onClose={gameModal.close} />
+          <GameModalV2
+            gameId={gameModal.gameId}
+            siblingIds={gameModal.siblingIds}
+            onClose={gameModal.close}
+            onNavigate={gameModal.navigateToSibling}
+          />
         )}
       </SidebarProvider>
     </GameModalProvider>

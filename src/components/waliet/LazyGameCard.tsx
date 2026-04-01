@@ -58,9 +58,11 @@ function useNearViewport(ref: React.RefObject<HTMLElement | null>) {
 export const LazyGameCard = memo(function LazyGameCard({
   game,
   leagueUrl,
+  siblingIds,
 }: {
   game: GameData;
   leagueUrl: string;
+  siblingIds?: string[];
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isNearViewport = useNearViewport(ref);
@@ -68,7 +70,7 @@ export const LazyGameCard = memo(function LazyGameCard({
   return (
     <div ref={ref}>
       {isNearViewport ? (
-        <GameCard game={game} leagueUrl={leagueUrl} />
+        <GameCard game={game} leagueUrl={leagueUrl} siblingIds={siblingIds} />
       ) : (
         <GameCardSkeleton game={game} />
       )}

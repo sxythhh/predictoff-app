@@ -20,7 +20,7 @@ function formatClock(seconds: number): string {
 }
 
 /** Extract sub-scores (quarters, sets, halves) */
-function extractPeriods(scoreBoard: any, sportSlug: string): { home: string[]; away: string[] } | null {
+export function extractPeriods(scoreBoard: any, sportSlug: string): { home: string[]; away: string[] } | null {
   if (!scoreBoard) return null;
 
   // Basketball: q1-q4
@@ -67,7 +67,7 @@ function extractPeriods(scoreBoard: any, sportSlug: string): { home: string[]; a
 }
 
 /** Get interesting stats from the stats object */
-function extractStats(stats: any, sportSlug: string): { label: string; home: string; away: string }[] {
+export function extractStats(stats: any, sportSlug: string): { label: string; home: string; away: string }[] {
   if (!stats) return [];
   const result: { label: string; home: string; away: string }[] = [];
 

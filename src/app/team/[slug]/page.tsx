@@ -207,7 +207,7 @@ export default function TeamPage({ params }: { params: Promise<{ slug: string }>
                 key={game.id}
                 game={game}
                 teamId={team.id}
-                onClick={() => openGame(game.azuroGameId)}
+                onClick={() => openGame(game.azuroGameId, games.map((g: any) => g.azuroGameId).filter(Boolean))}
               />
             ))}
           </div>
