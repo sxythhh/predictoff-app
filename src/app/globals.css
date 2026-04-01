@@ -240,17 +240,6 @@ body {
   background-color: #171717;
 }
 
-/* Prevent autofill from overriding input styles */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px var(--bg-modal) inset !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
-  background-clip: text !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
 /* Inter font for numbers — uses next/font CSS variable */
 .font-ibm-plex {
   font-family: var(--font-ibm-plex), system-ui, sans-serif;
@@ -299,56 +288,93 @@ input:-webkit-autofill:active {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Glass inner shadow — odds buttons */
-@layer utilities {
+/* Glass inner shadow — odds buttons on top event cards.
+   Exact effect from clipper campaign budget-header, adapted for small buttons. */
+/* Mobile: simplified odds-glass (no multi-gradient, no box-shadow) */
+@media (max-width: 1023px) {
   .odds-glass {
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease;
+    background: #ededef !important;
+    border: 0.83px solid rgba(0, 0, 0, 0.06) !important;
+    box-shadow: none !important;
+  }
+  .dark .odds-glass {
+    background: #181818 !important;
+    border: 0.83px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: none !important;
+  }
+}
+/* Desktop: full glassmorphism */
+@media (min-width: 1024px) {
+  .odds-glass {
     background:
       linear-gradient(180deg, #ffffff -10.42%, rgba(255, 255, 255, 0.01) 68.75%)
         padding-box,
       linear-gradient(0deg, #ededef, #ededef) padding-box,
-      linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)
-        border-box;
-    border: 0.83px solid transparent;
+      linear-gradient(
+          135deg,
+          #ffffff 0%,
+          rgba(255, 255, 255, 0) 35%,
+          rgba(255, 255, 255, 0) 85%,
+          #ffffff 100%
+        )
+        border-box,
+      linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 35%,
+          rgba(255, 255, 255, 0) 85%,
+          rgba(255, 255, 255, 0.3) 100%
+        )
+        border-box,
+      linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.03) 100%)
+        border-box !important;
+    border: 0.83px solid transparent !important;
     box-shadow:
-      0px 1px 2px rgba(0, 0, 0, 0.04),
-      0px 0.5px 1px rgba(0, 0, 0, 0.03);
-  }
-  .odds-glass:active {
-    transform: scale(0.97);
+      0px 1px 2px rgba(0, 0, 0, 0.06),
+      0px 1px 1px rgba(0, 0, 0, 0.04) !important;
   }
   .dark .odds-glass {
     background:
       radial-gradient(
           60.93% 50% at 51.43% 0%,
-          rgba(255, 255, 255, 0.05) 0%,
-          rgba(255, 255, 255, 0.003) 100%
+          rgba(255, 255, 255, 0.08) 0%,
+          rgba(255, 255, 255, 0.005) 100%
         )
         padding-box,
       linear-gradient(0deg, #181818, #181818) padding-box,
-      linear-gradient(180deg, #131313 0%, #2a2a2a 50%, #131313 100%) border-box;
+      linear-gradient(180deg, #0e0e0e 0%, #3a3a3a 50%, #0e0e0e 100%) border-box !important;
     box-shadow:
-      0px 1px 3px rgba(0, 0, 0, 0.12),
-      0px 1px 2px rgba(0, 0, 0, 0.08),
-      inset 0px 0.5px 0px rgba(255, 255, 255, 0.08);
+      4px 6px 8px rgba(0, 0, 0, 0.12),
+      2px 3px 5px rgba(0, 0, 0, 0.18),
+      1px 1.5px 3px rgba(0, 0, 0, 0.22),
+      inset 0px 1.25px 0px rgba(255, 255, 255, 0.18) !important;
   }
-  .odds-glass.odds-glass-active {
-    background:
-      linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
-      linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff) 0%, color-mix(in srgb, var(--accent) 90%, #fff) 50%, color-mix(in srgb, var(--accent) 70%, #fff) 100%) border-box;
-    border: 0.83px solid transparent;
-    box-shadow:
-      0px 1px 3px rgba(0, 0, 0, 0.1),
-      0px 1px 2px rgba(0, 0, 0, 0.08),
-      inset 0px 0.5px 0px rgba(255, 255, 255, 0.35);
-  }
-  .dark .odds-glass.odds-glass-active {
-    background:
-      linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
-      linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #000) 0%, color-mix(in srgb, var(--accent) 80%, #fff) 50%, color-mix(in srgb, var(--accent) 60%, #000) 100%) border-box;
-  }
+}
+/* Active (selected) state — solid accent with glass treatment */
+.odds-glass.odds-glass-active {
+  background:
+    linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff) 0%, color-mix(in srgb, var(--accent) 90%, #fff) 50%, color-mix(in srgb, var(--accent) 70%, #fff) 100%) border-box !important;
+  border: 0.83px solid transparent !important;
+  box-shadow:
+    4px 6px 8px rgba(0, 0, 0, 0.12),
+    2px 3px 5px rgba(0, 0, 0, 0.18),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.65) !important;
+}
+.dark .odds-glass.odds-glass-active {
+  background:
+    linear-gradient(0deg, var(--accent), var(--accent)) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #000) 0%, color-mix(in srgb, var(--accent) 80%, #fff) 50%, color-mix(in srgb, var(--accent) 60%, #000) 100%) border-box !important;
+}
+
+/* Press interaction — scale + radial light burst */
+.odds-glass {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease;
+}
+.odds-glass:active {
+  transform: scale(0.97);
 }
 
 /* Safe area padding for mobile nav */
@@ -358,7 +384,7 @@ input:-webkit-autofill:active {
 
 /* Shadow via pseudo-element — transitions opacity (GPU) not box-shadow (paint) */
 .verified-card-hover {
-  contain: layout style paint;
+  contain: layout style;
   position: relative;
 }
 .verified-card-hover::after {
@@ -428,12 +454,10 @@ input:-webkit-autofill:active {
 .odds-increased { animation: odds-flash-up 600ms ease-out; }
 .odds-decreased { animation: odds-flash-down 600ms ease-out; }
 
-/* ── Perf optimizations for top events cards ── */
-.top-events-card-perf {
-  contain: layout style paint;
-}
-@media (min-width: 1024px) {
+/* ── Mobile-only perf optimizations for top events cards ── */
+@media (max-width: 1023px) {
   .top-events-card-perf {
+    contain: layout style paint;
     will-change: transform;
   }
 }

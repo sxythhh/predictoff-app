@@ -18,6 +18,7 @@ import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
 import { useSplashReady } from "./Web3Boundary";
 import { useTick } from "@/hooks/useTick";
+import { useAccount } from "wagmi";
 import { useOddsFormat } from "./OddsFormatContext";
 
 function resolveSelectionName(raw: string, game: GameData): string {
@@ -49,6 +50,7 @@ function OddsBtn({
     initialOdds: outcome.odds,
   });
   const { items, addItem, removeItem } = useBaseBetslip();
+  const { isConnected } = useAccount();
 
   const isActive = items.some(
     (item) =>
@@ -59,6 +61,10 @@ function OddsBtn({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isConnected) {
+      window.dispatchEvent(new Event("open-auth"));
+      return;
+    }
     const item = {
       conditionId: outcome.conditionId,
       outcomeId: outcome.outcomeId,
@@ -112,10 +118,11 @@ const EventCardMarkets = memo(function EventCardMarkets({ game }: { game: GameDa
   if (isFetching || !markets?.length) {
     return (
       <div className="p-3 pt-2">
+        <div className="text-[11px] text-text-secondary text-center mb-2">Loading...</div>
         <div className="flex gap-1">
-          <div className="flex-1 h-9 rounded-lg" style={{ background: "var(--border-subtle)" }} />
-          <div className="flex-1 h-9 rounded-lg" style={{ background: "var(--border-subtle)" }} />
-          <div className="flex-1 h-9 rounded-lg" style={{ background: "var(--border-subtle)" }} />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex-1 h-9 rounded-lg animate-pulse" style={{ background: "var(--border-subtle)" }} />
+          ))}
         </div>
       </div>
     );

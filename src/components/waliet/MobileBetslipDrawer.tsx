@@ -1,11 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PlayBetslip } from "./PlayBetslip";
+import { useWebHaptics } from "web-haptics/react";
 
 export function MobileBetslipDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [startY, setStartY] = useState<number | null>(null);
   const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startYRef = useRef<number | null>(null);
+  const haptic = useWebHaptics();
+
+  // Reset drag state when open changes
+  useEffect(() => {
+    setDragY(0);
+    setIsDragging(false);
+    startYRef.current = null;
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -15,28 +25,44 @@ export function MobileBetslipDrawer({ open, onClose }: { open: boolean; onClose:
   }, [open]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setStartY(e.touches[0].clientY);
+    startYRef.current = e.touches[0].clientY;
+    setIsDragging(true);
   };
+
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (startY === null) return;
-    const dy = e.touches[0].clientY - startY;
+    if (startYRef.current === null) return;
+    const dy = e.touches[0].clientY - startYRef.current;
     if (dy > 0) setDragY(dy);
   };
+
   const handleTouchEnd = () => {
-    if (dragY > 120) onClose();
+    if (dragY > 120) {
+      haptic.trigger("light");
+      onClose();
+    }
     setDragY(0);
-    setStartY(null);
+    setIsDragging(false);
+    startYRef.current = null;
   };
+
+  if (!open && dragY === 0) {
+    return null;
+  }
 
   return (
     <>
       <div
-        className={`fixed inset-0 z-50 bg-black/60 transition-opacity duration-300 lg:hidden ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        onClick={onClose}
+        className="fixed inset-0 z-50 bg-black/60 lg:hidden"
+        style={{ opacity: open ? Math.max(0, 1 - dragY / 300) : 0 }}
+        onClick={() => { haptic.trigger("light"); onClose(); }}
       />
       <div
-        className={`fixed inset-x-0 bottom-0 z-50 lg:hidden transition-transform duration-300 ease-out ${open ? "translate-y-0" : "translate-y-full"}`}
-        style={{ transform: open ? `translateY(${dragY}px)` : undefined, maxHeight: "85vh" }}
+        className="fixed inset-x-0 bottom-0 z-50 lg:hidden"
+        style={{
+          transform: `translateY(${dragY}px)`,
+          transition: isDragging ? "none" : "transform 0.3s ease-out",
+          maxHeight: "85vh",
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

@@ -58,9 +58,9 @@ export function GlobalMobileNav() {
           </NavBtn>
 
           {/* Betslip — center notch button */}
-          <div className="relative flex flex-col items-center" style={{ width: 64 }}>
-            <svg className="absolute bottom-0 text-bg-card dark:text-bg-surface" width="64" height="61" viewBox="0 0 64 61" fill="none" style={{ pointerEvents: "none" }}>
-              <path fillRule="evenodd" clipRule="evenodd" d="M60.006 17C56.45 17 53.436 14.57 51.64 11.503C47.6 4.604 40.315 0 32 0C23.685 0 16.4 4.604 12.36 11.503C10.564 14.57 7.55 17 3.994 17H0V61H64V17H60.006Z" fill="currentColor"/>
+          <div className="relative flex flex-col items-center" style={{ width: 80 }}>
+            <svg className="absolute bottom-0 text-bg-card dark:text-bg-surface" width="80" height="66" viewBox="0 0 80 66" fill="none" style={{ pointerEvents: "none" }}>
+              <path fillRule="evenodd" clipRule="evenodd" d="M80 22H76C71 22 66.5 19 64 14.5C59 5 51 0 40 0C29 0 21 5 16 14.5C13.5 19 9 22 4 22H0V66H80V22Z" fill="currentColor"/>
             </svg>
             <button
               onClick={toggleBetslip}

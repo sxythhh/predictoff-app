@@ -2,6 +2,8 @@
 
 import { memo, useRef, useState, useEffect } from "react";
 import { useActiveMarkets, useGameState, useBaseBetslip, useSelectionOdds } from "@azuro-org/sdk";
+import { useAccount } from "wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import { type GameData, GameState, type MarketOutcome } from "@azuro-org/toolkit";
 import { LiveStats, useLiveScore } from "./LiveStats";
 import { setBetslipMeta, clearBetslipMeta } from "./betslip-meta";
@@ -10,7 +12,6 @@ import { useOpenGame } from "./GameModal";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
 import { useOddsFormat } from "./OddsFormatContext";
-import { useTick } from "@/hooks/useTick";
 
 /** Resolve "1"→home team, "2"→away team, "X"→"Draw", otherwise keep original */
 function resolveSelectionName(raw: string, game: GameData): string {
@@ -55,6 +56,8 @@ const OddsButton = memo(function OddsButton({
   }, [odds]);
 
   const { items, addItem, removeItem } = useBaseBetslip();
+  const { isConnected } = useAccount();
+  const { isAuthenticated } = useAuth();
 
   const isActive = items.some(
     (item) =>
@@ -64,6 +67,10 @@ const OddsButton = memo(function OddsButton({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isConnected && !isAuthenticated) {
+      window.dispatchEvent(new Event("open-auth"));
+      return;
+    }
     const item = {
       conditionId: outcome.conditionId,
       outcomeId: outcome.outcomeId,
@@ -145,9 +152,18 @@ const GameMarkets = memo(function GameMarkets({ game }: { game: GameData }) {
 });
 
 function useCountdown(startsAt: number) {
-  const now = useTick();
+  const [now, setNow] = useState(() => Date.now());
   const startMs = startsAt * 1000;
   const diffMs = startMs - now;
+  // Tick faster when close to kickoff: every 1s within 1 hour, every 30s otherwise
+  const tickMs = diffMs < 3_600_000 ? 1_000 : 30_000;
+  const needsTimer = diffMs > 0 && diffMs <= 24 * 3_600_000;
+
+  useEffect(() => {
+    if (!needsTimer) return;
+    const interval = setInterval(() => setNow(Date.now()), tickMs);
+    return () => clearInterval(interval);
+  }, [tickMs, needsTimer]);
 
   const diffMinutes = Math.floor(diffMs / 60_000);
   const diffHours = Math.floor(diffMinutes / 60);

@@ -307,8 +307,10 @@ export function WalletModal({
           /* ─── Connect view (Polymarket-style) ─── */
           <div className="flex flex-col gap-[18px]">
             {/* Logo + Title */}
-            <img src="/images/waliet-logo.png" alt="Waliet" className="w-10 h-10 brightness-0 invert mx-auto" />
-            <h2 className="text-[20px] font-semibold text-text-primary text-center">Welcome to Waliet</h2>
+            <div className="flex flex-col items-center gap-2">
+              <img src="/images/waliet-logo.png" alt="Waliet" width={40} height={40} className="brightness-0 invert" loading="eager" fetchPriority="high" />
+              <h2 className="text-[20px] font-semibold text-text-primary">Welcome to Waliet</h2>
+            </div>
 
             {/* Continue with Google */}
             <button

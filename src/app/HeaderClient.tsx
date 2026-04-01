@@ -12,6 +12,7 @@ import { useSidebar } from "@/components/sidebar/sidebar-context";
 import { useAuth } from "@/hooks/useAuth";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
 import { springs } from "@/lib/springs";
+import { useWebHaptics } from "web-haptics/react";
 
 function WalietLogo({ className }: { className?: string }) {
   // Dark mode: white PNG, Light mode: green SVG
@@ -365,6 +366,8 @@ function HeaderRightSection({ onWalletOpen }: { onWalletOpen: () => void }) {
   const { isConnected } = useAccount();
   const { isAuthenticated } = useAuth();
 
+  const haptic = useWebHaptics();
+
   if (isConnected || isAuthenticated) {
     return <HeaderBalancePill />;
   }
@@ -372,13 +375,13 @@ function HeaderRightSection({ onWalletOpen }: { onWalletOpen: () => void }) {
   return (
     <div className="flex items-center gap-2.5">
       <button
-        onClick={onWalletOpen}
+        onClick={() => { haptic.trigger("light"); onWalletOpen(); }}
         className="h-10 px-5 rounded-lg text-accent text-[14px] font-semibold hover:bg-bg-hover transition-colors cursor-pointer"
       >
         Log In
       </button>
       <button
-        onClick={onWalletOpen}
+        onClick={() => { haptic.trigger("medium"); onWalletOpen(); }}
         className="h-10 px-5 rounded-lg bg-accent text-btn-primary-text text-[14px] font-semibold hover:bg-accent-hover transition-colors cursor-pointer"
       >
         Sign Up
@@ -419,8 +422,13 @@ export default function HeaderClient({ activePage, onPageChange, onHowItWorks }:
         setSearchOpen(true);
       }
     };
+    const authHandler = () => setWalletOpen(true);
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("open-auth", authHandler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("open-auth", authHandler);
+    };
   }, [searchOpen]);
 
   return (
@@ -430,7 +438,7 @@ export default function HeaderClient({ activePage, onPageChange, onHowItWorks }:
           {/* Left: logo + tabs */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2 shrink-0">
-              <WalietLogo className="w-6 h-6" />
+              <WalietLogo className="w-6 h-6 translate-y-px" />
               <span className="text-[18px] font-bold tracking-tight text-text-primary -ml-0.5">Waliet</span>
             </div>
             <div className="hidden lg:block h-14">

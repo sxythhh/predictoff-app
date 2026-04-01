@@ -27,6 +27,7 @@ export const metadata: Metadata = {
 // It's a string that gets injected directly into the HTML response
 // and paints BEFORE any JavaScript downloads or executes.
 const SPLASH_HTML = `
+<script>if(!sessionStorage.getItem('w-splash')){sessionStorage.setItem('w-splash','1');document.write(\`
 <div id="splash" style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1a0f">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 735 735" width="72" height="72" style="animation:sf 1.5s ease-in-out infinite">
     <defs>
@@ -44,6 +45,7 @@ const SPLASH_HTML = `
   </div>
 </div>
 <style>@keyframes sf{0%,100%{opacity:.7}50%{opacity:1}}@keyframes sb{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}</style>
+\`)}</script>
 `;
 
 export default function RootLayout({
@@ -53,6 +55,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark h-full antialiased ${inter.variable} ${ibmPlexSans.variable}`} suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/images/waliet-logo.png" as="image" />
+      </head>
       <body className="min-h-full flex flex-col bg-bg-page text-text-primary">
         {/* Inline splash — renders as raw HTML before ANY JS loads */}
         <div dangerouslySetInnerHTML={{ __html: SPLASH_HTML }} suppressHydrationWarning />
