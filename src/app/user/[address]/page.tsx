@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useBetsSummary, useChain } from "@azuro-org/sdk";
 import { useAccount } from "wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { ActivityFeed } from "@/components/social/ActivityFeed";
 
@@ -13,6 +14,7 @@ function formatAddress(addr: string): string {
 interface PublicUser {
   id: string;
   walletAddress: string;
+  username: string | null;
   displayName: string | null;
   avatar: string | null;
   bio?: string | null;
@@ -59,11 +61,16 @@ function PublicStatsRow({ address, showStats, favoritesCount }: { address: strin
 export default function PublicProfilePage({ params }: { params: Promise<{ address: string }> }) {
   const { address: paramAddress } = use(params);
   const { address: myAddress } = useAccount();
+  const { user: authUser } = useAuth();
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const isOwnProfile = myAddress?.toLowerCase() === paramAddress?.toLowerCase();
+  // Compare by wallet address OR username to detect own profile
+  const paramLower = paramAddress?.toLowerCase();
+  const isOwnProfile =
+    (myAddress && myAddress.toLowerCase() === paramLower) ||
+    (authUser?.username && authUser.username.toLowerCase() === paramLower);
 
   useEffect(() => {
     fetch(`/api/users/${paramAddress}`)
@@ -153,7 +160,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ addres
           </div>
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-[22px] font-medium text-text-primary truncate">{displayName}</span>
-            <span className="text-[12px] text-text-muted">{formatAddress(user.walletAddress)}</span>
+            {user.username ? (
+              <span className="text-[13px] text-text-muted">@{user.username}</span>
+            ) : (
+              <span className="text-[12px] text-text-muted">{formatAddress(user.walletAddress)}</span>
+            )}
             {joinDate && <span className="text-[12px] text-text-muted">Joined {joinDate}</span>}
             {!user.isPrivate && user.bio && (
               <p className="text-[13px] text-text-secondary mt-1">{user.bio}</p>

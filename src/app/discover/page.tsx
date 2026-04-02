@@ -76,9 +76,8 @@ function PlatformPill({
       style={{
         width: 24,
         height: 24,
-        outline: "2px solid #000",
-        background:
-          "linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0.4)), radial-gradient(42.53% 86.44% at 50.57% 0%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.32) 100%), #151515",
+        outline: "2px solid var(--bg-page)",
+        background: "var(--bg-subtle)",
         marginLeft: index > 0 ? -4 : 0,
       }}
     >
@@ -99,19 +98,11 @@ function PlatformFilterButton({
   return (
     <button
       onClick={onClick}
-      className="size-[36px] rounded-full flex items-center justify-center cursor-pointer transition-colors"
-      style={
+      className={`size-[36px] rounded-full flex items-center justify-center cursor-pointer transition-colors border ${
         active
-          ? {
-              background: "#2a2725",
-              boxShadow:
-                "0px 1px 3px rgba(0,0,0,0.12), 0px 1px 2px rgba(0,0,0,0.08), inset 0px 1px 0px rgba(255,255,255,0.08)",
-            }
-          : {
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.15)",
-            }
-      }
+          ? "bg-bg-active border-border-input shadow-sm"
+          : "bg-transparent border-border-input"
+      }`}
     >
       <span
         className={`text-[11px] font-bold ${active ? "text-text-primary" : "text-text-muted"}`}
@@ -141,7 +132,7 @@ function CampaignCard({
 
   return (
     <div
-      className={`discover-card-border verified-card-hover rounded-2xl overflow-hidden bg-bg-page flex flex-col cursor-pointer ${isGrid ? "!w-full" : "w-[320px]"} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:group-hover/card:z-30`}
+      className={`discover-card-border verified-card-hover rounded-2xl overflow-hidden bg-bg-page flex flex-col cursor-pointer ${isGrid ? "relative w-full" : "w-[320px] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"} lg:group-hover/card:z-30`}
       onClick={onClick}
     >
       {/* Thumbnail */}
@@ -159,8 +150,8 @@ function CampaignCard({
             <div
               className="w-5 h-5 rounded-full shrink-0"
               style={{
-                background: "linear-gradient(135deg, #444, #666)",
-                boxShadow: "0 0 0 1px rgba(255,255,255,0.4)",
+                background: "linear-gradient(135deg, #888, #aaa)",
+                boxShadow: "0 0 0 1px var(--border-subtle)",
               }}
             />
             <span className="text-[12px] font-medium text-text-primary truncate">
@@ -182,10 +173,10 @@ function CampaignCard({
             >
               <div className="pl-1">
                 <span
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white whitespace-nowrap"
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold text-text-primary whitespace-nowrap"
                   style={{
-                    outline: "2px solid #000",
-                    background: "linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0.4)), radial-gradient(42.53% 86.44% at 50.57% 0%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.32) 100%), #151515",
+                    outline: "2px solid var(--bg-page)",
+                    background: "var(--bg-subtle)",
                   }}
                 >
                   {campaign.category}
@@ -208,7 +199,7 @@ function CampaignCard({
                 style={STAGGER_80}
               >
                 <div className="h-10 pt-1">
-                  <p className="line-clamp-2 text-[14px] font-normal leading-[140%] tracking-[-0.18px] text-[rgba(255,255,255,0.88)]">
+                  <p className="line-clamp-2 text-[14px] font-normal leading-[140%] tracking-[-0.18px] text-text-secondary">
                     {campaign.description || `Join ${campaign.brand}'s campaign and earn by creating engaging content for their audience.`}
                   </p>
                 </div>
@@ -224,14 +215,10 @@ function CampaignCard({
             >
               <div className="flex items-center gap-2 pb-1">
                 <div
-                  className="flex items-center justify-center h-9 w-[128px] rounded-full flex-none cursor-pointer transition-[transform,filter] duration-150 hover:brightness-110 active:scale-[0.96]"
-                  style={{
-                    background: "radial-gradient(31.76% 50.52% at 64.86% 100.52%, rgba(255,63,213,0.35) 0%, rgba(255,63,213,0) 100%), radial-gradient(60.93% 50% at 51.43% 0%, rgba(255,255,255,0.265) 0%, rgba(255,255,255,0.005) 100%), linear-gradient(0deg, #1c1917, #1c1917)",
-                    boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.08)",
-                  }}
+                  className="flex items-center justify-center h-9 w-[128px] rounded-full flex-none cursor-pointer transition-[transform,filter] duration-150 hover:brightness-110 active:scale-[0.96] bg-accent"
                   onClick={(e) => { e.stopPropagation(); onClick(); }}
                 >
-                  <span className="text-[14px] font-semibold leading-[21px] text-white whitespace-nowrap">
+                  <span className="text-[14px] font-semibold leading-[21px] text-btn-primary-text whitespace-nowrap">
                     Join Campaign
                   </span>
                 </div>
@@ -247,10 +234,10 @@ function CampaignCard({
             </span>
             <div className="flex items-center -space-x-1">
               <span
-                className="relative z-[1] inline-flex items-center gap-[2px] rounded-full px-2 py-[3px] h-6 text-[12px] font-semibold text-white"
+                className="relative z-[1] inline-flex items-center gap-[2px] rounded-full px-2 py-[3px] h-6 text-[12px] font-semibold text-text-primary"
                 style={{
-                  outline: "2px solid #000",
-                  background: "linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0.4)), radial-gradient(42.53% 86.44% at 50.57% 0%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.32) 100%), #151515",
+                  outline: "2px solid var(--bg-page)",
+                  background: "var(--bg-subtle)",
                 }}
               >
                 <svg width="10" height="10" viewBox="0 0 11 12" fill="none" className="shrink-0">
@@ -260,14 +247,14 @@ function CampaignCard({
                 {campaign.creators}
               </span>
               <span
-                className="relative inline-flex items-center justify-center rounded-full px-2 py-[3px] h-6 text-[12px] font-semibold"
+                className="relative inline-flex items-center justify-center rounded-full px-2 py-[3px] h-6 text-[12px] font-semibold text-accent"
                 style={{
-                  outline: "2px solid #000",
-                  background: "radial-gradient(263.05% 100% at 50.57% 0%, rgba(137,182,255,0.32) 0%, rgba(59,130,246,0.32) 100%), #151515",
+                  outline: "2px solid var(--bg-page)",
+                  background: "var(--accent-muted)",
                 }}
               >
-                <span style={{ color: "#89B6FF" }}>{campaign.cpm}</span>
-                <span style={{ color: "rgba(137,182,255,0.7)" }}>/1K</span>
+                <span>{campaign.cpm}</span>
+                <span className="opacity-70">/1K</span>
               </span>
             </div>
           </div>
@@ -276,10 +263,10 @@ function CampaignCard({
 
       {/* Progress bar */}
       <div className="h-1 w-full relative">
-        <div className="absolute inset-0" style={{ background: "rgba(255,255,255,0.3)" }} />
+        <div className="absolute inset-0 bg-border-subtle" />
         <div
-          className="absolute inset-y-0 left-0"
-          style={{ width: `${campaign.progress}%`, background: "#fff" }}
+          className="absolute inset-y-0 left-0 bg-accent"
+          style={{ width: `${campaign.progress}%` }}
         />
       </div>
     </div>
@@ -332,18 +319,17 @@ function CampaignModal({
   const budgetParts = campaign.budget.split("/");
   const approvalRate = 92;
 
-  const surfaceStyle = {
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.06)",
+  const surfaceStyle: React.CSSProperties = {
+    background: "var(--bg-subtle)",
+    border: "1px solid var(--border-subtle)",
   };
 
   const glassPill = (children: React.ReactNode, extraClass = "") => (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-white/80 ${extraClass}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-text-secondary ${extraClass}`}
       style={{
-        outline: "2px solid black",
-        background:
-          "linear-gradient(0deg, rgba(0,0,0,0.4), rgba(0,0,0,0.4)), radial-gradient(42.53% 86.44% at 50.57% 0%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.32) 100%), #151515",
+        outline: "2px solid var(--bg-card)",
+        background: "var(--bg-subtle)",
       }}
     >
       {children}
@@ -352,12 +338,10 @@ function CampaignModal({
 
   const blueGlassPill = (children: React.ReactNode) => (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-accent"
       style={{
-        outline: "2px solid black",
-        background:
-          "radial-gradient(263.05% 100% at 50.57% 0%, rgba(137,182,255,0.32) 0%, rgba(59,130,246,0.32) 100%), #151515",
-        color: "#89B6FF",
+        outline: "2px solid var(--bg-card)",
+        background: "var(--accent-muted)",
       }}
     >
       {children}
@@ -488,8 +472,8 @@ function CampaignModal({
               <div
                 className="w-6 h-6 rounded-full shrink-0"
                 style={{
-                  background: "linear-gradient(135deg, #444, #666)",
-                  boxShadow: "0 0 0 1px rgba(255,255,255,0.4)",
+                  background: "linear-gradient(135deg, #888, #aaa)",
+                  boxShadow: "0 0 0 1px var(--border-subtle)",
                 }}
               />
               <span className="text-sm font-medium text-text-primary">
@@ -517,15 +501,11 @@ function CampaignModal({
                   <span className="text-text-muted">/{budgetParts[1]}</span>
                 </span>
                 <div
-                  className="rounded-full overflow-hidden"
-                  style={{
-                    width: 80,
-                    height: 4,
-                    background: "rgba(255,255,255,0.3)",
-                  }}
+                  className="rounded-full overflow-hidden bg-border-subtle"
+                  style={{ width: 80, height: 4 }}
                 >
                   <div
-                    className="h-full rounded-full bg-white"
+                    className="h-full rounded-full bg-accent"
                     style={{ width: `${campaign.progress}%` }}
                   />
                 </div>
@@ -588,8 +568,7 @@ function CampaignModal({
 
             {/* Description */}
             <p
-              className="text-base leading-relaxed line-clamp-4 mb-5"
-              style={{ color: "rgba(255,255,255,0.88)" }}
+              className="text-base leading-relaxed line-clamp-4 mb-5 text-text-secondary"
             >
               {campaign.description}
             </p>
@@ -597,14 +576,8 @@ function CampaignModal({
             {/* Action buttons */}
             <div className="flex items-center gap-3 mb-6">
               <button
-                className="rounded-[40px] px-8 text-base font-semibold text-black cursor-pointer"
-                style={{
-                  height: 48,
-                  background:
-                    "radial-gradient(31.76% 50.52% at 64.86% 100.52%, rgba(255,63,213,0.35) 0%, rgba(255,63,213,0) 100%), radial-gradient(60.93% 50% at 51.43% 0%, rgba(255,255,255,0.265) 0%, rgba(255,255,255,0.005) 100%), linear-gradient(0deg, #1c1917, #1c1917)",
-                  boxShadow: "inset 0px 1px 0px rgba(255,255,255,0.08)",
-                  color: "#fff",
-                }}
+                className="rounded-[40px] px-8 text-base font-semibold cursor-pointer bg-accent text-btn-primary-text"
+                style={{ height: 48 }}
               >
                 Join Campaign
               </button>
@@ -646,10 +619,7 @@ function CampaignModal({
               <h3 className="text-base font-medium text-text-primary mb-3">
                 Requirements
               </h3>
-              <p
-                className="text-xs font-medium mb-3"
-                style={{ color: "rgba(255,255,255,0.56)" }}
-              >
+              <p className="text-xs font-medium mb-3 text-text-muted">
                 Content Requirements
               </p>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
@@ -660,28 +630,27 @@ function CampaignModal({
                       height="16"
                       viewBox="0 0 16 16"
                       fill="none"
-                      className="shrink-0 mt-0.5"
+                      className="shrink-0 mt-0.5 text-text-muted"
                     >
                       <circle
                         cx="8"
                         cy="8"
                         r="6"
-                        stroke="rgba(255,255,255,0.3)"
+                        stroke="currentColor"
                         strokeWidth="1.2"
                         fill="none"
+                        opacity="0.5"
                       />
                       <path
                         d="M5.5 8L7.2 9.7L10.5 6.3"
-                        stroke="rgba(255,255,255,0.5)"
+                        stroke="currentColor"
                         strokeWidth="1.2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        opacity="0.7"
                       />
                     </svg>
-                    <span
-                      className="text-sm"
-                      style={{ color: "rgba(255,255,255,0.88)" }}
-                    >
+                    <span className="text-sm text-text-secondary">
                       {req}
                     </span>
                   </div>
@@ -757,10 +726,7 @@ function CampaignModal({
                   style={{ ...surfaceStyle, height: 252 }}
                 >
                   <div className="flex items-center gap-1 mb-4">
-                    <button
-                      className="rounded-full px-3 py-1 text-xs font-medium text-text-primary"
-                      style={{ background: "rgba(255,255,255,0.1)" }}
-                    >
+                    <button className="rounded-full px-3 py-1 text-xs font-medium text-text-primary bg-bg-active">
                       Views
                     </button>
                     <button className="rounded-full px-3 py-1 text-xs font-medium text-text-muted">
@@ -771,10 +737,7 @@ function CampaignModal({
                   <p className="text-2xl font-semibold text-text-primary">
                     1,234,567
                   </p>
-                  <p
-                    className="text-sm mb-4"
-                    style={{ color: "rgba(255,255,255,0.56)" }}
-                  >
+                  <p className="text-sm mb-4 text-text-muted">
                     Total views
                   </p>
 
@@ -866,10 +829,7 @@ function CampaignModal({
                             background: "linear-gradient(135deg, #555, #777)",
                           }}
                         />
-                        <span
-                          className="text-xs font-medium"
-                          style={{ color: "rgba(255,255,255,0.88)" }}
-                        >
+                        <span className="text-xs font-medium text-text-secondary">
                           {earner.name}
                         </span>
                       </div>
@@ -917,10 +877,10 @@ function CampaignModal({
                     style={{ ...surfaceStyle, height: 80 }}
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-text-muted"
                       style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "var(--bg-subtle)",
+                        border: "1px solid var(--border-subtle)",
                       }}
                     >
                       {res.icon === "play" ? (
@@ -932,7 +892,7 @@ function CampaignModal({
                         >
                           <path
                             d="M5 3L12 8L5 13V3Z"
-                            fill="rgba(255,255,255,0.6)"
+                            fill="currentColor"
                           />
                         </svg>
                       ) : (
@@ -944,7 +904,7 @@ function CampaignModal({
                         >
                           <path
                             d="M2 4C2 3.44772 2.44772 3 3 3H6L8 5H13C13.5523 5 14 5.44772 14 6V12C14 12.5523 13.5523 13 13 13H3C2.44772 13 2 12.5523 2 12V4Z"
-                            stroke="rgba(255,255,255,0.6)"
+                            stroke="currentColor"
                             strokeWidth="1.2"
                             fill="none"
                           />
@@ -955,10 +915,7 @@ function CampaignModal({
                       <p className="text-sm font-medium text-text-primary">
                         {res.label}
                       </p>
-                      <p
-                        className="text-xs"
-                        style={{ color: "rgba(255,255,255,0.56)" }}
-                      >
+                      <p className="text-xs text-text-muted">
                         {res.description}
                       </p>
                     </div>
@@ -1026,24 +983,9 @@ function Dropdown({
         return (
           <button
             key={opt}
-            className="w-full flex items-center gap-2 h-[36px] px-3 rounded-xl text-[14px] font-medium text-text-primary cursor-pointer"
-            style={{
-              background: isSelected
-                ? "rgba(255,255,255,0.05)"
-                : "transparent",
-            }}
-            onMouseEnter={(e) => {
-              if (!isSelected) {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(255,255,255,0.03)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isSelected) {
-                (e.currentTarget as HTMLElement).style.background =
-                  "transparent";
-              }
-            }}
+            className={`w-full flex items-center gap-2 h-[36px] px-3 rounded-xl text-[14px] font-medium text-text-primary cursor-pointer transition-colors ${
+              isSelected ? "bg-bg-active" : "hover:bg-bg-hover"
+            }`}
             onClick={() => {
               onChange(isSelected ? null : opt);
               onClose();
@@ -1051,15 +993,9 @@ function Dropdown({
           >
             {/* Checkbox circle */}
             <span
-              className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
-              style={{
-                borderColor: isSelected
-                  ? "rgba(255,255,255,0.6)"
-                  : "rgba(255,255,255,0.2)",
-                background: isSelected
-                  ? "rgba(255,255,255,0.1)"
-                  : "transparent",
-              }}
+              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                isSelected ? "border-text-secondary bg-bg-active" : "border-border-input"
+              }`}
             >
               {isSelected && (
                 <span className="w-2 h-2 rounded-full bg-text-primary" />
@@ -1129,39 +1065,18 @@ function SortDropdown({
         return (
           <button
             key={opt}
-            className="w-full flex items-center gap-2 h-[36px] px-3 rounded-xl text-[14px] font-medium text-text-primary cursor-pointer"
-            style={{
-              background: isSelected
-                ? "rgba(255,255,255,0.05)"
-                : "transparent",
-            }}
-            onMouseEnter={(e) => {
-              if (!isSelected) {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(255,255,255,0.03)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isSelected) {
-                (e.currentTarget as HTMLElement).style.background =
-                  "transparent";
-              }
-            }}
+            className={`w-full flex items-center gap-2 h-[36px] px-3 rounded-xl text-[14px] font-medium text-text-primary cursor-pointer transition-colors ${
+              isSelected ? "bg-bg-active" : "hover:bg-bg-hover"
+            }`}
             onClick={() => {
               onChange(opt);
               onClose();
             }}
           >
             <span
-              className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
-              style={{
-                borderColor: isSelected
-                  ? "rgba(255,255,255,0.6)"
-                  : "rgba(255,255,255,0.2)",
-                background: isSelected
-                  ? "rgba(255,255,255,0.1)"
-                  : "transparent",
-              }}
+              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                isSelected ? "border-text-secondary bg-bg-active" : "border-border-input"
+              }`}
             >
               {isSelected && (
                 <span className="w-2 h-2 rounded-full bg-text-primary" />
@@ -1382,29 +1297,6 @@ export default function DiscoverPage() {
 
   return (
     <>
-      {/* Global card border styles */}
-      <style>{`
-        .discover-card-border {
-          position: relative;
-        }
-        .discover-card-border::after {
-          position: absolute;
-          inset: 0;
-          z-index: 20;
-          pointer-events: none;
-          content: "";
-          border: 1px solid rgba(255,255,255,0.16);
-          border-radius: inherit;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-
       <div className="min-h-screen bg-bg-card">
         {/* ===== HERO BANNER ===== */}
         <div
@@ -1420,7 +1312,7 @@ export default function DiscoverPage() {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, transparent 40%, #151515 100%)",
+                "linear-gradient(to bottom, transparent 40%, var(--bg-card) 100%)",
             }}
           />
 
@@ -1494,7 +1386,7 @@ export default function DiscoverPage() {
           <div className="absolute bottom-[72px] right-3 sm:right-12 flex items-center gap-2">
             <button
               className="size-8 rounded-full flex items-center justify-center cursor-pointer"
-              style={{ border: "1px solid rgba(255,255,255,0.15)" }}
+              style={{ border: "1px solid rgba(255,255,255,0.3)" }}
               onClick={() =>
                 setHeroSlide((prev) =>
                   prev === 0 ? heroCount - 1 : prev - 1
@@ -1518,7 +1410,7 @@ export default function DiscoverPage() {
             </button>
             <button
               className="size-8 rounded-full flex items-center justify-center cursor-pointer"
-              style={{ border: "1px solid rgba(255,255,255,0.15)" }}
+              style={{ border: "1px solid rgba(255,255,255,0.3)" }}
               onClick={() =>
                 setHeroSlide((prev) => (prev + 1) % heroCount)
               }
@@ -1547,7 +1439,7 @@ export default function DiscoverPage() {
             {/* Search input */}
             <div className="relative">
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.4)]"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
                 width="14"
                 height="14"
                 viewBox="0 0 14 14"
@@ -1572,28 +1464,19 @@ export default function DiscoverPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search campaigns..."
-                className="h-9 rounded-full pl-9 pr-4 text-[14px] text-text-primary placeholder:text-text-muted outline-none"
-                style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  minWidth: 200,
-                }}
+                className="h-9 rounded-full pl-9 pr-4 text-[14px] text-text-primary placeholder:text-text-muted outline-none bg-bg-input border border-border-input"
+                style={{ minWidth: 200 }}
               />
             </div>
 
             {/* Sort button */}
             <div className="relative">
               <button
-                className="size-[36px] rounded-full flex items-center justify-center cursor-pointer"
-                style={{
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                }}
+                className="size-[36px] rounded-full flex items-center justify-center cursor-pointer border border-border-input"
                 onClick={() =>
                   setOpenDropdown(openDropdown === "sort" ? null : "sort")
                 }
               >
-                {/* Sort icon: 3 horizontal lines */}
                 <svg
                   width="16"
                   height="16"
@@ -1602,7 +1485,8 @@ export default function DiscoverPage() {
                 >
                   <path
                     d="M3 4H13M3 8H10M3 12H7"
-                    stroke="white"
+                    stroke="currentColor"
+                    className="text-text-secondary"
                     strokeWidth="1.3"
                     strokeLinecap="round"
                   />
@@ -1636,8 +1520,7 @@ export default function DiscoverPage() {
             {/* Category dropdown */}
             <div className="relative">
               <button
-                className="h-[36px] rounded-full px-4 text-[13px] font-medium text-text-primary/80 flex items-center gap-1.5 cursor-pointer"
-                style={{ border: "1px solid rgba(255,255,255,0.15)" }}
+                className="h-[36px] rounded-full px-4 text-[13px] font-medium text-text-primary/80 flex items-center gap-1.5 cursor-pointer border border-border-input"
                 onClick={() =>
                   setOpenDropdown(
                     openDropdown === "category" ? null : "category"
@@ -1761,21 +1644,6 @@ export default function DiscoverPage() {
                   className="group/card relative cursor-pointer text-left focus-visible:outline-none lg:hover:z-30"
                   aria-label={`View ${campaign.title}`}
                 >
-                  {/* Invisible spacer — defines grid cell height so hover expand doesn't push rows */}
-                  <div className="invisible w-full" aria-hidden="true">
-                    <div className="aspect-[16/9]" />
-                    <div className="px-4 pt-3 pb-4">
-                      <div className="flex flex-col gap-2">
-                        <div className="h-6" />
-                        <div className="flex flex-col gap-1.5">
-                          <div className="h-5" />
-                          <div />
-                          <div className="h-6" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="h-1" />
-                  </div>
                   <CampaignCard
                     campaign={campaign}
                     onClick={() => modal.open(campaign)}

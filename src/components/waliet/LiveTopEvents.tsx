@@ -12,6 +12,7 @@ import { GameOrderBy, GameState, type GameData, type MarketOutcome } from "@azur
 import { setBetslipMeta, clearBetslipMeta } from "./betslip-meta";
 import { useOpenGame } from "./GameModal";
 import { useImageColor, darkenColor, colorFromName, hslToRgb, lightenColor } from "./useImageColor";
+import { getTeamColorOverride } from "./game-modal/useTeamGradient";
 import { useTheme } from "@/components/ui/theme";
 import { useLiveScore } from "./LiveStats";
 import { TeamLogo } from "./TeamLogo";
@@ -195,8 +196,8 @@ const LiveEventCard = memo(function LiveEventCard({ game, siblingIds }: { game: 
   const imgColor2 = useImageColor(team2Img);
   const nameColor1 = hslToRgb(colorFromName(team1));
   const nameColor2 = hslToRgb(colorFromName(team2));
-  const c1 = imgColor1 ?? nameColor1;
-  const c2 = imgColor2 ?? nameColor2;
+  const c1 = getTeamColorOverride(team1) ?? imgColor1 ?? nameColor1;
+  const c2 = getTeamColorOverride(team2) ?? imgColor2 ?? nameColor2;
   const d1 = darkenColor(c1, 0.5);
   const d2 = darkenColor(c2, 0.5);
 

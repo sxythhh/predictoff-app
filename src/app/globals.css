@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Kill backdrop-filter on mobile (biggest perf bottleneck) ── */
 @media (max-width: 1023px) {
   * {
@@ -267,7 +269,10 @@ body {
   pointer-events: none;
   content: "";
   border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.dark .discover-card-border::after {
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 /* Event card border — only on the gradient/image area, not the odds section */

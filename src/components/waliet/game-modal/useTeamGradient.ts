@@ -5,6 +5,24 @@ import type { GameData } from "@azuro-org/toolkit";
 import { useImageColor, darkenColor, lightenColor, colorFromName, hslToRgb } from "../useImageColor";
 import { useTheme } from "@/components/ui/theme";
 
+/** Custom gradient colors for specific teams (takes priority over extracted/derived colors) */
+const TEAM_COLOR_OVERRIDES: Record<string, string> = {
+  "Liverpool": "rgb(200, 16, 46)",        // deep red
+  "Real Madrid": "rgb(218, 165, 32)",     // gold
+};
+
+export function getTeamColorOverride(name: string): string | undefined {
+  // Try exact match first, then case-insensitive substring match
+  if (TEAM_COLOR_OVERRIDES[name]) return TEAM_COLOR_OVERRIDES[name];
+  const lower = name.toLowerCase();
+  for (const [key, color] of Object.entries(TEAM_COLOR_OVERRIDES)) {
+    if (lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) {
+      return color;
+    }
+  }
+  return undefined;
+}
+
 /**
  * Extracts team colors and builds a radial gradient background
  * matching the LiveTopEvents card style.
@@ -19,8 +37,8 @@ export function useTeamGradient(game: GameData | undefined) {
   const imgColor2 = useImageColor(team2Img);
   const nameColor1 = hslToRgb(colorFromName(team1));
   const nameColor2 = hslToRgb(colorFromName(team2));
-  const c1 = imgColor1 ?? nameColor1;
-  const c2 = imgColor2 ?? nameColor2;
+  const c1 = getTeamColorOverride(team1) ?? imgColor1 ?? nameColor1;
+  const c2 = getTeamColorOverride(team2) ?? imgColor2 ?? nameColor2;
 
   const { theme } = useTheme();
   const isDark = theme === "dark";

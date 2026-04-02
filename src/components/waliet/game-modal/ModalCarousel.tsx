@@ -135,11 +135,10 @@ export function ModalCarousel({
 
     const onTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
-      const isHandle = !!target.closest("[data-drag-handle]");
       const scrollable = target.closest("[data-card-scroll]");
       const isScrolledToTop = !scrollable || scrollable.scrollTop <= 0;
 
-      if (isHandle || isScrolledToTop) {
+      if (isScrolledToTop) {
         startYRef.current = e.touches[0].clientY;
         draggingRef.current = false;
       }
@@ -210,14 +209,6 @@ export function ModalCarousel({
           maxHeight: "88vh",
         }}
       >
-        {/* Drag handle */}
-        <div
-          data-drag-handle
-          className="flex justify-center pt-2 pb-1 cursor-grab"
-        >
-          <div className="w-10 h-1.5 rounded-full bg-white/30" />
-        </div>
-
         {/* Carousel scroll container */}
         <div
           ref={scrollRef}

@@ -74,15 +74,44 @@ function ActionButton({ children, onClick }: { children: React.ReactNode; onClic
 }
 
 /* ── Edit Profile Form ── */
-function EditProfileForm({ user, onClose }: { user: { displayName: string | null; avatar: string | null; bio: string | null; walletAddress: string }; onClose: () => void }) {
+function EditProfileForm({ user, onClose }: { user: { displayName: string | null; avatar: string | null; bio: string | null; walletAddress: string; username?: string | null }; onClose: () => void }) {
   const { refreshUser } = useAuth();
   const [displayName, setDisplayName] = useState(user.displayName ?? "");
+  const [username, setUsername] = useState(user.username ?? "");
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
   const [bio, setBio] = useState(user.bio ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user.avatar ?? "");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const usernameTimer = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const checkUsername = (value: string) => {
+    const clean = value.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    setUsername(clean);
+    if (usernameTimer.current) clearTimeout(usernameTimer.current);
+
+    if (!clean || clean === user.username) {
+      setUsernameStatus("idle");
+      return;
+    }
+    if (clean.length < 3 || clean.length > 20) {
+      setUsernameStatus("invalid");
+      return;
+    }
+
+    setUsernameStatus("checking");
+    usernameTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/username-check?username=${encodeURIComponent(clean)}`);
+        const data = await res.json();
+        setUsernameStatus(data.available ? "available" : "taken");
+      } catch {
+        setUsernameStatus("idle");
+      }
+    }, 400);
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,6 +147,7 @@ function EditProfileForm({ user, onClose }: { user: { displayName: string | null
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           displayName: displayName.trim() || null,
+          username: username.trim() || null,
           bio: bio.trim() || null,
           avatar: avatarUrl.trim() || null,
         }),
@@ -206,6 +236,45 @@ function EditProfileForm({ user, onClose }: { user: { displayName: string | null
           </div>
           <p className="text-[10px] text-text-muted mt-1">JPG, PNG, WebP, or GIF. Max 4MB.</p>
         </div>
+      </div>
+
+      {/* Username */}
+      <div>
+        <label className="text-[12px] text-text-muted mb-1 block">Username</label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-text-muted">@</span>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => checkUsername(e.target.value)}
+            placeholder="choose_a_username"
+            maxLength={20}
+            className="w-full h-9 pl-7 pr-9 rounded-lg bg-bg-input border border-border-subtle text-[13px] text-text-primary placeholder:text-text-muted outline-none focus:border-accent transition-colors"
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2">
+            {usernameStatus === "checking" && (
+              <svg className="w-3.5 h-3.5 text-text-muted animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            )}
+            {usernameStatus === "available" && (
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="#33c771" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            )}
+            {usernameStatus === "taken" && (
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="#fe7c8c" strokeWidth="2" strokeLinecap="round"/></svg>
+            )}
+          </span>
+        </div>
+        {username && usernameStatus === "available" && (
+          <p className="text-[11px] text-accent mt-1">waliet.com/@{username}</p>
+        )}
+        {usernameStatus === "taken" && (
+          <p className="text-[11px] text-status-loss mt-1">Username already taken</p>
+        )}
+        {usernameStatus === "invalid" && (
+          <p className="text-[11px] text-text-muted mt-1">3–20 characters: letters, numbers, underscores</p>
+        )}
       </div>
 
       {/* Display name */}

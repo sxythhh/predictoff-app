@@ -10,24 +10,28 @@ export async function GET(
   const { address } = await params;
   const normalized = address.toLowerCase();
 
-  const user = await prisma.user.findUnique({
-    where: { walletAddress: normalized },
-    select: {
-      id: true,
-      walletAddress: true,
-      displayName: true,
-      avatar: true,
-      bio: true,
-      profileVisibility: true,
-      showBetHistory: true,
-      showStats: true,
-      isTipster: true,
-      tipsterBio: true,
-      subscriptionPrice: true,
-      createdAt: true,
-      _count: { select: { favorites: true, tipsterPicks: true, subscribers: true } },
-    },
-  });
+  const select = {
+    id: true,
+    walletAddress: true,
+    username: true,
+    displayName: true,
+    avatar: true,
+    bio: true,
+    profileVisibility: true,
+    showBetHistory: true,
+    showStats: true,
+    isTipster: true,
+    tipsterBio: true,
+    subscriptionPrice: true,
+    createdAt: true,
+    _count: { select: { favorites: true, tipsterPicks: true, subscribers: true } },
+  } as const;
+
+  // Try wallet address first, then username
+  const isWalletAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
+  const user = isWalletAddress
+    ? await prisma.user.findUnique({ where: { walletAddress: normalized }, select })
+    : await prisma.user.findUnique({ where: { username: normalized }, select });
 
   if (!user) {
     return Response.json({ error: "User not found" }, { status: 404 });
@@ -37,6 +41,7 @@ export async function GET(
     return Response.json({
       id: user.id,
       walletAddress: user.walletAddress,
+      username: user.username,
       displayName: user.displayName,
       avatar: user.avatar,
       isPrivate: true,
@@ -46,6 +51,7 @@ export async function GET(
   return Response.json({
     id: user.id,
     walletAddress: user.walletAddress,
+    username: user.username,
     displayName: user.displayName,
     avatar: user.avatar,
     bio: user.bio,

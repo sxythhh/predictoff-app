@@ -604,9 +604,28 @@ export function AppSidebar({
                     Array.from({ length: 8 }).map((_, i) => (
                       <div
                         key={i}
-                        className="h-8 rounded-lg animate-pulse"
-                        style={{ background: "var(--sidebar-hover)" }}
-                      />
+                        className="flex h-8 items-center gap-2.5 rounded-lg px-[10px]"
+                      >
+                        {/* Icon placeholder */}
+                        <div
+                          className="size-4 rounded animate-pulse shrink-0"
+                          style={{ background: "var(--sidebar-hover)", animationDelay: `${i * 60}ms` }}
+                        />
+                        {/* Label placeholder */}
+                        <div
+                          className="h-3 rounded-full animate-pulse"
+                          style={{
+                            background: "var(--sidebar-hover)",
+                            animationDelay: `${i * 60}ms`,
+                            width: `${[72, 56, 84, 48, 64, 76, 52, 68][i]}px`,
+                          }}
+                        />
+                        {/* Count placeholder */}
+                        <div
+                          className="ml-auto h-3 w-5 rounded-full animate-pulse shrink-0"
+                          style={{ background: "var(--sidebar-hover)", animationDelay: `${i * 60}ms` }}
+                        />
+                      </div>
                     ))
                   ) : (
                     <>

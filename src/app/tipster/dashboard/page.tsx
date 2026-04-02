@@ -69,7 +69,7 @@ export default function TipsterDashboardPage() {
                     const res = await fetch("/api/tipster/onboarding");
                     const d = await res.json();
                     if (d.url) window.open(d.url, "_blank");
-                    else toast("Unable to start onboarding", "error");
+                    else toast(d.error ?? "Unable to start onboarding", "error");
                   }}
                   className="mt-3 h-9 px-4 rounded-lg bg-yellow-500/20 text-yellow-400 text-[13px] font-semibold hover:bg-yellow-500/30 transition-colors"
                 >
@@ -193,7 +193,7 @@ export default function TipsterDashboardPage() {
                 const res = await fetch("/api/tipster/onboarding?type=payouts");
                 const d = await res.json();
                 if (d.url) window.open(d.url, "_blank");
-                else toast("Unable to open payouts portal", "error");
+                else toast(d.error ?? "Unable to open payouts portal", "error");
               }}
               className="flex-1 h-10 rounded-lg bg-bg-surface text-text-secondary text-[14px] font-medium hover:bg-bg-hover transition-colors flex items-center justify-center gap-2"
             >

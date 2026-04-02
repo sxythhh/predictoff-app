@@ -13,6 +13,7 @@ import {
 } from "@azuro-org/sdk";
 import { useAccount } from "wagmi";
 import { GameState, type GameData, type MarketOutcome } from "@azuro-org/toolkit";
+import { useWebHaptics } from "web-haptics/react";
 import { setBetslipMeta, clearBetslipMeta } from "./betslip-meta";
 import { TeamLogo } from "./TeamLogo";
 import { SportFallbackIcon } from "./SportFallbackIcon";
@@ -47,8 +48,17 @@ export function GameModalProvider({
   children: React.ReactNode;
   openGame: (id: string, siblingIds?: string[]) => void;
 }) {
+  const haptic = useWebHaptics();
+  const openGameWithHaptic = useCallback(
+    (id: string, siblingIds?: string[]) => {
+      haptic.trigger("medium");
+      openGame(id, siblingIds);
+    },
+    [haptic, openGame]
+  );
+
   return (
-    <GameModalContext.Provider value={{ openGame }}>
+    <GameModalContext.Provider value={{ openGame: openGameWithHaptic }}>
       {children}
     </GameModalContext.Provider>
   );

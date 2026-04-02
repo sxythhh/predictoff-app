@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     user: {
       id: user.id,
       walletAddress: user.walletAddress,
+      username: user.username,
       displayName: user.displayName,
       avatar: user.avatar,
       banner: user.banner,

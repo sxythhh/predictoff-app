@@ -7,6 +7,7 @@ import { SiweMessage } from "siwe";
 interface DbUser {
   id: string;
   walletAddress: string;
+  username: string | null;
   displayName: string | null;
   avatar: string | null;
   banner: string | null;

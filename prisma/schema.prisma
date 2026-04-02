@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                String    @id @default(cuid())
   walletAddress     String    @unique
+  username          String?   @unique
   displayName       String?
   avatar            String?
   banner            String?

@@ -210,11 +210,16 @@ function AccountSection() {
   const { betToken, appChain } = useChain();
   const { user } = useAuth();
 
+  // Use wagmi address if connected, otherwise fall back to the DB wallet address
+  // (covers social login users whose embedded wallet isn't connected to wagmi)
+  const displayAddress = (isConnected && address) ? address : user?.walletAddress;
+  const hasAccount = !!displayAddress || !!user;
+
   return (
     <div className="p-8 max-w-[600px]">
       <h2 className="text-[18px] font-semibold text-text-primary mb-6">Account</h2>
 
-      {isConnected && address ? (
+      {hasAccount ? (
         <div className="flex flex-col gap-5">
           {user?.email && (
             <div className="flex flex-col gap-1.5">
@@ -226,22 +231,36 @@ function AccountSection() {
             </div>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[12px] font-medium text-text-muted">Wallet Address</span>
-            <div className="flex items-center gap-2 bg-border-subtle rounded-lg px-3 py-2.5 border border-border-subtle">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-accent to-[#1a8a4a]" />
-              <span className="text-[13px] font-mono text-text-primary/80">{address}</span>
-              <button
-                onClick={() => navigator.clipboard.writeText(address)}
-                className="ml-auto text-text-muted hover:text-text-secondary transition-colors"
-              >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M3 11V3.5C3 2.67 3.67 2 4.5 2H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
+          {user?.authProvider && user.authProvider !== "wallet" && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[12px] font-medium text-text-muted">Sign-in Method</span>
+              <div className="flex items-center gap-2 bg-border-subtle rounded-lg px-3 py-2.5 border border-border-subtle text-[13px] text-text-primary/80">
+                <span className="capitalize">{user.authProvider}</span>
+              </div>
             </div>
-          </div>
+          )}
+
+          {displayAddress && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[12px] font-medium text-text-muted">Wallet Address</span>
+              <div className="flex items-center gap-2 bg-border-subtle rounded-lg px-3 py-2.5 border border-border-subtle">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-accent to-[#1a8a4a]" />
+                <span className="text-[13px] font-mono text-text-primary/80">{displayAddress}</span>
+                <button
+                  onClick={() => navigator.clipboard.writeText(displayAddress)}
+                  className="ml-auto text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M3 11V3.5C3 2.67 3.67 2 4.5 2H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              {!isConnected && (
+                <p className="text-[11px] text-text-muted mt-0.5">Embedded wallet — managed by your social login</p>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-4">
             <div className="flex-1 flex flex-col gap-1.5">
@@ -261,7 +280,7 @@ function AccountSection() {
       ) : (
         <div className="text-center py-12">
           <p className="text-text-muted text-[14px]">No wallet connected</p>
-          <p className="text-text-muted text-[12px] mt-1">Connect a wallet to see account details</p>
+          <p className="text-text-muted text-[12px] mt-1">Connect a wallet or sign in to see account details</p>
         </div>
       )}
     </div>
